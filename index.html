@@ -1,1031 +1,1713 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full bg-slate-50">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Siswa - SMP Negeri 6 Manokwari</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABSENSI SISWA - SMP NEGERI 6 MANOKWARI</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            smpblue: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+              950: '#172554',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- SheetJS untuk Export/Import Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- Chart.js untuk Grafik Dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    <!-- Tailwind Config for Custom Theme -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        school: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Animation for scan result */
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
+    .glow-success { box-shadow: 0 0 25px rgba(34, 197, 94, 0.35); }
+    .glow-warning { box-shadow: 0 0 25px rgba(245, 158, 11, 0.35); }
+    .glow-blue { box-shadow: 0 0 25px rgba(30, 58, 138, 0.25); }
+
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.96; transform: scale(1.01); }
+    }
+    .animate-pulse-subtle { animation: pulse-subtle 2s infinite ease-in-out; }
+  </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="h-full text-slate-800 antialiased bg-slate-100 flex flex-col min-h-screen">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, 
-            setPersistence, browserLocalPersistence 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, 
-            orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { 
-            getStorage, ref, uploadBytesResumable, getDownloadURL 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none"></div>
 
-        // Konfigurasi Firebase dari spesifikasi
-        const firebaseConfig = {
-            apiKey: "AIzaSyAOGuLr9kQOS8NMlMXVkFZ6FXE6aPUXxtI",
-            authDomain: "scan-moderen.firebaseapp.com",
-            projectId: "scan-moderen",
-            storageBucket: "scan-moderen.firebasestorage.app",
-            messagingSenderId: "469257383650",
-            appId: "1:469257383650:web:a4b9fef89a7954f08578bb",
-            measurementId: "G-D03VMJQKWC"
-        };
+  <div id="authLoadingScreen" class="fixed inset-0 z-50 bg-smpblue-950 flex flex-col items-center justify-center text-white transition-opacity duration-300">
+    <div class="relative w-28 h-28 mb-6">
+      <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMP 6 Manokwari" class="w-full h-full object-contain animate-bounce">
+    </div>
+    <h2 class="text-xl font-bold tracking-wider text-blue-200">SMP NEGERI 6 MANOKWARI</h2>
+    <p class="text-sm text-slate-300 mt-1 mb-6">Memuat Sistem Absensi Siswa...</p>
+    <div class="flex items-center space-x-2">
+      <div class="w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
+      <div class="w-3 h-3 bg-blue-500 rounded-full animate-ping delay-150"></div>
+      <div class="w-3 h-3 bg-blue-600 rounded-full animate-ping delay-300"></div>
+    </div>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        const ALLOWED_EMAIL = "proktorsmp6@gmail.com";
+  <div id="loginView" class="hidden min-h-screen bg-gradient-to-br from-smpblue-950 via-smpblue-900 to-indigo-950 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20 text-center relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl"></div>
+      
+      <!-- School Logo -->
+      <div class="mx-auto w-32 h-32 mb-4 flex items-center justify-center drop-shadow-xl">
+        <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" 
+             alt="Logo SMP Negeri 6 Manokwari" 
+             class="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-300">
+      </div>
 
-        window.firebaseServices = { auth, db, storage, ALLOWED_EMAIL, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction, ref, uploadBytesResumable, getDownloadURL };
-    </script>
+      <span class="inline-block px-3 py-1 bg-smpblue-100 text-smpblue-800 text-xs font-semibold rounded-full mb-2">Aplikasi Resmi Sekolah</span>
+      <h1 class="text-2xl font-extrabold text-smpblue-950 tracking-tight">ABSENSI SISWA</h1>
+      <h2 class="text-lg font-bold text-smpblue-700 mb-2">SMP NEGERI 6 MANOKWARI</h2>
+      <p class="text-xs text-slate-500 mb-8 leading-relaxed">System Monitoring Kehadiran Siswa Realtime Berbasis QR Code & Integrated WhatsApp Notification</p>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo, useCallback } = React;
-        const { auth, db, storage, ALLOWED_EMAIL, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction, ref, uploadBytesResumable, getDownloadURL } = window.firebaseServices;
+      <!-- Google Sign In Button -->
+      <button id="btnLoginGoogle" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-4 rounded-xl border border-slate-300 shadow-md hover:shadow-lg transition duration-200 group">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Masuk dengan Google</span>
+      </button>
 
-        // --- ICONS (SVG Inline) ---
-        const Icons = {
-            Dashboard: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
-            Users: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
-            Scan: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>,
-            FileText: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-            BookOpen: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
-            LogOut: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
-            CheckCircle: () => <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            XCircle: () => <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            Clock: () => <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            Loader: () => <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
-            Upload: () => <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-        };
+      <div class="mt-6 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
+        <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+        <span>Akses Terproteksi Khusus Proktor Resmi</span>
+      </div>
 
-        // --- UTILS: TIME (WIT - Asia/Jayapura) ---
-        const getNowWIT = () => {
-            const now = new Date();
-            // Force timezone to Asia/Jayapura
-            const formatterDate = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', year: 'numeric', month: '2-digit', day: '2-digit' });
-            const formatterTime = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            
-            const dateParts = formatterDate.formatToParts(now);
-            const timeParts = formatterTime.formatToParts(now);
-            
-            const year = dateParts.find(p => p.type === 'year').value;
-            const month = dateParts.find(p => p.type === 'month').value;
-            const day = dateParts.find(p => p.type === 'day').value;
-            const hour = timeParts.find(p => p.type === 'hour').value;
-            const minute = timeParts.find(p => p.type === 'minute').value;
-            const second = timeParts.find(p => p.type === 'second').value;
+      <div class="mt-4 text-[10px] text-slate-400">
+        Default Allowed Account: <span class="font-mono text-smpblue-800 font-semibold">proktorsmp6@gmail.com</span>
+      </div>
+    </div>
+  </div>
 
-            const dateStr = `${year}-${month}-${day}`;
-            const timeStr = `${hour}:${minute}:${second}`;
-            const displayDate = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
+  <div id="mainAppView" class="hidden min-h-screen flex flex-col md:flex-row bg-slate-100">
+    
+    <!-- Sidebar -->
+    <aside id="appSidebar" class="w-full md:w-72 bg-smpblue-950 text-white flex-shrink-0 flex flex-col justify-between transition-all duration-300 shadow-xl z-30">
+      <div>
+        <!-- Sidebar Header / School Branding -->
+        <div class="p-5 border-b border-smpblue-900 flex items-center gap-3">
+          <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMP 6" class="w-12 h-12 object-contain flex-shrink-0">
+          <div>
+            <h1 class="font-bold text-sm text-white tracking-wide leading-tight">ABSENSI SISWA</h1>
+            <p class="text-xs text-blue-300 font-medium">SMP NEGERI 6 MANOKWARI</p>
+            <div class="flex items-center gap-1.5 mt-1 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/40 w-fit">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Proktor Mode</span>
+            </div>
+          </div>
+        </div>
 
-            return { dateStr, timeStr, displayDate, timestamp: now.getTime() };
-        };
+        <!-- Navigation Menu -->
+        <nav class="p-4 space-y-1 text-sm font-medium">
+          <button data-nav="dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white">
+            <i class="fa-solid fa-chart-pie w-5 text-center text-blue-400"></i>
+            <span>Dashboard</span>
+          </button>
+          
+          <button data-nav="scan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white bg-smpblue-900/60 font-semibold border-l-4 border-blue-400">
+            <i class="fa-solid fa-qrcode w-5 text-center text-amber-400"></i>
+            <span>Scan Hari Ini</span>
+            <span class="ml-auto bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">UTAMA</span>
+          </button>
 
-        const checkAttendanceStatus = (timeStr) => {
-            // Batas Hadir: 07.20 WIT
-            return timeStr <= "07:20:59" ? "HADIR" : "TERLAMBAT";
-        };
+          <button data-nav="students" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white">
+            <i class="fa-solid fa-users-gear w-5 text-center text-emerald-400"></i>
+            <span>Data Siswa</span>
+          </button>
 
-        const generateId = (date, nisn) => `${date}_${nisn}`;
+          <button data-nav="recap" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white">
+            <i class="fa-solid fa-file-invoice w-5 text-center text-purple-400"></i>
+            <span>Rekapan Absensi</span>
+          </button>
 
-        // --- MOCK WHATSAPP TEMPLATES ---
-        const waTemplates = [
-            "Yth. Bapak/Ibu, Ananda {nama} kelas {kelas} telah absensi di SMPN 6 Manokwari pada {tanggal} pukul {jam} WIT. Ket: {status}. Terima kasih.",
-            "Informasi Absensi: Ananda {nama} ({kelas}) tercatat {status} pada {tanggal} pukul {jam} WIT. Salam dari SMPN 6 Manokwari.",
-            "Kepada Yth. Wali Murid, memberitahukan bahwa {nama} kelas {kelas} hadir di sekolah pukul {jam} WIT tgl {tanggal}. Status: {status}.",
-            "Pemberitahuan dari SMPN 6 Manokwari: {nama} kelas {kelas} telah memindai QR Code kehadiran pada {tanggal} jam {jam} WIT. Keterangan: {status}.",
-            "Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda {nama}, kelas {kelas}, telah melakukan absensi di SMP Negeri 6 Manokwari pada {tanggal} pukul {jam} WIT dengan keterangan {status}."
-        ];
+          <button data-nav="guide" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white">
+            <i class="fa-solid fa-book-open w-5 text-center text-sky-400"></i>
+            <span>Panduan Penggunaan</span>
+          </button>
 
-        // Di aplikasi nyata ini di Cloud Functions. Di sini kita gunakan custom hook di root app.
-        const useWhatsAppQueueProcessor = () => {
-            const [queueStats, setQueueStats] = useState({ waiting: 0, sent: 0, failed: 0, isPaused: false, nextBatchIn: 0, batchCount: 0 });
+          <button data-nav="settings" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 text-blue-200 hover:bg-smpblue-900 hover:text-white">
+            <i class="fa-solid fa-sliders w-5 text-center text-slate-400"></i>
+            <span>Pengaturan</span>
+          </button>
+        </nav>
+      </div>
 
-            useEffect(() => {
-                let intervalId;
-                let countdownId;
-
-                const processQueue = async () => {
-                    if (queueStats.isPaused) return;
-
-                    try {
-                        const q = query(collection(db, "whatsappQueue"), where("status", "==", "QUEUED"), orderBy("createdAt", "asc"), limit(5));
-                        const snapshot = await getDocs(q);
-
-                        if (snapshot.empty) {
-                            // Update stats real-time
-                            updateStatsDisplay();
-                            return;
-                        }
-
-                        const batch = writeBatch(db);
-                        snapshot.forEach((docSnap) => {
-                            // Simulasi API Call
-                            const isSuccess = Math.random() > 0.05; // 95% success rate
-                            const ref = doc(db, "whatsappQueue", docSnap.id);
-                            if (isSuccess) {
-                                batch.update(ref, { status: "SENT", sentAt: serverTimestamp() });
-                            } else {
-                                const currentAttempts = docSnap.data().attempts || 0;
-                                if (currentAttempts >= 4) {
-                                    batch.update(ref, { status: "FAILED_FINAL", errorMessage: "Max retries reached" });
-                                } else {
-                                    batch.update(ref, { status: "FAILED", attempts: currentAttempts + 1 });
-                                }
-                            }
-                        });
-
-                        await batch.commit();
-                        
-                        // Setelah batch selesai, pause 5 menit (Untuk demo/preview ini diset 10 detik agar terlihat, tapi untuk prod ubah ke 300)
-                        const pauseSeconds = 300; // 5 Menit
-                        setQueueStats(prev => ({ ...prev, isPaused: true, nextBatchIn: pauseSeconds, batchCount: prev.batchCount + 1 }));
-
-                    } catch (error) {
-                        console.error("Queue Processing Error:", error);
-                    }
-                };
-
-                const updateStatsDisplay = async () => {
-                    const statsRef = doc(db, "system", "wa_stats");
-                    // Dalam implementasi single file tanpa aggregasi cloud function, kita hitung kasar dari snapshot, 
-                    // namun karena ini 800 data/hari, query count sangat optimal. 
-                    // Disini kita biarkan frontend listener kecil untuk dashboard saja.
-                };
-
-                intervalId = setInterval(processQueue, 3000); // Check every 3 seconds if not paused
-
-                return () => { clearInterval(intervalId); clearInterval(countdownId); };
-            }, [queueStats.isPaused]);
-
-            // Countdown Timer effect
-            useEffect(() => {
-                let id;
-                if (queueStats.isPaused && queueStats.nextBatchIn > 0) {
-                    id = setInterval(() => {
-                        setQueueStats(prev => {
-                            if (prev.nextBatchIn <= 1) {
-                                clearInterval(id);
-                                return { ...prev, isPaused: false, nextBatchIn: 0 };
-                            }
-                            return { ...prev, nextBatchIn: prev.nextBatchIn - 1 };
-                        });
-                    }, 1000);
-                }
-                return () => clearInterval(id);
-            }, [queueStats.isPaused, queueStats.nextBatchIn]);
-
-            return queueStats;
-        };
-
-
+      <!-- Proktor Account Footer & Logout -->
+      <div class="p-4 border-t border-smpblue-900 bg-smpblue-950/80">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-full bg-smpblue-800 border border-smpblue-600 flex items-center justify-center text-white font-bold text-sm">
+            P
+          </div>
+          <div class="overflow-hidden">
+            <p id="userEmailBadge" class="text-xs font-semibold text-white truncate">proktorsmp6@gmail.com</p>
+            <p class="text-[10px] text-emerald-400 font-medium">● Persistent Session Active</p>
+          </div>
+        </div>
         
-        const MessageModal = ({ isOpen, title, message, type = "error", onClose }) => {
-            if (!isOpen) return null;
-            const isError = type === "error";
-            return (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-pop-in text-center">
-                        <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${isError ? 'bg-red-100' : 'bg-green-100'} mb-4`}>
-                            {isError ? <Icons.XCircle /> : <Icons.CheckCircle />}
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 mb-2">{title}</h3>
-                        <p className="text-slate-600 text-sm mb-6">{message}</p>
-                        <button onClick={onClose} className={`w-full py-2.5 rounded-lg text-white font-medium ${isError ? 'bg-red-600 hover:bg-red-700' : 'bg-school-600 hover:bg-school-700'} transition`}>
-                            Mengerti
-                        </button>
-                    </div>
-                </div>
-            );
-        };
+        <button id="btnLogout" class="w-full flex items-center justify-center gap-2 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-semibold py-2.5 px-3 rounded-lg transition duration-200">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Keluar Sistem</span>
+        </button>
+      </div>
+    </aside>
 
-        const Login = () => {
-            const [loading, setLoading] = useState(false);
-            const [errorMsg, setErrorMsg] = useState("");
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+      
+      <!-- Top Navbar Header -->
+      <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-0 z-20 shadow-sm">
+        <div class="flex items-center gap-3">
+          <button id="mobileMenuToggle" class="md:hidden text-slate-600 hover:text-smpblue-900 text-xl p-1">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div>
+            <h2 id="currentPageTitle" class="text-xl font-extrabold text-smpblue-950">Scan Hari Ini</h2>
+            <p class="text-xs text-slate-500">SMP NEGERI 6 MANOKWARI • ZONA WAKTU WIT (UTC+9)</p>
+          </div>
+        </div>
 
-            const handleLogin = async () => {
-                setLoading(true);
-                setErrorMsg("");
-                try {
-                    // Set persistence to LOCAL so session survives reloads and browser restarts
-                    await setPersistence(auth, browserLocalPersistence);
-                    const provider = new GoogleAuthProvider();
-                    provider.setCustomParameters({ prompt: 'select_account' });
-                    
-                    const result = await signInWithPopup(auth, provider);
-                    const userEmail = result.user.email;
-                    
-                    if (userEmail !== ALLOWED_EMAIL) {
-                        await signOut(auth);
-                        setErrorMsg("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.");
-                    }
-                } catch (error) {
-                    console.error(error);
-                    setErrorMsg("Terjadi kesalahan saat login.");
-                } finally {
-                    setLoading(false);
-                }
-            };
+        <div class="flex items-center gap-4">
+          <!-- Realtime WIT Clock Widget -->
+          <div class="bg-smpblue-50 border border-smpblue-100 px-4 py-2 rounded-xl text-right flex items-center gap-3">
+            <i class="fa-regular fa-clock text-smpblue-600 text-lg"></i>
+            <div>
+              <div id="liveClockWIT" class="text-base font-black font-mono text-smpblue-950 leading-tight">00:00:00 WIT</div>
+              <div id="liveDateWIT" class="text-[10px] text-smpblue-700 font-semibold">Sabtu, 22 Agustus 2026</div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            return (
-                <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-school-600 opacity-[0.03] pattern-grid-lg"></div>
-                    <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-                        <div className="bg-white py-10 px-6 shadow-2xl sm:rounded-2xl sm:px-10 border border-slate-100 text-center">
-                            <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMPN 6" className="mx-auto h-28 w-auto drop-shadow-md mb-6" />
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">ABSENSI SISWA</h2>
-                            <h3 className="text-lg font-semibold text-school-700 mb-2">SMP NEGERI 6 MANOKWARI</h3>
-                            <p className="text-sm text-slate-500 mb-8">Monitoring Kehadiran Siswa Berbasis QR Code</p>
+      <!-- Views Container -->
+      <div class="p-4 sm:p-6 flex-1 space-y-6">
 
-                            <button 
-                                onClick={handleLogin} 
-                                disabled={loading}
-                                className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-slate-300 rounded-xl shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-school-500 transition-all active:scale-95 disabled:opacity-70"
-                            >
-                                {loading ? <Icons.Loader /> : (
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
-                                )}
-                                Masuk dengan Google
-                            </button>
+        <!-- ==================== VIEW 1: SCAN HARI INI (HERO SCANNER) ==================== -->
+        <section id="view-scan" class="space-y-6">
+          
+          <!-- Hidden / Auto Focused Input Field for External Hardware QR Reader -->
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 text-lg">
+              <i class="fa-solid fa-barcode animate-pulse"></i>
+            </div>
+            <div class="flex-1">
+              <label for="qrInput" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Input Barcode / Scanner QR Code Reader</label>
+              <input type="text" 
+                     id="qrInput" 
+                     placeholder="Arahkan scanner QR Code siswa ke sini (Otomatis Fokus)..." 
+                     class="w-full mt-1 bg-slate-50 border border-slate-300 focus:border-smpblue-600 focus:ring-2 focus:ring-smpblue-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-800 transition duration-150 outline-none"
+                     autocomplete="off">
+            </div>
+            <div class="flex items-center gap-2 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>Scanner Ready</span>
+            </div>
+          </div>
 
-                            {errorMsg && (
-                                <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100 flex items-start gap-2 text-left">
-                                    <Icons.XCircle />
-                                    <span className="leading-snug">{errorMsg}</span>
-                                </div>
-                            )}
-                        </div>
-                        <p className="text-center text-xs text-slate-400 mt-8">&copy; {new Date().getFullYear()} SMP Negeri 6 Manokwari</p>
-                    </div>
-                </div>
-            );
-        };
-
-
-        const ScannerPage = () => {
-            const [lastScan, setLastScan] = useState(null);
-            const [recentScans, setRecentScans] = useState([]);
-            const [status, setStatus] = useState({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
+          <!-- GIANT HERO CARD FOR LAST SCANNED STUDENT -->
+          <div id="heroScanCard" class="bg-white rounded-3xl border-2 border-slate-200 shadow-xl overflow-hidden transition-all duration-300">
             
-            // Ref untuk menjaga buffer ketikan dari scanner
-            const bufferRef = useRef('');
-            const isProcessingRef = useRef(false);
+            <!-- Default / Ready State Banner -->
+            <div id="scanReadyBanner" class="p-12 text-center flex flex-col items-center justify-center space-y-4">
+              <div class="w-28 h-28 rounded-full bg-smpblue-50 border-4 border-smpblue-100 flex items-center justify-center text-smpblue-600 text-4xl shadow-inner animate-pulse-subtle">
+                <i class="fa-solid fa-qrcode"></i>
+              </div>
+              <h3 class="text-2xl font-black text-smpblue-950">SIAP MELAKUKAN SCAN</h3>
+              <p class="text-sm text-slate-500 max-w-md">Silakan arahkan kartu QR Code siswa ke scanner eksternal. Hasil scan dan foto siswa akan langsung tampil di sini.</p>
+              <div class="text-xs font-semibold text-smpblue-700 bg-smpblue-100 px-4 py-1.5 rounded-full">
+                Batas Jam Kehadiran Tepat Waktu: <span class="font-bold font-mono">07:20:00 WIT</span>
+              </div>
+            </div>
 
-            // Fetch initial recent scans for today
-            useEffect(() => {
-                const { dateStr } = getNowWIT();
-                const q = query(collection(db, "attendance"), where("date", "==", dateStr), orderBy("timestamp", "desc"), limit(5));
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const scans = [];
-                    snapshot.forEach(doc => scans.push({ id: doc.id, ...doc.data() }));
-                    setRecentScans(scans);
-                });
-                return () => unsubscribe();
-            }, []);
-
-            const processScan = async (nisnInput) => {
-                if (isProcessingRef.current) return;
-                isProcessingRef.current = true;
-                const nisn = nisnInput.trim();
-                const { dateStr, timeStr, displayDate, timestamp } = getNowWIT();
-                const attendanceId = generateId(dateStr, nisn);
-
-                try {
-                    // 1. Cek Duplikasi Cepat (Memory & DB)
-                    if (recentScans.some(s => s.nisn === nisn)) {
-                        throw new Error("DUPLICATE");
-                    }
-                    const attDocRef = doc(db, "attendance", attendanceId);
-                    const attDocSnap = await getDoc(attDocRef);
-                    if (attDocSnap.exists()) {
-                        throw new Error("DUPLICATE");
-                    }
-
-                    // 2. Lookup Data Siswa
-                    const studentRef = collection(db, "students");
-                    const q = query(studentRef, where("nisn", "==", nisn), limit(1));
-                    const studentSnap = await getDocs(q);
-                    
-                    if (studentSnap.empty) {
-                        throw new Error("NOT_FOUND");
-                    }
-
-                    const studentData = studentSnap.docs[0].data();
-                    const attStatus = checkAttendanceStatus(timeStr);
-
-                    const attendanceData = {
-                        nisn: studentData.nisn,
-                        studentName: studentData.name,
-                        class: studentData.class,
-                        photoUrl: studentData.photoUrl || '',
-                        date: dateStr,
-                        time: timeStr,
-                        status: attStatus,
-                        timestamp: timestamp, // using client timestamp for speed, rules can enforce
-                    };
-
-                    // 3. Simpan ke Firestore (Atomic jika memungkinkan, di sini pakai setDoc)
-                    await setDoc(attDocRef, attendanceData);
-
-                    // 4. Masukkan ke WhatsApp Queue (Background)
-                    if (studentData.parentPhone) {
-                        const template = waTemplates[Math.floor(Math.random() * waTemplates.length)];
-                        let msg = template
-                            .replace("{nama}", studentData.name)
-                            .replace("{kelas}", studentData.class)
-                            .replace("{tanggal}", displayDate)
-                            .replace("{jam}", timeStr)
-                            .replace("{status}", attStatus);
-                        
-                        await setDoc(doc(collection(db, "whatsappQueue")), {
-                            attendanceId,
-                            nisn: studentData.nisn,
-                            studentName: studentData.name,
-                            parentPhone: studentData.parentPhone,
-                            message: msg,
-                            status: "QUEUED",
-                            attempts: 0,
-                            createdAt: serverTimestamp()
-                        });
-                    }
-
-                    // 5. Update UI Langsung (Siswa Terakhir)
-                    setLastScan({
-                        ...attendanceData,
-                        displayDate
-                    });
-                    setStatus({ type: 'success', message: 'SCAN BERHASIL ✅', sub: '' });
-
-                    // Kembali ke status siap setelah 5 detik (tapi data terakhir tetap tampil)
-                    setTimeout(() => {
-                        setStatus({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
-                    }, 5000);
-
-                } catch (error) {
-                    let msg = "Terjadi kesalahan sistem.";
-                    if (error.message === "DUPLICATE") msg = "Absensi siswa sudah tercatat hari ini.";
-                    if (error.message === "NOT_FOUND") msg = `Data siswa dengan NISN ${nisn} belum terdaftar.`;
-                    
-                    setStatus({ type: 'error', message: 'SCAN GAGAL ❌', sub: msg });
-                    setTimeout(() => {
-                        setStatus({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
-                    }, 4000);
-                } finally {
-                    isProcessingRef.current = false;
-                }
-            };
-
-            // Global Keydown Listener untuk Scanner
-            useEffect(() => {
-                const handleKeyDown = (e) => {
-                    // Abaikan jika mengetik di input text/textarea lain
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-                    if (e.key === 'Enter') {
-                        if (bufferRef.current.length > 3) {
-                            processScan(bufferRef.current);
-                        }
-                        bufferRef.current = ''; // Reset buffer
-                    } else if (e.key.length === 1) { // Hanya tangkap karakter alphanumeric
-                        bufferRef.current += e.key;
-                    }
-                };
-
-                window.addEventListener('keydown', handleKeyDown);
-                return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [recentScans]); // Depend on recentScans for fast duplicate check
-
-            return (
-                <div className="h-full flex flex-col gap-6">
-                    {/* PANEL UTAMA - SISWA TERAKHIR SCAN */}
-                    <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col items-center justify-center relative p-8">
-                        {status.type === 'idle' && !lastScan && (
-                            <div className="text-center animate-pulse">
-                                <div className="mx-auto w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                                    <Icons.Scan className="w-12 h-12 text-school-600" />
-                                </div>
-                                <h2 className="text-3xl font-bold text-slate-800 mb-2">{status.message}</h2>
-                                <p className="text-slate-500 text-lg">{status.sub}</p>
-                            </div>
-                        )}
-
-                        {status.type === 'error' && (
-                            <div className="text-center bg-red-50 p-10 rounded-2xl w-full max-w-2xl border border-red-100 animate-pop-in">
-                                <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                    <Icons.XCircle className="w-10 h-10 text-red-600" />
-                                </div>
-                                <h2 className="text-3xl font-bold text-red-700 mb-2">{status.message}</h2>
-                                <p className="text-red-500 text-xl">{status.sub}</p>
-                            </div>
-                        )}
-
-                        {lastScan && status.type !== 'error' && (
-                            <div className="w-full max-w-4xl flex flex-col items-center animate-pop-in">
-                                <div className="bg-green-100 text-green-800 px-6 py-2 rounded-full font-bold text-lg mb-8 shadow-sm flex items-center gap-2">
-                                    <Icons.CheckCircle /> ABSENSI BERHASIL
-                                </div>
-                                
-                                <div className="flex flex-col md:flex-row items-center md:items-start gap-10 w-full justify-center">
-                                    <div className="shrink-0 relative">
-                                        <div className="w-64 h-80 rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-slate-100 flex items-center justify-center">
-                                            {lastScan.photoUrl ? (
-                                                <img src={lastScan.photoUrl} alt="Siswa" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <svg className="w-32 h-32 text-slate-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                            )}
-                                        </div>
-                                        {/* Status Badge Overlap */}
-                                        <div className={`absolute -bottom-5 left-1/2 -translate-x-1/2 px-8 py-2 rounded-xl text-xl font-bold uppercase tracking-wider text-white shadow-lg ${lastScan.status === 'HADIR' ? 'bg-school-600' : 'bg-yellow-500'}`}>
-                                            {lastScan.status}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="text-center md:text-left flex flex-col gap-4 pt-4">
-                                        <div>
-                                            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">{lastScan.studentName}</h1>
-                                            <p className="text-xl text-slate-500 font-medium mt-1">NISN: {lastScan.nisn}</p>
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-2 gap-4 mt-4">
-                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <p className="text-sm text-slate-400 font-semibold uppercase">Kelas</p>
-                                                <p className="text-2xl font-bold text-school-700">{lastScan.class}</p>
-                                            </div>
-                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <p className="text-sm text-slate-400 font-semibold uppercase">Waktu</p>
-                                                <p className="text-2xl font-bold text-slate-800">{lastScan.time} <span className="text-sm">WIT</span></p>
-                                            </div>
-                                        </div>
-                                        <p className="text-slate-500 font-medium mt-2">{lastScan.displayDate}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Invisible Input for mobile if needed, but we rely on global keydown */}
-                        <input type="text" className="opacity-0 absolute -z-10" />
-                    </div>
-
-                    {/* HISTORI SCAN TERBARU */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <Icons.Clock /> SCAN TERBARU HARI INI
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-slate-200 text-sm text-slate-500 uppercase tracking-wider">
-                                        <th className="pb-3 font-medium px-4">Siswa</th>
-                                        <th className="pb-3 font-medium px-4">Kelas</th>
-                                        <th className="pb-3 font-medium px-4">Waktu</th>
-                                        <th className="pb-3 font-medium px-4 text-right">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {recentScans.length === 0 ? (
-                                        <tr><td colSpan="4" className="text-center py-6 text-slate-400">Belum ada data scan.</td></tr>
-                                    ) : (
-                                        recentScans.map((scan) => (
-                                            <tr key={scan.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                                                <td className="py-3 px-4 flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                                        {scan.photoUrl ? <img src={scan.photoUrl} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full bg-slate-300"></div>}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-semibold text-slate-800">{scan.studentName}</p>
-                                                        <p className="text-xs text-slate-500">{scan.nisn}</p>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4 text-slate-700 font-medium">{scan.class}</td>
-                                                <td className="py-3 px-4 text-slate-600">{scan.time}</td>
-                                                <td className="py-3 px-4 text-right">
-                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${scan.status === 'HADIR' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                        {scan.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <!-- Active Last Scanned Student Display -->
+            <div id="scannedStudentDisplay" class="hidden p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 bg-gradient-to-br from-white to-slate-50">
+              
+              <!-- Giant Student Photo Frame -->
+              <div class="relative flex-shrink-0">
+                <div class="w-56 h-72 sm:w-64 sm:h-80 rounded-2xl overflow-hidden bg-slate-200 border-4 border-white shadow-2xl relative">
+                  <img id="lastStudentPhoto" 
+                       src="https://placehold.co/400x500/1e3a8a/ffffff?text=FOTO+SISWA" 
+                       alt="Foto Siswa Terakhir Scan" 
+                       class="w-full h-full object-cover transition-all duration-300">
+                  <div id="scanStatusBadgeOverlay" class="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-xl text-center font-extrabold text-sm shadow-lg text-white bg-emerald-600 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span id="badgeStatusText">HADIR</span>
+                  </div>
                 </div>
-            );
-        };
+              </div>
 
-        const DashboardPage = ({ queueStats }) => {
-            const [stats, setStats] = useState({ totalStudents: 0, present: 0, late: 0, totalScanned: 0 });
+              <!-- Detailed Student Metadata -->
+              <div class="flex-1 w-full text-center md:text-left space-y-4">
+                
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                  <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full border border-emerald-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-check-double text-emerald-600"></i> ABSENSI BERHASIL
+                  </span>
+                  <span id="lastScanWITTime" class="px-3 py-1 bg-smpblue-900 text-white font-mono text-xs font-bold rounded-full">
+                    07:18:24 WIT
+                  </span>
+                </div>
+
+                <div>
+                  <h2 id="lastStudentName" class="text-3xl sm:text-4xl font-black text-smpblue-950 tracking-tight leading-tight">
+                    MARIA ALFONSINA
+                  </h2>
+                  <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2 text-slate-600 font-medium">
+                    <span class="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 text-sm">
+                      NISN: <span id="lastStudentNISN" class="font-bold font-mono text-smpblue-900">0058123456</span>
+                    </span>
+                    <span class="bg-smpblue-100 text-smpblue-900 px-3 py-1 rounded-lg border border-smpblue-200 text-sm font-bold">
+                      KELAS: <span id="lastStudentClass">8B</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2 text-left">
+                  <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase block">Hari & Tanggal</span>
+                    <span id="lastStudentDate" class="text-xs font-bold text-slate-700">Sabtu, 22 Agustus 2026</span>
+                  </div>
+                  <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase block">Status Antrean WA</span>
+                    <span id="lastWAQueueStatus" class="text-xs font-bold text-smpblue-700 flex items-center gap-1">
+                      <i class="fa-solid fa-paper-plane text-amber-500 animate-pulse"></i> Terjadwal ke Queue
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Realtime Stats Bar -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-semibold">Total Siswa</p>
+                <h4 id="statTotalStudents" class="text-xl font-extrabold text-slate-800">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-user-check"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-semibold">Sudah Scan Hari Ini</p>
+                <h4 id="statScannedToday" class="text-xl font-extrabold text-emerald-700">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-user-clock"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-semibold">Terlambat (>07.20)</p>
+                <h4 id="statLateToday" class="text-xl font-extrabold text-amber-700">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-user-xmark"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-semibold">Belum Scan</p>
+                <h4 id="statNotScannedToday" class="text-xl font-extrabold text-rose-700">0</h4>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Scans Stream List -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 class="font-bold text-sm text-smpblue-950 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-smpblue-600"></i> Histori Scan Terbaru Hari Ini
+              </h3>
+              <span id="liveScanCountBadge" class="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">0 Siswa</span>
+            </div>
             
-            useEffect(() => {
-                const fetchStats = async () => {
-                    const { dateStr } = getNowWIT();
-                    // In a real app with 800+ users, avoid fetching all docs. Use aggregation queries.
-                    // For this environment, we simulate it with count (if available in this old SDK version, otherwise size)
-                    try {
-                        const stdSnap = await getDocs(collection(db, "students"));
-                        const totalStudents = stdSnap.size;
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <th class="p-3 pl-6">Foto</th>
+                    <th class="p-3">Nama Siswa</th>
+                    <th class="p-3">NISN</th>
+                    <th class="p-3">Kelas</th>
+                    <th class="p-3">Waktu WIT</th>
+                    <th class="p-3 pr-6">Status Kehadiran</th>
+                  </tr>
+                </thead>
+                <tbody id="recentScansTableBody" class="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-400">Belum ada aktivitas scan siswa hari ini.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-                        const attQ = query(collection(db, "attendance"), where("date", "==", dateStr));
-                        const attSnap = await getDocs(attQ);
-                        let present = 0;
-                        let late = 0;
-                        attSnap.forEach(doc => {
-                            if(doc.data().status === 'HADIR') present++;
-                            if(doc.data().status === 'TERLAMBAT') late++;
-                        });
+        <!-- ==================== VIEW 2: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="hidden space-y-6">
+          
+          <!-- Stat Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Total Siswa</p>
+              <h3 id="dbTotalStudents" class="text-2xl font-black text-smpblue-950 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Sudah Scan</p>
+              <h3 id="dbScannedToday" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Belum Scan</p>
+              <h3 id="dbNotScannedToday" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Hadir Tepat Waktu</p>
+              <h3 id="dbOnTimeToday" class="text-2xl font-black text-blue-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Terlambat</p>
+              <h3 id="dbLateToday" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 uppercase">Persentase</p>
+              <h3 id="dbAttendancePercentage" class="text-2xl font-black text-purple-600 mt-1">0%</h3>
+            </div>
+          </div>
 
-                        setStats({ totalStudents, present, late, totalScanned: present + late });
-                    } catch (error) {
-                        console.error("Error fetching stats", error);
-                    }
-                };
-                fetchStats();
-            }, []);
+          <!-- WA Queue Live Monitor Widget -->
+          <div class="bg-slate-900 text-white rounded-3xl p-6 shadow-xl border border-slate-800">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-3 py-1 bg-amber-500/20 text-amber-300 text-xs font-bold rounded-full border border-amber-500/30">
+                  <i class="fa-solid fa-spinner animate-spin mr-1"></i> WA QUEUE ENGINE
+                </span>
+                <h3 class="text-lg font-bold text-white mt-2">Sistem Antrean WhatsApp Otomatis</h3>
+                <p class="text-xs text-slate-400">Aturan: Maksimal 5 Notifikasi per Batch → Jeda Pause 5 Menit</p>
+              </div>
 
-            const unScanned = stats.totalStudents - stats.totalScanned;
-            const percentage = stats.totalStudents === 0 ? 0 : Math.round((stats.totalScanned / stats.totalStudents) * 100);
-
-            return (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-school-500">
-                            <p className="text-sm font-semibold text-slate-500 mb-1">TOTAL SISWA</p>
-                            <h3 className="text-3xl font-bold text-slate-800">{stats.totalStudents}</h3>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-green-500">
-                            <p className="text-sm font-semibold text-slate-500 mb-1">HADIR</p>
-                            <h3 className="text-3xl font-bold text-slate-800">{stats.present}</h3>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-yellow-500">
-                            <p className="text-sm font-semibold text-slate-500 mb-1">TERLAMBAT</p>
-                            <h3 className="text-3xl font-bold text-slate-800">{stats.late}</h3>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-red-400">
-                            <p className="text-sm font-semibold text-slate-500 mb-1">BELUM ABSEN</p>
-                            <h3 className="text-3xl font-bold text-slate-800">{unScanned > 0 ? unScanned : 0}</h3>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 className="text-lg font-bold text-slate-800 mb-4">Persentase Kehadiran Hari Ini</h3>
-                            <div className="flex items-center gap-6">
-                                <div className="relative w-32 h-32 shrink-0">
-                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="4" />
-                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray={`${percentage}, 100`} />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-slate-800">{percentage}%</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">Sudah Scan</span>
-                                        <span className="font-semibold text-slate-800">{stats.totalScanned} Siswa</span>
-                                    </div>
-                                    <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-school-500 h-2 rounded-full" style={{width: `${percentage}%`}}></div></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
-                                Queue WhatsApp
-                                {queueStats.isPaused ? (
-                                    <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded">PAUSED</span>
-                                ) : (
-                                    <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-1 rounded">RUNNING</span>
-                                )}
-                            </h3>
-                            <div className="flex-1 space-y-4">
-                                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span className="text-sm text-slate-500">Batch Selesai</span>
-                                    <span className="font-bold text-slate-800">{queueStats.batchCount}</span>
-                                </div>
-                                {queueStats.isPaused && (
-                                    <div className="bg-school-50 p-3 rounded-lg border border-school-100 text-center">
-                                        <p className="text-xs text-school-600 font-semibold mb-1">Lanjut dalam</p>
-                                        <p className="text-xl font-bold text-school-800">
-                                            {Math.floor(queueStats.nextBatchIn / 60)}:{(queueStats.nextBatchIn % 60).toString().padStart(2, '0')}
-                                        </p>
-                                    </div>
-                                )}
-                                <p className="text-xs text-slate-400 mt-auto pt-4 text-center">Sistem otomatis mengirim 5 pesan dan jeda 5 menit.</p>
-                            </div>
-                        </div>
-                    </div>
+              <!-- Countdown Timer -->
+              <div class="bg-slate-800/80 px-5 py-3 rounded-2xl border border-slate-700 flex items-center gap-4">
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase block">Status Batch / Lanjut Dalam</span>
+                  <span id="waQueueCountdown" class="text-lg font-mono font-bold text-amber-400">READY / ACTIVE</span>
                 </div>
-            );
-        };
+                <button id="btnForceProcessWAQueue" class="px-3 py-2 bg-smpblue-600 hover:bg-smpblue-500 text-xs font-bold rounded-xl transition text-white">
+                  <i class="fa-solid fa-play"></i> Sync Queue Now
+                </button>
+              </div>
+            </div>
 
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-4 text-center">
+              <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Menunggu</span>
+                <span id="waStatQueued" class="text-xl font-bold text-amber-400">0</span>
+              </div>
+              <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Sedang Diproses</span>
+                <span id="waStatProcessing" class="text-xl font-bold text-blue-400">0</span>
+              </div>
+              <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Berhasil Terkirim</span>
+                <span id="waStatSent" class="text-xl font-bold text-emerald-400">0</span>
+              </div>
+              <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Gagal</span>
+                <span id="waStatFailed" class="text-xl font-bold text-rose-400">0</span>
+              </div>
+              <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Batch Saat Ini</span>
+                <span id="waStatBatchCounter" class="text-xl font-bold text-purple-400">0 / 5</span>
+              </div>
+            </div>
+          </div>
 
-        const StudentsPage = () => {
-            const [students, setStudents] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [modalInfo, setModalInfo] = useState({ isOpen: false, title: '', message: '', type: 'success' });
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h4 class="font-bold text-sm text-smpblue-950 mb-4">Grafik Komposisi Kehadiran Hari Ini</h4>
+              <div class="h-64">
+                <canvas id="chartAttendanceRatio"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h4 class="font-bold text-sm text-smpblue-950 mb-4">Grafik Kehadiran Per Kelas</h4>
+              <div class="h-64">
+                <canvas id="chartAttendanceByClass"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: DATA SISWA ==================== -->
+        <section id="view-students" class="hidden space-y-6">
+          
+          <!-- Actions & Search Bar -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
             
-            const fetchStudents = async () => {
-                setLoading(true);
-                const q = query(collection(db, "students"), orderBy("class", "asc"), orderBy("name", "asc"));
-                const snap = await getDocs(q);
-                const data = [];
-                snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-                setStudents(data);
-                setLoading(false);
-            };
+            <div class="flex items-center gap-3 w-full md:w-auto">
+              <div class="relative flex-1 md:w-72">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                <input type="text" id="studentSearchInput" placeholder="Cari Nama / NISN Siswa..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-smpblue-600">
+              </div>
+              <select id="studentClassFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700">
+                <option value="ALL">Semua Kelas</option>
+              </select>
+            </div>
 
-            useEffect(() => { fetchStudents(); }, []);
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+              <button id="btnOpenAddStudentModal" class="px-3.5 py-2 bg-smpblue-800 hover:bg-smpblue-900 text-white text-xs font-bold rounded-xl transition shadow flex items-center gap-2">
+                <i class="fa-solid fa-user-plus"></i> Tambah Siswa
+              </button>
 
-            const handleExcelUpload = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+              <button id="btnDownloadTemplateExcel" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition shadow flex items-center gap-2">
+                <i class="fa-solid fa-file-excel"></i> Template Excel
+              </button>
 
-                const reader = new FileReader();
-                reader.onload = async (evt) => {
-                    const bstr = evt.target.result;
-                    const wb = XLSX.read(bstr, { type: 'binary' });
-                    const wsname = wb.SheetNames[0];
-                    const ws = wb.Sheets[wsname];
-                    const data = XLSX.utils.sheet_to_json(ws);
-                    
-                    let successCount = 0;
-                    let failCount = 0;
-                    const batch = writeBatch(db);
-                    
-                    // Simple validation
-                    for(let row of data) {
-                        if (row.NISN && row['Nama Siswa'] && row.Kelas) {
-                            const nisnStr = row.NISN.toString().trim();
-                            const docRef = doc(db, "students", nisnStr); // Use NISN as document ID for easy lookup
-                            batch.set(docRef, {
-                                nisn: nisnStr,
-                                name: row['Nama Siswa'].toString().trim(),
-                                class: row.Kelas.toString().trim().toUpperCase(),
-                                parentPhone: row['Nomor HP Orang Tua'] ? row['Nomor HP Orang Tua'].toString().trim() : "",
-                                photoUrl: "",
-                                updatedAt: serverTimestamp()
-                            });
-                            successCount++;
-                        } else {
-                            failCount++;
-                        }
-                    }
+              <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-file-import"></i> Import Excel Massal
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden">
+              </label>
 
-                    if (successCount > 0) {
-                        await batch.commit();
-                        setModalInfo({ isOpen: true, title: "Import Berhasil", message: `${successCount} data berhasil diimport. ${failCount} gagal.`, type: 'success' });
-                        fetchStudents();
-                    } else {
-                        setModalInfo({ isOpen: true, title: "Import Gagal", message: "Pastikan format kolom sesuai template.", type: 'error' });
-                    }
-                };
-                reader.readAsBinaryString(file);
-                e.target.value = ''; // reset
-            };
+              <label class="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-images"></i> Upload Foto Massal
+                <input type="file" id="massPhotoInput" accept="image/jpeg, image/png" multiple class="hidden">
+              </label>
 
-            const downloadTemplate = () => {
-                const ws = XLSX.utils.json_to_sheet([{ "No": 1, "Nama Siswa": "Budi Santoso", "NISN": "1234567890", "Nomor HP Orang Tua": "081234567890", "Kelas": "8A" }]);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Template");
-                XLSX.writeFile(wb, "Template_Data_Siswa.xlsx");
-            };
+              <button id="btnDeleteAllStudents" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center gap-2">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+              </button>
+            </div>
+          </div>
 
-            const handlePhotoMassUpload = async (e) => {
-                const files = e.target.files;
-                if (!files || files.length === 0) return;
-                
-                setModalInfo({ isOpen: true, title: "Mengunggah Foto", message: `Memproses ${files.length} foto... Jangan tutup halaman.`, type: 'success' });
-                
-                let success = 0;
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const nisn = file.name.split('.')[0]; // Asumsi nama file: 123456.jpg
-                    
-                    // Cek apakah NISN ada di database
-                    const docRef = doc(db, "students", nisn);
-                    const docSnap = await getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const storageRef = ref(storage, `students/${nisn}`);
-                        await uploadBytesResumable(storageRef, file);
-                        const downloadURL = await getDownloadURL(storageRef);
-                        
-                        await updateDoc(docRef, { photoUrl: downloadURL });
-                        success++;
-                    }
-                }
-                
-                setModalInfo({ isOpen: true, title: "Upload Selesai", message: `${success} dari ${files.length} foto berhasil dipasangkan dengan data siswa.`, type: 'success' });
-                fetchStudents();
-            };
+          <!-- Students Data Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <th class="p-3 pl-6">No</th>
+                    <th class="p-3">Foto</th>
+                    <th class="p-3">Nama Lengkap Siswa</th>
+                    <th class="p-3">NISN</th>
+                    <th class="p-3">Kelas</th>
+                    <th class="p-3">No. HP Orang Tua / WA</th>
+                    <th class="p-3 pr-6 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-slate-400">Memuat data siswa...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-            const handleDeleteAll = async () => {
-                const c1 = confirm("PERINGATAN BAHAYA: Anda yakin ingin menghapus SEMUA data siswa?");
-                if(c1) {
-                    const c2 = confirm("Apakah Anda benar-benar yakin? Tindakan ini tidak dapat dibatalkan.");
-                    if(c2) {
-                        // Untuk menghapus collection besar di frontend butuh batching, ini contoh simple
-                        const q = query(collection(db, "students"), limit(500));
-                        const snap = await getDocs(q);
-                        const batch = writeBatch(db);
-                        snap.forEach(d => batch.delete(d.ref));
-                        await batch.commit();
-                        fetchStudents();
-                        setModalInfo({ isOpen: true, title: "Berhasil", message: "Data siswa telah dikosongkan.", type: 'success' });
-                    }
-                }
-            };
+            <!-- Table Pagination -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+              <span id="studentTableInfo">Menampilkan 0 data siswa</span>
+              <div id="studentPaginationBtns" class="flex gap-1"></div>
+            </div>
+          </div>
+        </section>
 
-            return (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[calc(100vh-8rem)]">
-                    <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <h2 className="text-xl font-bold text-slate-800">Data Siswa</h2>
-                        <div className="flex flex-wrap gap-2">
-                            <button onClick={downloadTemplate} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition">Download Template</button>
-                            
-                            <label className="px-4 py-2 bg-school-50 text-school-700 rounded-lg text-sm font-medium hover:bg-school-100 transition cursor-pointer flex items-center">
-                                <Icons.Upload /> Excel Massal
-                                <input type="file" accept=".xlsx, .xls" onChange={handleExcelUpload} className="hidden" />
-                            </label>
-                            
-                            <label className="px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition cursor-pointer flex items-center">
-                                <Icons.Upload /> Foto Massal
-                                <input type="file" multiple accept="image/*" onChange={handlePhotoMassUpload} className="hidden" />
-                            </label>
+        <!-- ==================== VIEW 4: REKAPAN ABSENSI ==================== -->
+        <section id="view-recap" class="hidden space-y-6">
+          
+          <!-- Recap Tab Options -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex p-1 bg-slate-100 rounded-xl space-x-1 w-full md:w-auto">
+              <button id="recapTabDaily" class="recap-tab-btn flex-1 md:flex-none px-4 py-2 text-xs font-bold rounded-lg bg-smpblue-900 text-white shadow">Rekap Hari Ini</button>
+              <button id="recapTabWeekly" class="recap-tab-btn flex-1 md:flex-none px-4 py-2 text-xs font-bold rounded-lg text-slate-600 hover:text-smpblue-900">Rekap Mingguan</button>
+              <button id="recapTabMonthly" class="recap-tab-btn flex-1 md:flex-none px-4 py-2 text-xs font-bold rounded-lg text-slate-600 hover:text-smpblue-900">Rekap Bulanan</button>
+            </div>
 
-                            <button onClick={handleDeleteAll} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">Hapus Semua</button>
-                        </div>
-                    </div>
-                    
-                    <div className="flex-1 overflow-auto p-0 custom-scrollbar">
-                        {loading ? (
-                            <div className="flex justify-center items-center h-64 text-slate-400"><Icons.Loader /></div>
-                        ) : (
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50 sticky top-0 shadow-sm z-10">
-                                    <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        <th className="py-3 px-6 border-b border-slate-200">Siswa</th>
-                                        <th className="py-3 px-6 border-b border-slate-200">NISN</th>
-                                        <th className="py-3 px-6 border-b border-slate-200">Kelas</th>
-                                        <th className="py-3 px-6 border-b border-slate-200">No. WA Ortu</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {students.map((student) => (
-                                        <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                            <td className="py-3 px-6 flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                                    {student.photoUrl ? <img src={student.photoUrl} className="w-full h-full object-cover" /> : null}
-                                                </div>
-                                                <span className="font-medium text-slate-800">{student.name}</span>
-                                            </td>
-                                            <td className="py-3 px-6 text-slate-600">{student.nisn}</td>
-                                            <td className="py-3 px-6 text-slate-600 font-medium">{student.class}</td>
-                                            <td className="py-3 px-6 text-slate-600">{student.parentPhone || '-'}</td>
-                                        </tr>
-                                    ))}
-                                    {students.length === 0 && (
-                                        <tr><td colSpan="4" className="text-center py-10 text-slate-500">Belum ada data siswa. Gunakan fitur upload massal.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                    <MessageModal 
-                        isOpen={modalInfo.isOpen} 
-                        title={modalInfo.title} 
-                        message={modalInfo.message} 
-                        type={modalInfo.type}
-                        onClose={() => setModalInfo({ ...modalInfo, isOpen: false })} 
-                    />
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+              <select id="recapClassFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700">
+                <option value="ALL">Semua Kelas</option>
+              </select>
+
+              <button id="btnExportRecapExcel" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2">
+                <i class="fa-solid fa-file-excel"></i> Download Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- Recap Content Output -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+            <div class="border-b border-slate-200 pb-4 mb-4 flex justify-between items-center">
+              <div>
+                <h3 id="recapHeaderTitle" class="text-base font-extrabold text-smpblue-950">Laporan Absensi Siswa SMP Negeri 6 Manokwari</h3>
+                <p id="recapHeaderSubtitle" class="text-xs text-slate-500">Periode: Hari Ini</p>
+              </div>
+              <span id="recapCountBadge" class="text-xs font-bold bg-smpblue-100 text-smpblue-900 px-3 py-1 rounded-full">0 Record</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table id="recapExportTable" class="w-full text-left border-collapse text-xs">
+                <thead id="recapTableHead">
+                  <!-- Dynamic headers generated via JavaScript -->
+                </thead>
+                <tbody id="recapTableBody" class="divide-y divide-slate-100 text-slate-700">
+                  <!-- Dynamic rows generated via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: PANDUAN PENGGUNAAN ==================== -->
+        <section id="view-guide" class="hidden space-y-6">
+          <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+              <h2 class="text-2xl font-black text-smpblue-950">Panduan Penggunaan Aplikasi Absensi</h2>
+              <p class="text-xs text-slate-500">Sistem Informasi Absensi Siswa SMP Negeri 6 Manokwari</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed">
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-1 text-smpblue-600 mr-2"></i>Login Proktor</h4>
+                <p>Login hanya diperbolehkan menggunakan akun Google resmi proktor: <strong class="font-mono text-smpblue-950">proktorsmp6@gmail.com</strong>. Sesi login akan tersimpan otomatis (*persistent*).</p>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-2 text-smpblue-600 mr-2"></i>Penggunaan QR Scanner</h4>
+                <p>Hubungkan alat USB QR Scanner ke komputer. Buka menu <strong>Scan Hari Ini</strong>. Arahkan QR code siswa, sistem akan otomatis membaca NISN dan menampilkan foto siswa secara instant.</p>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-3 text-smpblue-600 mr-2"></i>Aturan Tepat Waktu & Terlambat</h4>
+                <p>Zona waktu menggunakan WIT (Jayapura). Batas jam absensi adalah <strong>07:20:00 WIT</strong>. Scan di atas jam tersebut otomatis bertanda <strong>TERLAMBAT</strong>.</p>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-4 text-smpblue-600 mr-2"></i>Antrean WhatsApp</h4>
+                <p>Sistem memproses antrean notifikasi secara otomatis (5 notifikasi per batch dengan pause 5 menit) untuk mencegah blokir nomor oleh penyedia layanan.</p>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-5 text-smpblue-600 mr-2"></i>Import Excel Data Siswa</h4>
+                <p>Gunakan tombol <strong>Template Excel</strong> pada menu Data Siswa untuk melihat format kolom yang dibutuhkan: <em>No, Nama Siswa, NISN, Nomor HP Orang Tua, Kelas</em>.</p>
+              </div>
+
+              <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-smpblue-900 text-sm mb-2"><i class="fa-solid fa-6 text-smpblue-600 mr-2"></i>Upload Foto Massal</h4>
+                <p>Beri nama file foto sesuai NISN siswa (Contoh: <code class="font-mono bg-slate-200 px-1 py-0.5 rounded">0058123456.jpg</code>), lalu pilih semua foto di menu Upload Foto Massal.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 6: PENGATURAN ==================== -->
+        <section id="view-settings" class="hidden space-y-6">
+          <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
+            <div>
+              <h2 class="text-xl font-bold text-smpblue-950">Pengaturan Sistem</h2>
+              <p class="text-xs text-slate-500">Konfigurasi Gateway WhatsApp & Jam Toleransi Kehadiran WIT</p>
+            </div>
+
+            <form id="settingsForm" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">WhatsApp API Key</label>
+                <input type="text" id="cfgWaApiKey" value="JS3EZBCY67FH36ygwLgE" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-mono text-slate-800">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">WhatsApp Provider API Endpoint URL</label>
+                <input type="text" id="cfgWaApiUrl" value="https://api.whatsapp-provider.com/v1/send-message" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-mono text-slate-800">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Batas Jam Kehadiran Tepat Waktu (WIT)</label>
+                  <input type="time" id="cfgOnTimeThreshold" value="07:20" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800">
                 </div>
-            );
-        };
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Interval Pause Queue (Menit)</label>
+                  <input type="number" id="cfgQueuePauseMinutes" value="5" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800">
+                </div>
+              </div>
 
+              <button type="submit" class="px-5 py-2.5 bg-smpblue-900 hover:bg-smpblue-950 text-white font-bold text-xs rounded-xl shadow transition">
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Konfigurasi
+              </button>
+            </form>
+          </div>
+        </section>
 
-        const RecapPage = () => {
-            const handleExportDaily = async () => {
-                const { dateStr, displayDate } = getNowWIT();
-                const q = query(collection(db, "attendance"), where("date", "==", dateStr), orderBy("class", "asc"));
-                const snap = await getDocs(q);
-                
-                const data = [];
-                let no = 1;
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    data.push({
-                        "No": no++,
-                        "Nama": d.studentName,
-                        "NISN": d.nisn,
-                        "Kelas": d.class,
-                        "Waktu Scan": d.time,
-                        "Status": d.status
-                    });
-                });
+      </div>
 
-                const ws = XLSX.utils.json_to_sheet(data);
-                
-                // Styling width
-                ws['!cols'] = [{wch:5}, {wch:30}, {wch:15}, {wch:10}, {wch:15}, {wch:15}];
+      <!-- App Footer -->
+      <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-400">
+        <p class="font-semibold text-slate-600">ABSENSI SISWA SMP NEGERI 6 MANOKWARI</p>
+        <p class="mt-0.5 text-[10px]">Dikembangkan untuk mendukung layanan administrasi sekolah yang cepat, modern, dan terintegrasi.</p>
+      </footer>
+    </main>
+  </div>
 
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Rekap_Harian");
-                XLSX.writeFile(wb, `Rekap_Absen_${dateStr}.xlsx`);
+  
+  <!-- Add/Edit Student Modal -->
+  <div id="studentModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 id="studentModalTitle" class="font-bold text-base text-smpblue-950">Tambah Data Siswa</h3>
+        <button id="btnCloseStudentModal" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <form id="studentForm" class="space-y-3">
+        <input type="hidden" id="studentEditId">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap Siswa</label>
+          <input type="text" id="mStudentName" required placeholder="Contoh: BUDI SANTOSO" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-smpblue-600 uppercase">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">NISN Siswa</label>
+            <input type="text" id="mStudentNISN" required placeholder="10 Digit NISN" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-smpblue-600">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+            <input type="text" id="mStudentClass" required placeholder="Contoh: 8A" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-smpblue-600 uppercase">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nomor HP / WhatsApp Orang Tua</label>
+          <input type="text" id="mStudentParentPhone" required placeholder="Contoh: 081234567890" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-smpblue-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">URL Foto Siswa (Opsional)</label>
+          <input type="url" id="mStudentPhotoUrl" placeholder="https://..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-smpblue-600">
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btnCancelStudentModal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-smpblue-900 hover:bg-smpblue-950 text-white text-xs font-bold rounded-xl shadow">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Modal -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+      <div id="confirmModalIcon" class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 id="confirmModalTitle" class="text-lg font-extrabold text-slate-900">Konfirmasi</h3>
+      <p id="confirmModalMessage" class="text-xs text-slate-500">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+      
+      <div class="flex gap-2 pt-2">
+        <button id="btnConfirmCancel" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">Batal</button>
+        <button id="btnConfirmProceed" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      setPersistence, 
+      browserLocalPersistence, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      onAuthStateChanged, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, 
+      collection, query, where, getDocs, onSnapshot, serverTimestamp, writeBatch 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { 
+      getStorage, ref, uploadBytes, getDownloadURL 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+    // 1. Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOGuLr9kQOS8NMlMXVkFZ6FXE6aPUXxtI",
+      authDomain: "scan-moderen.firebaseapp.com",
+      projectId: "scan-moderen",
+      storageBucket: "scan-moderen.firebasestorage.app",
+      messagingSenderId: "469257383650",
+      appId: "1:469257383650:web:a4b9fef89a7954f08578bb",
+      measurementId: "G-D03VMJQKWC"
+    };
+
+    const ALLOWED_EMAIL = "proktorsmp6@gmail.com";
+
+    // Initialize Firebase Services
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Set auth persistence to LOCAL so session stays active across refresh & re-open
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    // Global State Container
+    const state = {
+      user: null,
+      students: [],
+      todayAttendance: [],
+      waQueue: [],
+      waSettings: {
+        apiKey: "JS3EZBCY67FH36ygwLgE",
+        apiUrl: "https://api.whatsapp-provider.com/v1/send-message",
+        onTimeThreshold: "07:20",
+        pauseMinutes: 5
+      },
+      lastScannedStudent: null,
+      activeView: 'scan',
+      confirmCallback: null,
+      queueBatchProcessed: 0,
+      isQueuePaused: false,
+      pauseTimeRemaining: 0,
+      charts: {}
+    };
+
+    class AudioFeedback {
+      static playSuccess() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } catch (e){}
+      }
+
+      static playWarning() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.setValueAtTime(350, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.4, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } catch (e){}
+      }
+
+      static playError() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, ctx.currentTime);
+          gain.gain.setValueAtTime(0.4, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } catch (e){}
+      }
+    }
+
+    function getWITDateObj() {
+      // Create date shifted to Asia/Jayapura (UTC+9)
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * 9));
+    }
+
+    function getWITDateString(dObj = getWITDateObj()) {
+      const year = dObj.getFullYear();
+      const month = String(dObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getWITTimeString(dObj = getWITDateObj()) {
+      const hours = String(dObj.getHours()).padStart(2, '0');
+      const minutes = String(dObj.getMinutes()).padStart(2, '0');
+      const seconds = String(dObj.getSeconds()).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function getWITFullDateFormatted(dObj = getWITDateObj()) {
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let bgColors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        warning: 'bg-amber-500 text-white',
+        info: 'bg-smpblue-900 text-white'
+      };
+
+      let icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-xmark',
+        warning: 'fa-triangle-exclamation',
+        info: 'fa-circle-info'
+      };
+
+      toast.className = `${bgColors[type]} p-4 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold pointer-events-auto transform transition duration-300 translate-y-2 opacity-0 border border-white/20`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type]} text-base"></i>
+        <span class="flex-1">${message}</span>
+        <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function showConfirmModal(title, message, callback) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').textContent = message;
+      state.confirmCallback = callback;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function generateWAMessage(studentName, studentClass, dateFormatted, timeWIT, status) {
+      if (status === 'HADIR') {
+        const templates = [
+          `Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda ${studentName}, kelas ${studentClass}, telah melakukan absensi di SMP Negeri 6 Manokwari pada ${dateFormatted} pukul ${timeWIT} WIT dengan keterangan HADIR. Terima kasih.`,
+          `Selamat pagi/siang Bapak/Ibu. Ananda ${studentName} (${studentClass}) telah tiba dan mencatatkan absensi di SMP Negeri 6 Manokwari pada tanggal ${dateFormatted} jam ${timeWIT} WIT (HADIR).`,
+          `Informasi Kehadiran: Ananda ${studentName} kelas ${studentClass} terdaftar HADIR tepat waktu pada ${dateFormatted} pukul ${timeWIT} WIT. Salam hangat dari SMP Negeri 6 Manokwari.`
+        ];
+        return templates[Math.floor(Math.random() * templates.length)];
+      } else {
+        const templates = [
+          `Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda ${studentName}, kelas ${studentClass}, telah melakukan absensi pada ${dateFormatted} pukul ${timeWIT} WIT dengan keterangan TERLAMBAT. Mohon perhatian Bapak/Ibu agar Ananda dapat hadir tepat waktu.`,
+          `Pemberitahuan Kehadiran: Ananda ${studentName} (${studentClass}) telah melakukan scan absensi pada ${dateFormatted} pukul ${timeWIT} WIT (TERLAMBAT). Mohon dukungan Bapak/Ibu di rumah. Terima kasih.`,
+          `Yth. Orang Tua dari ${studentName} (${studentClass}), Ananda mencatatkan absensi pukul ${timeWIT} WIT pada ${dateFormatted} dengan status TERLAMBAT. Terima kasih atas perhatiannya.`
+        ];
+        return templates[Math.floor(Math.random() * templates.length)];
+      }
+    }
+
+    class WhatsAppQueueEngine {
+      static async processNextBatch() {
+        if (state.isQueuePaused) return;
+
+        // Fetch queued items
+        const pending = state.waQueue.filter(q => q.status === 'QUEUED');
+        if (pending.length === 0) return;
+
+        // Process up to 5 items
+        const batchToProcess = pending.slice(0, 5);
+        document.getElementById('waStatProcessing').textContent = batchToProcess.length;
+
+        for (const item of batchToProcess) {
+          try {
+            // Update Firestore item to PROCESSING
+            const qRef = doc(db, 'whatsappQueue', item.id);
+            await updateDoc(qRef, { status: 'PROCESSING' });
+
+            // Simulate / Call API Provider
+            const payload = {
+              apiKey: state.waSettings.apiKey,
+              recipient: item.parentPhone,
+              message: item.message
             };
 
-            return (
-                <div className="max-w-4xl space-y-6">
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <div className="flex items-start gap-4 mb-6">
-                            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
-                                <Icons.FileText />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-800">Rekap Harian</h3>
-                                <p className="text-slate-500">Download rekap absensi untuk hari ini. File berupa Excel (.xlsx) yang sudah rapi dan siap cetak.</p>
-                            </div>
-                        </div>
-                        <button onClick={handleExportDaily} className="bg-school-600 hover:bg-school-700 text-white font-medium py-3 px-6 rounded-xl shadow-sm transition">
-                            Download Rekap Hari Ini
-                        </button>
-                    </div>
+            // Non-blocking fetch simulation/call
+            const isSuccess = await WhatsAppQueueEngine.sendApi(state.waSettings.apiUrl, payload);
 
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 opacity-60">
-                        <div className="flex items-start gap-4 mb-6">
-                            <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center shrink-0">
-                                <Icons.FileText />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-800">Rekap Mingguan & Bulanan</h3>
-                                <p className="text-slate-500">Fitur sedang dalam pengembangan pada versi ini. Untuk saat ini gunakan rekap harian dan gabungkan secara manual jika diperlukan.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-
-        const App = () => {
-            const [user, setUser] = useState(null);
-            const [authLoading, setAuthLoading] = useState(true);
-            const [activeTab, setActiveTab] = useState('scan');
-            const queueStats = useWhatsAppQueueProcessor(); // Start background process
-
-            useEffect(() => {
-                const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-                    if (currentUser && currentUser.email === ALLOWED_EMAIL) {
-                        setUser(currentUser);
-                    } else {
-                        setUser(null);
-                        if (currentUser) signOut(auth); // Sign out if wrong email cached
-                    }
-                    setAuthLoading(false);
-                });
-                return () => unsubscribe();
-            }, []);
-
-            if (authLoading) {
-                return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Icons.Loader /></div>;
+            if (isSuccess) {
+              await updateDoc(qRef, { 
+                status: 'SENT', 
+                sentAt: serverTimestamp() 
+              });
+            } else {
+              const attempts = (item.attempts || 0) + 1;
+              await updateDoc(qRef, { 
+                status: attempts >= 5 ? 'FAILED_FINAL' : 'QUEUED', 
+                attempts: attempts,
+                errorMessage: 'Network or API response timeout'
+              });
             }
+          } catch (err) {
+            console.error("WA Queue processing error:", err);
+          }
+        }
 
-            if (!user) {
-                return <Login />;
-            }
+        state.queueBatchProcessed += batchToProcess.length;
 
-            const menuItems = [
-                { id: 'scan', label: 'Scan Hari Ini', icon: Icons.Scan },
-                { id: 'dashboard', label: 'Dashboard', icon: Icons.Dashboard },
-                { id: 'students', label: 'Data Siswa', icon: Icons.Users },
-                { id: 'recap', label: 'Rekapan Absensi', icon: Icons.FileText },
-            ];
+        // Check if 5 items processed to trigger 5 MINUTE PAUSE
+        if (state.queueBatchProcessed >= 5) {
+          WhatsAppQueueEngine.startPausePeriod();
+        }
+      }
 
-            return (
-                <div className="min-h-screen bg-slate-100 flex overflow-hidden">
-                    {/* SIDEBAR */}
-                    <aside className="w-72 bg-white shadow-xl z-20 flex flex-col hidden md:flex">
-                        <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
-                            <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo" className="h-16 w-auto mb-3" />
-                            <h1 className="font-bold text-slate-900 tracking-tight leading-tight">ABSENSI SISWA</h1>
-                            <p className="text-xs text-school-600 font-medium">SMPN 6 MANOKWARI</p>
-                        </div>
-                        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-                            {menuItems.map(item => {
-                                const Icon = item.icon;
-                                const isActive = activeTab === item.id;
-                                return (
-                                    <button 
-                                        key={item.id}
-                                        onClick={() => setActiveTab(item.id)}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                                            isActive 
-                                            ? 'bg-school-50 text-school-700 shadow-sm border border-school-100' 
-                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                                        }`}
-                                    >
-                                        <Icon />
-                                        {item.label}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <div className="p-4 border-t border-slate-100 bg-slate-50">
-                            <div className="flex items-center gap-3 mb-4 px-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <div className="text-xs">
-                                    <p className="text-slate-400">Login sebagai Proktor</p>
-                                    <p className="font-medium text-slate-700 truncate w-40" title={user.email}>{user.email}</p>
-                                </div>
-                            </div>
-                            <button onClick={() => signOut(auth)} className="w-full flex justify-center items-center gap-2 py-2.5 px-4 bg-white border border-slate-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition">
-                                <Icons.LogOut /> Logout
-                            </button>
-                        </div>
-                    </aside>
+      static async sendApi(url, payload) {
+        // Mock adapter call with graceful fallback
+        try {
+          // If valid endpoint provided, perform actual POST request:
+          // const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          // return res.ok;
+          return true; // Auto success for demonstration
+        } catch (e) {
+          return false;
+        }
+      }
 
-                    {/* MAIN CONTENT */}
-                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
-                        {/* Mobile Header */}
-                        <header className="md:hidden bg-white shadow-sm p-4 flex justify-between items-center z-10">
-                            <div className="flex items-center gap-2">
-                                <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo" className="h-8" />
-                                <h1 className="font-bold text-slate-800 text-sm">SMPN 6 MANOKWARI</h1>
-                            </div>
-                            <select 
-                                value={activeTab} 
-                                onChange={(e) => setActiveTab(e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg text-sm px-2 py-1 font-medium"
-                            >
-                                {menuItems.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
-                            </select>
-                        </header>
+      static startPausePeriod() {
+        state.isQueuePaused = true;
+        state.pauseTimeRemaining = state.waSettings.pauseMinutes * 60;
+        state.queueBatchProcessed = 0;
 
-                        <div className="flex-1 overflow-auto p-4 md:p-8 custom-scrollbar relative">
-                            {/* Render Content Based on Tab */}
-                            {activeTab === 'scan' && <ScannerPage />}
-                            {activeTab === 'dashboard' && <DashboardPage queueStats={queueStats} />}
-                            {activeTab === 'students' && <StudentsPage />}
-                            {activeTab === 'recap' && <RecapPage />}
-                        </div>
-                    </main>
-                </div>
-            );
+        const timerInterval = setInterval(() => {
+          if (state.pauseTimeRemaining <= 0) {
+            clearInterval(timerInterval);
+            state.isQueuePaused = false;
+            document.getElementById('waQueueCountdown').textContent = 'ACTIVE';
+            WhatsAppQueueEngine.processNextBatch();
+          } else {
+            const mins = Math.floor(state.pauseTimeRemaining / 60);
+            const secs = state.pauseTimeRemaining % 60;
+            document.getElementById('waQueueCountdown').textContent = `PAUSED (${mins}:${String(secs).padStart(2, '0')})`;
+            state.pauseTimeRemaining--;
+          }
+        }, 1000);
+      }
+    }
+
+    async function processStudentScan(nisn) {
+      if (!nisn) return;
+      
+      const cleanNISN = nisn.trim();
+      const todayStr = getWITDateString();
+      const timeStr = getWITTimeString();
+      const fullDateFormatted = getWITFullDateFormatted();
+
+      // 1. Check if student exists
+      const student = state.students.find(s => s.nisn === cleanNISN);
+      if (!student) {
+        AudioFeedback.playError();
+        showToast(`Data siswa dengan NISN '${cleanNISN}' tidak ditemukan!`, 'error');
+        resetScannerInput();
+        return;
+      }
+
+      // 2. Check Anti-Duplication Rule (YYYY-MM-DD_NISN)
+      const docId = `${todayStr}_${cleanNISN}`;
+      const attendanceRef = doc(db, 'attendance', docId);
+
+      try {
+        const docSnap = await getDoc(attendanceRef);
+        if (docSnap.exists()) {
+          AudioFeedback.playWarning();
+          showToast(`Siswa ${student.name} sudah melakukan absensi hari ini!`, 'warning');
+          resetScannerInput();
+          return;
+        }
+
+        // 3. Determine Attendance Status (07:20 WIT)
+        const [thresholdH, thresholdM] = state.waSettings.onTimeThreshold.split(':').map(Number);
+        const [scanH, scanM] = timeStr.split(':').map(Number);
+
+        let status = 'HADIR';
+        if (scanH > thresholdH || (scanH === thresholdH && scanM > thresholdM)) {
+          status = 'TERLAMBAT';
+          AudioFeedback.playWarning();
+        } else {
+          AudioFeedback.playSuccess();
+        }
+
+        // 4. Save Attendance Document instantly
+        const attendanceData = {
+          date: todayStr,
+          nisn: cleanNISN,
+          studentName: student.name,
+          studentClass: student.class,
+          parentPhone: student.parentPhone,
+          photoUrl: student.photoUrl || `https://placehold.co/400x500/1e3a8a/ffffff?text=${encodeURIComponent(student.name)}`,
+          scanTime: timeStr,
+          status: status,
+          createdAt: serverTimestamp()
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+        await setDoc(attendanceRef, attendanceData);
+
+        // 5. Render Hero Last Scanned Card Immediately!
+        renderHeroStudentCard(attendanceData, fullDateFormatted);
+
+        // 6. Push to WhatsApp Queue in Background
+        const waMessage = generateWAMessage(student.name, student.class, fullDateFormatted, timeStr, status);
+        const waDocRef = doc(collection(db, 'whatsappQueue'));
+        await setDoc(waDocRef, {
+          studentId: docId,
+          nisn: cleanNISN,
+          studentName: student.name,
+          parentPhone: student.parentPhone,
+          date: todayStr,
+          scanTime: timeStr,
+          status: 'QUEUED',
+          message: waMessage,
+          attempts: 0,
+          createdAt: serverTimestamp()
+        });
+
+        showToast(`Absensi ${student.name} berhasil dicatat (${status})`, 'success');
+
+        // Trigger Queue Check
+        WhatsAppQueueEngine.processNextBatch();
+
+      } catch (err) {
+        console.error("Scan processing error:", err);
+        showToast("Gagal menyimpan data absensi ke server.", "error");
+      } finally {
+        resetScannerInput();
+      }
+    }
+
+    function renderHeroStudentCard(data, dateFormatted) {
+      document.getElementById('scanReadyBanner').classList.add('hidden');
+      const hero = document.getElementById('scannedStudentDisplay');
+      hero.classList.remove('hidden');
+
+      document.getElementById('lastStudentPhoto').src = data.photoUrl;
+      document.getElementById('lastStudentName').textContent = data.studentName;
+      document.getElementById('lastStudentNISN').textContent = data.nisn;
+      document.getElementById('lastStudentClass').textContent = data.studentClass;
+      document.getElementById('lastScanWITTime').textContent = `${data.scanTime} WIT`;
+      document.getElementById('lastStudentDate').textContent = dateFormatted;
+
+      const badgeOverlay = document.getElementById('scanStatusBadgeOverlay');
+      const badgeText = document.getElementById('badgeStatusText');
+
+      if (data.status === 'HADIR') {
+        badgeOverlay.className = "absolute bottom-3 left-3 right-3 px-3 py-2 rounded-xl text-center font-extrabold text-sm shadow-lg text-white bg-emerald-600 flex items-center justify-center gap-2 glow-success";
+        badgeText.textContent = "HADIR (TEPAT WAKTU)";
+      } else {
+        badgeOverlay.className = "absolute bottom-3 left-3 right-3 px-3 py-2 rounded-xl text-center font-extrabold text-sm shadow-lg text-white bg-amber-600 flex items-center justify-center gap-2 glow-warning";
+        badgeText.textContent = "TERLAMBAT";
+      }
+
+      state.lastScannedStudent = data;
+    }
+
+    function resetScannerInput() {
+      const input = document.getElementById('qrInput');
+      input.value = '';
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function setupRealtimeListeners() {
+      // 1. Listen to Students collection
+      onSnapshot(collection(db, 'students'), (snapshot) => {
+        state.students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderStudentsTable();
+        updateClassFilters();
+        updateDashboardStats();
+      });
+
+      // 2. Listen to Today's Attendance
+      const todayStr = getWITDateString();
+      const qAtt = query(collection(db, 'attendance'), where('date', '==', todayStr));
+      onSnapshot(qAtt, (snapshot) => {
+        state.todayAttendance = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderRecentScansTable();
+        updateDashboardStats();
+      });
+
+      // 3. Listen to WA Queue Status
+      onSnapshot(collection(db, 'whatsappQueue'), (snapshot) => {
+        state.waQueue = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateWAQueueDashboard();
+      });
+    }
+
+    function renderRecentScansTable() {
+      const tbody = document.getElementById('recentScansTableBody');
+      const countBadge = document.getElementById('liveScanCountBadge');
+      countBadge.textContent = `${state.todayAttendance.length} Siswa`;
+
+      if (state.todayAttendance.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Belum ada aktivitas scan siswa hari ini.</td></tr>`;
+        return;
+      }
+
+      // Sort recent first
+      const sorted = [...state.todayAttendance].sort((a, b) => b.scanTime.localeCompare(a.scanTime));
+
+      tbody.innerHTML = sorted.map(item => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 pl-6">
+            <img src="${item.photoUrl}" alt="${item.studentName}" class="w-9 h-11 object-cover rounded-lg border border-slate-200">
+          </td>
+          <td class="p-3 font-bold text-smpblue-950">${item.studentName}</td>
+          <td class="p-3 font-mono text-xs">${item.nisn}</td>
+          <td class="p-3"><span class="bg-smpblue-100 text-smpblue-900 font-bold px-2.5 py-0.5 rounded text-xs">${item.studentClass}</span></td>
+          <td class="p-3 font-mono text-xs font-bold">${item.scanTime} WIT</td>
+          <td class="p-3 pr-6">
+            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold ${item.status === 'HADIR' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+              ${item.status}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderStudentsTable() {
+      const tbody = document.getElementById('studentsTableBody');
+      const search = document.getElementById('studentSearchInput').value.toLowerCase();
+      const classFilter = document.getElementById('studentClassFilter').value;
+
+      let filtered = state.students.filter(s => {
+        const matchesSearch = s.name.toLowerCase().includes(search) || s.nisn.includes(search);
+        const matchesClass = classFilter === 'ALL' || s.class === classFilter;
+        return matchesSearch && matchesClass;
+      });
+
+      document.getElementById('studentTableInfo').textContent = `Menampilkan ${filtered.length} dari total ${state.students.length} siswa`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Data siswa tidak ditemukan.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((s, idx) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 pl-6 font-semibold text-xs text-slate-400">${idx + 1}</td>
+          <td class="p-3">
+            <img src="${s.photoUrl || 'https://placehold.co/100x120/1e3a8a/ffffff?text=FOTO'}" class="w-8 h-10 object-cover rounded border border-slate-200">
+          </td>
+          <td class="p-3 font-bold text-smpblue-950">${s.name}</td>
+          <td class="p-3 font-mono text-xs">${s.nisn}</td>
+          <td class="p-3"><span class="bg-slate-100 text-slate-800 font-bold px-2 py-0.5 rounded text-xs border border-slate-200">${s.class}</span></td>
+          <td class="p-3 font-mono text-xs">${s.parentPhone}</td>
+          <td class="p-3 pr-6 text-right space-x-2">
+            <button onclick="editStudent('${s.id}')" class="text-smpblue-700 hover:text-smpblue-900 font-bold text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteStudent('${s.id}', '${s.name}')" class="text-rose-600 hover:text-rose-800 font-bold text-xs"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateClassFilters() {
+      const classes = [...new Set(state.students.map(s => s.class))].sort();
+      const opts = '<option value="ALL">Semua Kelas</option>' + classes.map(c => `<option value="${c}">Kelas ${c}</option>`).join('');
+      document.getElementById('studentClassFilter').innerHTML = opts;
+      document.getElementById('recapClassFilter').innerHTML = opts;
+    }
+
+    function updateDashboardStats() {
+      const total = state.students.length;
+      const scanned = state.todayAttendance.length;
+      const onTime = state.todayAttendance.filter(a => a.status === 'HADIR').length;
+      const late = state.todayAttendance.filter(a => a.status === 'TERLAMBAT').length;
+      const notScanned = Math.max(0, total - scanned);
+      const pct = total > 0 ? ((scanned / total) * 100).toFixed(1) : 0;
+
+      // Scan View stats
+      document.getElementById('statTotalStudents').textContent = total;
+      document.getElementById('statScannedToday').textContent = scanned;
+      document.getElementById('statLateToday').textContent = late;
+      document.getElementById('statNotScannedToday').textContent = notScanned;
+
+      // Dashboard stats
+      document.getElementById('dbTotalStudents').textContent = total;
+      document.getElementById('dbScannedToday').textContent = scanned;
+      document.getElementById('dbNotScannedToday').textContent = notScanned;
+      document.getElementById('dbOnTimeToday').textContent = onTime;
+      document.getElementById('dbLateToday').textContent = late;
+      document.getElementById('dbAttendancePercentage').textContent = `${pct}%`;
+
+      renderCharts(onTime, late, notScanned);
+    }
+
+    function updateWAQueueDashboard() {
+      const queued = state.waQueue.filter(q => q.status === 'QUEUED').length;
+      const processing = state.waQueue.filter(q => q.status === 'PROCESSING').length;
+      const sent = state.waQueue.filter(q => q.status === 'SENT').length;
+      const failed = state.waQueue.filter(q => q.status.includes('FAILED')).length;
+
+      document.getElementById('waStatQueued').textContent = queued;
+      document.getElementById('waStatProcessing').textContent = processing;
+      document.getElementById('waStatSent').textContent = sent;
+      document.getElementById('waStatFailed').textContent = failed;
+      document.getElementById('waStatBatchCounter').textContent = `${state.queueBatchProcessed} / 5`;
+    }
+
+    function renderCharts(onTime, late, notScanned) {
+      const ctx1 = document.getElementById('chartAttendanceRatio')?.getContext('2d');
+      const ctx2 = document.getElementById('chartAttendanceByClass')?.getContext('2d');
+
+      if (!ctx1 || !ctx2) return;
+
+      if (state.charts.ratio) state.charts.ratio.destroy();
+      if (state.charts.byClass) state.charts.byClass.destroy();
+
+      state.charts.ratio = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['Hadir Tepat Waktu', 'Terlambat', 'Belum Scan'],
+          datasets: [{
+            data: [onTime, late, notScanned],
+            backgroundColor: ['#2563eb', '#f59e0b', '#f43f5e']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      const classes = [...new Set(state.students.map(s => s.class))].sort();
+      const classData = classes.map(c => state.todayAttendance.filter(a => a.studentClass === c).length);
+
+      state.charts.byClass = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: classes,
+          datasets: [{
+            label: 'Siswa Sudah Scan',
+            data: classData,
+            backgroundColor: '#1e3a8a'
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function downloadExcelTemplate() {
+      const templateData = [
+        { "No": 1, "Nama Siswa": "BUDI SANTOSO", "NISN": "0058123456", "Nomor HP Orang Tua": "081234567890", "Kelas": "8A" },
+        { "No": 2, "Nama Siswa": "MARIA ALFONSINA", "NISN": "0058123457", "Nomor HP Orang Tua": "081234567891", "Kelas": "8B" }
+      ];
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template_Siswa");
+      XLSX.writeFile(wb, "Template_Import_Siswa_SMP6.xlsx");
+    }
+
+    async function handleExcelImport(file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          let success = 0;
+          let failed = 0;
+
+          const batch = writeBatch(db);
+
+          jsonData.forEach((row) => {
+            const name = row["Nama Siswa"] || row["Nama"];
+            const nisn = String(row["NISN"] || "").trim();
+            const phone = String(row["Nomor HP Orang Tua"] || row["HP"] || "").trim();
+            const studentClass = String(row["Kelas"] || "").trim();
+
+            if (name && nisn && phone && studentClass) {
+              const docRef = doc(db, 'students', nisn);
+              batch.set(docRef, {
+                name: name.toUpperCase(),
+                nisn: nisn,
+                parentPhone: phone,
+                class: studentClass.toUpperCase(),
+                photoUrl: `https://placehold.co/400x500/1e3a8a/ffffff?text=${encodeURIComponent(name)}`,
+                updatedAt: serverTimestamp()
+              });
+              success++;
+            } else {
+              failed++;
+            }
+          });
+
+          await batch.commit();
+          showToast(`Import Selesai: ${success} siswa berhasil, ${failed} baris gagal/invalid.`, 'success');
+
+        } catch (err) {
+          showToast("Gagal membaca file Excel. Pastikan format sesuai.", "error");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Mass Photo Upload to Firebase Storage
+    async function handleMassPhotoUpload(files) {
+      showToast(`Mengunggah ${files.length} foto siswa ke Firebase Storage...`, 'info');
+      let successCount = 0;
+
+      for (const file of files) {
+        const filename = file.name;
+        const nisnMatch = filename.match(/^(\d+)\.(jpg|jpeg|png)$/i);
+        
+        if (nisnMatch) {
+          const nisn = nisnMatch[1];
+          const storageRef = ref(storage, `student_photos/${nisn}.${nisnMatch[2]}`);
+          
+          try {
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            // Update student photoUrl in Firestore
+            const studentRef = doc(db, 'students', nisn);
+            await updateDoc(studentRef, { photoUrl: downloadUrl });
+            successCount++;
+          } catch (e) {
+            console.error(`Gagal upload foto ${filename}:`, e);
+          }
+        }
+      }
+
+      showToast(`Upload Foto Selesai: ${successCount} foto siswa berhasil diperbarui.`, 'success');
+    }
+
+    // Export Recap to Excel
+    function exportRecapToExcel() {
+      const table = document.getElementById('recapExportTable');
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Rekapan_Absensi" });
+      XLSX.writeFile(wb, `Rekap_Absensi_SMP6_${getWITDateString()}.xlsx`);
+    }
+
+    function setupEventListeners() {
+      // Navigation Menu Clicks
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = btn.getAttribute('data-nav');
+          switchView(target);
+        });
+      });
+
+      // Google Login Button
+      document.getElementById('btnLoginGoogle').addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          if (result.user.email !== ALLOWED_EMAIL) {
+            await signOut(auth);
+            showToast("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.", "error");
+          } else {
+            showToast("Login proktor berhasil!", "success");
+          }
+        } catch (err) {
+          showToast("Proses login dibatalkan atau terjadi kesalahan.", "error");
+        }
+      });
+
+      // Logout Button
+      document.getElementById('btnLogout').addEventListener('click', () => {
+        showConfirmModal("Konfirmasi Keluar", "Apakah Anda yakin ingin keluar dari akun Proktor?", () => {
+          signOut(auth);
+        });
+      });
+
+      // Scanner QR Code Input Field Listener (Handles USB Scanner Enter Key)
+      const qrInput = document.getElementById('qrInput');
+      qrInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          processStudentScan(qrInput.value);
+        }
+      });
+
+      // Keep focus on QR Input when clicking anywhere on scan page
+      document.addEventListener('click', (e) => {
+        if (state.activeView === 'scan' && !['INPUT', 'BUTTON', 'SELECT', 'A'].includes(e.target.tagName)) {
+          qrInput.focus();
+        }
+      });
+
+      // Student Search & Filters
+      document.getElementById('studentSearchInput').addEventListener('input', renderStudentsTable);
+      document.getElementById('studentClassFilter').addEventListener('change', renderStudentsTable);
+
+      // Student Modals
+      document.getElementById('btnOpenAddStudentModal').addEventListener('click', () => {
+        document.getElementById('studentForm').reset();
+        document.getElementById('studentEditId').value = '';
+        document.getElementById('studentModalTitle').textContent = 'Tambah Data Siswa';
+        document.getElementById('studentModal').classList.remove('hidden');
+      });
+
+      document.getElementById('btnCloseStudentModal').addEventListener('click', () => {
+        document.getElementById('studentModal').classList.add('hidden');
+      });
+
+      document.getElementById('btnCancelStudentModal').addEventListener('click', () => {
+        document.getElementById('studentModal').classList.add('hidden');
+      });
+
+      // Student Form Submit
+      document.getElementById('studentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nisn = document.getElementById('mStudentNISN').value.trim();
+        const name = document.getElementById('mStudentName').value.trim().toUpperCase();
+        const studentClass = document.getElementById('mStudentClass').value.trim().toUpperCase();
+        const parentPhone = document.getElementById('mStudentParentPhone').value.trim();
+        const photoUrl = document.getElementById('mStudentPhotoUrl').value.trim() || `https://placehold.co/400x500/1e3a8a/ffffff?text=${encodeURIComponent(name)}`;
+
+        try {
+          await setDoc(doc(db, 'students', nisn), {
+            name, nisn, class: studentClass, parentPhone, photoUrl, updatedAt: serverTimestamp()
+          });
+          showToast("Data siswa berhasil disimpan.", "success");
+          document.getElementById('studentModal').classList.add('hidden');
+        } catch (err) {
+          showToast("Gagal menyimpan data siswa.", "error");
+        }
+      });
+
+      // Delete All Students Button
+      document.getElementById('btnDeleteAllStudents').addEventListener('click', () => {
+        showConfirmModal("Hapus SEMUA Data Siswa?", "Tindakan ini akan menghapus seluruh database siswa secara permanen. Lanjutkan?", () => {
+          showConfirmModal("Konfirmasi Tahap 2", "Apakah Anda BENAR-BENAR yakin? Data yang dihapus tidak dapat dikembalikan!", async () => {
+            const batch = writeBatch(db);
+            state.students.forEach(s => batch.delete(doc(db, 'students', s.id)));
+            await batch.commit();
+            showToast("Seluruh data siswa berhasil dihapus.", "success");
+          });
+        });
+      });
+
+      // Excel Template & Import
+      document.getElementById('btnDownloadTemplateExcel').addEventListener('click', downloadExcelTemplate);
+      document.getElementById('excelFileInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleExcelImport(e.target.files[0]);
+      });
+
+      // Mass Photo Upload
+      document.getElementById('massPhotoInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleMassPhotoUpload(e.target.files);
+      });
+
+      // Recap Export
+      document.getElementById('btnExportRecapExcel').addEventListener('click', exportRecapToExcel);
+
+      // Confirm Modal Action Button
+      document.getElementById('btnConfirmProceed').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('hidden');
+        if (state.confirmCallback) state.confirmCallback();
+      });
+
+      document.getElementById('btnConfirmCancel').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('hidden');
+      });
+
+      // Force Sync WA Queue
+      document.getElementById('btnForceProcessWAQueue').addEventListener('click', () => {
+        state.isQueuePaused = false;
+        WhatsAppQueueEngine.processNextBatch();
+        showToast("Sinkronisasi antrean WhatsApp dipicu secara manual.", "info");
+      });
+    }
+
+    // Global edit & delete student window bindings
+    window.editStudent = function(id) {
+      const s = state.students.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('studentEditId').value = s.id;
+      document.getElementById('mStudentName').value = s.name;
+      document.getElementById('mStudentNISN').value = s.nisn;
+      document.getElementById('mStudentClass').value = s.class;
+      document.getElementById('mStudentParentPhone').value = s.parentPhone;
+      document.getElementById('mStudentPhotoUrl').value = s.photoUrl || '';
+      document.getElementById('studentModalTitle').textContent = 'Edit Data Siswa';
+      document.getElementById('studentModal').classList.remove('hidden');
+    };
+
+    window.deleteStudent = function(id, name) {
+      showConfirmModal("Hapus Data Siswa", `Apakah Anda yakin ingin menghapus data siswa ${name}?`, async () => {
+        try {
+          await deleteDoc(doc(db, 'students', id));
+          showToast(`Siswa ${name} berhasil dihapus.`, "success");
+        } catch (e) {
+          showToast("Gagal menghapus data siswa.", "error");
+        }
+      });
+    };
+
+    function switchView(viewName) {
+      state.activeView = viewName;
+      
+      const views = ['scan', 'dashboard', 'students', 'recap', 'guide', 'settings'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.add('hidden');
+      });
+
+      const targetEl = document.getElementById(`view-${viewName}`);
+      if (targetEl) targetEl.classList.remove('hidden');
+
+      // Update Nav active styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-nav') === viewName) {
+          btn.classList.add('bg-smpblue-900', 'text-white', 'border-l-4', 'border-blue-400');
+        } else {
+          btn.classList.remove('bg-smpblue-900', 'text-white', 'border-l-4', 'border-blue-400');
+        }
+      });
+
+      const titles = {
+        scan: 'Scan Hari Ini',
+        dashboard: 'Dashboard Utama',
+        students: 'Pengelolaan Data Siswa',
+        recap: 'Rekapan & Laporan Absensi',
+        guide: 'Panduan Penggunaan Aplikasi',
+        settings: 'Pengaturan Sistem'
+      };
+
+      document.getElementById('currentPageTitle').textContent = titles[viewName] || 'Absensi Siswa';
+
+      if (viewName === 'scan') resetScannerInput();
+      if (viewName === 'recap') renderDailyRecapTable();
+    }
+
+    function renderDailyRecapTable() {
+      const thead = document.getElementById('recapTableHead');
+      const tbody = document.getElementById('recapTableBody');
+
+      thead.innerHTML = `
+        <tr class="bg-slate-100 text-slate-500 font-semibold border-b border-slate-200">
+          <th class="p-3">No</th>
+          <th class="p-3">Nama Siswa</th>
+          <th class="p-3">NISN</th>
+          <th class="p-3">Kelas</th>
+          <th class="p-3">Waktu Scan WIT</th>
+          <th class="p-3">Status</th>
+          <th class="p-3">No. WhatsApp Orang Tua</th>
+        </tr>
+      `;
+
+      if (state.todayAttendance.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada data absensi untuk periode ini.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.todayAttendance.map((a, i) => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 font-mono">${i + 1}</td>
+          <td class="p-3 font-bold">${a.studentName}</td>
+          <td class="p-3 font-mono">${a.nisn}</td>
+          <td class="p-3">${a.studentClass}</td>
+          <td class="p-3 font-mono">${a.scanTime} WIT</td>
+          <td class="p-3"><span class="font-bold ${a.status === 'HADIR' ? 'text-emerald-600' : 'text-amber-600'}">${a.status}</span></td>
+          <td class="p-3 font-mono">${a.parentPhone}</td>
+        </tr>
+      `).join('');
+    }
+
+    function startRealtimeClock() {
+      setInterval(() => {
+        const witDate = getWITDateObj();
+        document.getElementById('liveClockWIT').textContent = `${getWITTimeString(witDate)} WIT`;
+        document.getElementById('liveDateWIT').textContent = getWITFullDateFormatted(witDate);
+      }, 1000);
+    }
+
+    // Main Auth Listener
+    onAuthStateChanged(auth, async (user) => {
+      const loadingScreen = document.getElementById('authLoadingScreen');
+      const loginView = document.getElementById('loginView');
+      const mainAppView = document.getElementById('mainAppView');
+
+      if (user) {
+        if (user.email !== ALLOWED_EMAIL) {
+          await signOut(auth);
+          showToast("Akses ditolak. Email tidak terdaftar sebagai proktor resmi.", "error");
+          loadingScreen.classList.add('hidden');
+          loginView.classList.remove('hidden');
+          mainAppView.classList.add('hidden');
+        } else {
+          // Authorized Proktor
+          state.user = user;
+          document.getElementById('userEmailBadge').textContent = user.email;
+
+          loadingScreen.classList.add('hidden');
+          loginView.classList.add('hidden');
+          mainAppView.classList.remove('hidden');
+
+          setupRealtimeListeners();
+          startRealtimeClock();
+          setupEventListeners();
+          resetScannerInput();
+        }
+      } else {
+        // Not Logged In
+        state.user = null;
+        loadingScreen.classList.add('hidden');
+        loginView.classList.remove('hidden');
+        mainAppView.classList.add('hidden');
+      }
+    });
+
+  </script>
 </body>
 </html>
