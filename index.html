@@ -1,1133 +1,1031 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  initializeApp 
-} from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged, 
-  setPersistence, 
-  browserLocalPersistence 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  onSnapshot, 
-  serverTimestamp 
-} from 'firebase/firestore';
-import { 
-  getStorage, 
-  ref as storageRef, 
-  uploadBytes, 
-  getDownloadURL 
-} from 'firebase/storage';
-import { 
-  QrCode, 
-  Users, 
-  BarChart3, 
-  BookOpen, 
-  LogOut, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Clock, 
-  Calendar, 
-  FileSpreadsheet, 
-  Upload, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  Search, 
-  ShieldAlert, 
-  Check, 
-  X, 
-  Smartphone, 
-  Activity, 
-  Send, 
-  HelpCircle, 
-  Settings, 
-  ChevronRight, 
-  RefreshCw,
-  Award
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Siswa - SMP Negeri 6 Manokwari</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAOGuLr9kQOS8NMlMXVkFZ6FXE6aPUXxtI",
-  authDomain: "scan-moderen.firebaseapp.com",
-  projectId: "scan-moderen",
-  storageBucket: "scan-moderen.firebasestorage.app",
-  messagingSenderId: "469257383650",
-  appId: "1:469257383650:web:a4b9fef89a7954f08578bb",
-  measurementId: "G-D03VMJQKWC"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn6-manokwari-absensi';
-
-// Allowed Proktor email
-const PROKTOR_EMAIL = "proktorsmp6@gmail.com";
-const SCHOOL_LOGO = "https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png";
-
-const getWITDateString = (date = new Date()) => {
-  // Convert to WIT (Asia/Jayapura, UTC+9)
-  const options = { timeZone: 'Asia/Jayapura', year: 'numeric', month: '2-digit', day: '2-digit' };
-  const formatter = new Intl.DateTimeFormat('en-CA', options);
-  return formatter.format(date); // YYYY-MM-DD
-};
-
-const getWITTimeDetails = (date = new Date()) => {
-  const options = { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-  const formatter = new Intl.DateTimeFormat('id-ID', options);
-  return formatter.format(date); // HH:MM:SS
-};
-
-const getWITFullDateTime = (date = new Date()) => {
-  const options = { timeZone: 'Asia/Jayapura', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-  return new Intl.DateTimeFormat('id-ID', options).format(date);
-};
-
-// WhatsApp message templates generator for variety
-const getWhatsAppTemplate = (status, studentName, studentClass, dateStr, timeStr) => {
-  const templatesHadir = [
-    `Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda ${studentName}, kelas ${studentClass}, telah melakukan absensi di SMP Negeri 6 Manokwari pada ${dateStr} pukul ${timeStr} WIT dengan keterangan HADIR. Terima kasih atas perhatian dan kerja samanya.`,
-    `Halo Bapak/Ibu Wali dari ${studentName} (${studentClass}), kabar baik! Ananda tercatat HADIR di sekolah pada hari ${dateStr} pukul ${timeStr} WIT. Tetap semangat belajar! - SMPN 6 Manokwari`,
-    `Informasi Kehadiran Siswa SMPN 6 Manokwari: Ananda ${studentName} (${studentClass}) terpantau hadir tepat waktu pada ${dateStr} pukul ${timeStr} WIT. Terima kasih atas dukungan Bapak/Ibu.`,
-    `Salam hormat Bapak/Ibu Orang Tua ${studentName} (${studentClass}), kami mengonfirmasi bahwa Ananda telah melakukan scan kehadiran pada ${dateStr} pukul ${timeStr} WIT (HADIR). Semoga hari belajar Ananda menyenangkan.`
-  ];
-
-  const templatesTerlambat = [
-    `Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda ${studentName}, kelas ${studentClass}, telah melakukan absensi pada ${dateStr} pukul ${timeStr} WIT dengan keterangan TERLAMBAT. Mohon perhatian dan kerja sama Bapak/Ibu agar Ananda dapat hadir tepat waktu. Terima kasih.`,
-    `Pemberitahuan Akademik SMPN 6 Manokwari: Ananda ${studentName} (${studentClass}) tercatat TERLAMBAT hadir di sekolah pada ${dateStr} pukul ${timeStr} WIT. Mohon kerjasamanya untuk membimbing Ananda berangkat lebih awal esok hari.`,
-    `Yth. Orang Tua/Wali ${studentName} (${studentClass}), Ananda melakukan absensi pukul ${timeStr} WIT pada ${dateStr} dan dinyatakan TERLAMBAT (>07.20 WIT). Mari bersama kita tingkatkan kedisiplinan Ananda.`,
-    `Perhatian Kehadiran SMPN 6 Manokwari: Ananda ${studentName} dari kelas ${studentClass} tiba di sekolah pukul ${timeStr} WIT (${dateStr}) dengan status TERLAMBAT. Terima kasih atas perhatian Bapak/Ibu.`
-  ];
-
-  const list = status === 'HADIR' ? templatesHadir : templatesTerlambat;
-  const randomIndex = Math.floor(Math.random() * list.length);
-  return list[randomIndex];
-};
-
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState('');
-  const [currentTab, setCurrentTab] = useState('scan'); // 'dashboard', 'scan', 'students', 'reports', 'guide'
-  
-  // Data states
-  const [students, setStudents] = useState([]);
-  const [attendanceToday, setAttendanceToday] = useState([]);
-  const [lastScanned, setLastScanned] = useState(null);
-  const [whatsappQueue, setWhatsappQueue] = useState([]);
-  const [queueStatus, setQueueStatus] = useState({ menungg: 0, berhasil: 0, gagal: 0, status: 'RUNNING', nextBatchIn: 300 });
-  
-  // Toast & Modal state
-  const [toast, setToast] = useState(null);
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
-
-  useEffect(() => {
-    const initAuthPersistence = async () => {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-      } catch (err) {
-        console.error("Persistence error:", err);
-      }
-    };
-    initAuthPersistence();
-
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        if (currentUser.email === PROKTOR_EMAIL) {
-          setUser(currentUser);
-          setAuthError('');
-        } else {
-          signOut(auth);
-          setUser(null);
-          setAuthError("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.");
+    <!-- Tailwind Config for Custom Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        school: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
         }
-      } else {
-        setUser(null);
-      }
-      setAuthLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const handleGoogleLogin = async () => {
-    setAuthLoading(true);
-    setAuthError('');
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const loggedUser = result.user;
-      if (loggedUser.email !== PROKTOR_EMAIL) {
-        await signOut(auth);
-        setUser(null);
-        setAuthError("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.");
-      } else {
-        setUser(loggedUser);
-        showToast("Login berhasil! Selamat datang, Proktor SMPN 6 Manokwari.");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setAuthError("Terjadi kesalahan saat login dengan Google: " + err.message);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      showToast("Berhasil keluar.", "info");
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-
-    // Fetch Students
-    const studentsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
-    const unsubStudents = onSnapshot(studentsColRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
-      setStudents(list);
-    }, (err) => console.error("Error fetching students:", err));
-
-    // Fetch Today's Attendance
-    const todayStr = getWITDateString();
-    const attendanceColRef = collection(db, 'artifacts', appId, 'public', 'data', 'attendance');
-    const unsubAttendance = onSnapshot(attendanceColRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.date === todayStr) {
-          list.push({ id: doc.id, ...data });
-        }
-      });
-      // Sort descending by scanTime
-      list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      setAttendanceToday(list);
-      if (list.length > 0 && !lastScanned) {
-        setLastScanned(list[0]);
-      }
-    }, (err) => console.error("Error fetching attendance:", err));
-
-    // Fetch WhatsApp Queue
-    const queueColRef = collection(db, 'artifacts', appId, 'public', 'data', 'whatsappQueue');
-    const unsubQueue = onSnapshot(queueColRef, (snapshot) => {
-      const list = [];
-      let pending = 0;
-      let sent = 0;
-      let failed = 0;
-      snapshot.forEach((doc) => {
-        const qData = doc.data();
-        list.push({ id: doc.id, ...qData });
-        if (qData.status === 'QUEUED' || qData.status === 'PENDING') pending++;
-        else if (qData.status === 'SENT') sent++;
-        else if (qData.status === 'FAILED') failed++;
-      });
-      setWhatsappQueue(list);
-      setQueueStatus(prev => ({ ...prev, menungg: pending, berhasil: sent, gagal: failed }));
-    }, (err) => console.error("Error fetching WA queue:", err));
-
-    return () => {
-      unsubStudents();
-      unsubAttendance();
-      unsubQueue();
-    };
-  }, [user]);
-
-  const processScan = async (rawNisn) => {
-    const nisn = rawNisn.trim();
-    if (!nisn) return;
-
-    // 1. Find student
-    const student = students.find(s => s.nisn === nisn);
-    if (!student) {
-      showToast(`Data siswa dengan NISN "${nisn}" belum terdaftar!`, 'error');
-      return { success: false, error: 'NOT_FOUND' };
-    }
-
-    const todayStr = getWITDateString();
-    const uniqueKey = `${todayStr}_${nisn}`;
-    const attendanceDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'attendance', uniqueKey);
-
-    try {
-      const docSnap = await getDoc(attendanceDocRef);
-      if (docSnap.exists()) {
-        showToast(`Absensi siswa ${student.name} sudah tercatat hari ini!`, 'warning');
-        return { success: false, error: 'DUPLICATE', student };
-      }
-
-      const now = new Date();
-      const timeStr = getWITTimeDetails(now);
-      
-      // Cutoff check: 07:20 WIT
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const totalMinutes = hours * 60 + minutes;
-      const cutoffMinutes = 7 * 60 + 20; // 07:20
-      const status = totalMinutes <= cutoffMinutes ? 'HADIR' : 'TERLAMBAT';
-
-      const attendanceData = {
-        nisn: student.nisn,
-        name: student.name,
-        className: student.className || '7A',
-        parentPhone: student.parentPhone || '',
-        photoUrl: student.photoUrl || '',
-        date: todayStr,
-        scanTime: timeStr,
-        status: status,
-        timestamp: now.getTime()
-      };
-
-      // Save to Firestore attendance
-      await setDoc(attendanceDocRef, attendanceData);
-
-      // Add to WhatsApp Queue
-      const waMsg = getWhatsAppTemplate(status, student.name, student.className || '7A', todayStr, timeStr);
-      const queueRef = collection(db, 'artifacts', appId, 'public', 'data', 'whatsappQueue');
-      await addDoc(queueRef, {
-        studentId: student.id,
-        nisn: student.nisn,
-        studentName: student.name,
-        parentPhone: student.parentPhone || '',
-        date: todayStr,
-        scanTime: timeStr,
-        attendanceStatus: status,
-        message: waMsg,
-        status: 'QUEUED',
-        attempts: 0,
-        createdAt: serverTimestamp()
-      });
-
-      setLastScanned(attendanceData);
-      showToast(`Scan Berhasil: ${student.name} (${status})`, 'success');
-      return { success: true, student, status };
-    } catch (err) {
-      console.error("Scan processing error:", err);
-      showToast("Gagal memproses absensi: " + err.message, 'error');
-      return { success: false, error: err.message };
-    }
-  };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-medium tracking-wide">Memuat Sistem Absensi SMPN 6 Manokwari...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-800/90 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400"></div>
-          
-          <div className="mb-6 flex justify-center">
-            <div className="w-28 h-28 bg-white/10 rounded-2xl p-3 border border-white/20 flex items-center justify-center shadow-inner">
-              <img src={SCHOOL_LOGO} alt="Logo SMPN 6 Manokwari" className="w-full h-full object-contain drop-shadow-md" />
-            </div>
-          </div>
-
-          <h1 className="text-2xl font-bold text-white tracking-tight mb-1">ABSENSI SISWA</h1>
-          <h2 className="text-lg font-semibold text-blue-400 mb-2">SMP NEGERI 6 MANOKWARI</h2>
-          <p className="text-xs text-slate-400 mb-8">Monitoring Kehadiran Siswa Berbasis QR Code & WhatsApp Otomatis</p>
-
-          {authError && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start space-x-3 text-left">
-              <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-red-300 leading-relaxed font-medium">{authError}</p>
-            </div>
-          )}
-
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full py-3.5 px-6 bg-white hover:bg-slate-100 text-slate-900 rounded-2xl font-semibold shadow-lg transition-all duration-200 flex items-center justify-center space-x-3 group"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span className="text-sm font-bold">Masuk dengan Google</span>
-          </button>
-
-          <p className="mt-8 text-xs text-slate-500">
-            © SMP Negeri 6 Manokwari — Sistem Absensi Proktor Resmi
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row antialiased font-sans">
-      
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed top-6 right-6 z-50 animate-bounce">
-          <div className={`px-5 py-3 rounded-2xl shadow-2xl border flex items-center space-x-3 text-sm font-semibold backdrop-blur-md ${
-            toast.type === 'error' ? 'bg-red-900/90 border-red-500 text-white' :
-            toast.type === 'warning' ? 'bg-amber-900/90 border-amber-500 text-white' :
-            'bg-blue-900/90 border-blue-500 text-white'
-          }`}>
-            {toast.type === 'error' ? <AlertTriangle className="w-5 h-5 shrink-0" /> : <CheckCircle2 className="w-5 h-5 shrink-0" />}
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-slate-900/90 border-r border-slate-800 flex flex-col justify-between shrink-0">
-        <div>
-          {/* Logo & School Title */}
-          <div className="p-6 border-b border-slate-800 flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white/10 rounded-xl p-2 border border-white/10 flex items-center justify-center shrink-0">
-              <img src={SCHOOL_LOGO} alt="Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-white leading-tight">SMP NEGERI 6</h2>
-              <p className="text-xs font-semibold text-blue-400">MANOKWARI</p>
-            </div>
-          </div>
-
-          {/* Proktor Profile Badge */}
-          <div className="p-4 mx-4 my-3 bg-slate-800/60 rounded-2xl border border-slate-700/60 flex items-center space-x-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-            <div className="overflow-hidden">
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Login Proktor</p>
-              <p className="text-xs text-slate-200 font-medium truncate">{user.email}</p>
-            </div>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="p-4 space-y-1">
-            <NavItem 
-              icon={<QrCode className="w-5 h-5" />} 
-              label="Scan Hari Ini" 
-              active={currentTab === 'scan'} 
-              onClick={() => setCurrentTab('scan')} 
-            />
-            <NavItem 
-              icon={<BarChart3 className="w-5 h-5" />} 
-              label="Dashboard" 
-              active={currentTab === 'dashboard'} 
-              onClick={() => setCurrentTab('dashboard')} 
-            />
-            <NavItem 
-              icon={<Users className="w-5 h-5" />} 
-              label="Data Siswa" 
-              active={currentTab === 'students'} 
-              onClick={() => setCurrentTab('students')} 
-            />
-            <NavItem 
-              icon={<FileSpreadsheet className="w-5 h-5" />} 
-              label="Rekapan Absensi" 
-              active={currentTab === 'reports'} 
-              onClick={() => setCurrentTab('reports')} 
-            />
-            <NavItem 
-              icon={<BookOpen className="w-5 h-5" />} 
-              label="Panduan Penggunaan" 
-              active={currentTab === 'guide'} 
-              onClick={() => setCurrentTab('guide')} 
-            />
-          </nav>
-        </div>
-
-        {/* Footer Logout */}
-        <div className="p-4 border-t border-slate-800">
-          <button
-            onClick={handleLogout}
-            className="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl font-semibold text-xs flex items-center justify-center space-x-2 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Logout Proktor</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <header className="bg-slate-900/60 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-20">
-          <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">
-              {currentTab === 'scan' && '📷 SCAN HARI INI'}
-              {currentTab === 'dashboard' && '📊 DASHBOARD UTAMA'}
-              {currentTab === 'students' && '📚 MANAJEMEN DATA SISWA'}
-              {currentTab === 'reports' && '📈 REKAPITULASI ABSENSI'}
-              {currentTab === 'guide' && '📖 PANDUAN PENGGUNAAN'}
-            </h1>
-            <p className="text-xs text-slate-400">Zona Waktu: WIT (Asia/Jayapura) • Target ±800 Siswa/Hari</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60 text-xs font-medium text-slate-300">
-              <Clock className="w-3.5 h-3.5 text-blue-400" />
-              <span>{getWITFullDateTime()}</span>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-6 flex-1">
-          {currentTab === 'scan' && <ScanView students={students} attendanceToday={attendanceToday} lastScanned={lastScanned} processScan={processScan} queueStatus={queueStatus} />}
-          {currentTab === 'dashboard' && <DashboardView students={students} attendanceToday={attendanceToday} queueStatus={queueStatus} />}
-          {currentTab === 'students' && <StudentsView students={students} />}
-          {currentTab === 'reports' && <ReportsView students={students} attendanceToday={attendanceToday} />}
-          {currentTab === 'guide' && <GuideView />}
-        </div>
-      </main>
-
-    </div>
-  );
-}
-
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all duration-200 ${
-        active 
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 font-bold' 
-          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function ScanView({ students, attendanceToday, lastScanned, processScan, queueStatus }) {
-  const [scanInput, setScanInput] = useState('');
-  const inputRef = useRef(null);
-
-  // Auto focus input on mount and clicks
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-    const handleWindowClick = () => {
-      if (inputRef.current) inputRef.current.focus();
-    };
-    window.addEventListener('click', handleWindowClick);
-    return () => window.removeEventListener('click', handleWindowClick);
-  }, []);
-
-  const handleKeyDown = async (e) => {
-    if (e.key === 'Enter') {
-      const code = scanInput.trim();
-      setScanInput('');
-      if (code) {
-        await processScan(code);
-      }
-    }
-  };
-
-  // Compute stats
-  const totalStudents = students.length;
-  const totalScanned = attendanceToday.length;
-  const totalHadir = attendanceToday.filter(a => a.status === 'HADIR').length;
-  const totalTerlambat = attendanceToday.filter(a => a.status === 'TERLAMBAT').length;
-  const percentage = totalStudents > 0 ? ((totalScanned / totalStudents) * 100).toFixed(1) : 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Hidden or Ready Scanner Input Field */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-xl">
-        <div className="p-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
-          <QrCode className="w-6 h-6 animate-pulse" />
-        </div>
-        <div className="flex-1">
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Scanner QR Code Aktif (Auto-Focus)</label>
-          <input
-            ref={inputRef}
-            type="text"
-            value={scanInput}
-            onChange={(e) => setScanInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Arahkan scanner ke sini atau ketik NISN lalu tekan Enter..."
-            className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500 font-mono"
-            autoFocus
-          />
-        </div>
-        <div className="hidden sm:block text-right">
-          <span className="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold">
-            🟢 SIAP SCAN
-          </span>
-        </div>
-      </div>
-
-      {/* Grid: Last Scanned Big Panel & Quick Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        {/* Big Last Scanned Panel (Takes 2 cols) */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl pointer-events-none"></div>
+        /* Animation for scan result */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Siswa Terakhir Scan</span>
-              {lastScanned ? (
-                <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide ${
-                  lastScanned.status === 'HADIR' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                }`}>
-                  {lastScanned.status === 'HADIR' ? '✅ HADIR' : '⚠️ TERLAMBAT'}
-                </span>
-              ) : (
-                <span className="px-3 py-1 bg-slate-800 text-slate-400 rounded-full text-xs font-medium">MENUNGGU SCAN...</span>
-              )}
-            </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, 
+            setPersistence, browserLocalPersistence 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, 
+            orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getStorage, ref, uploadBytesResumable, getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-            {lastScanned ? (
-              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 my-2">
-                <div className="w-36 h-36 sm:w-44 sm:h-44 bg-slate-800 rounded-2xl border-2 border-slate-700/80 overflow-hidden shadow-2xl shrink-0 flex items-center justify-center">
-                  {lastScanned.photoUrl ? (
-                    <img src={lastScanned.photoUrl} alt={lastScanned.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Users className="w-16 h-16 text-slate-600" />
-                  )}
-                </div>
+        // Konfigurasi Firebase dari spesifikasi
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOGuLr9kQOS8NMlMXVkFZ6FXE6aPUXxtI",
+            authDomain: "scan-moderen.firebaseapp.com",
+            projectId: "scan-moderen",
+            storageBucket: "scan-moderen.firebasestorage.app",
+            messagingSenderId: "469257383650",
+            appId: "1:469257383650:web:a4b9fef89a7954f08578bb",
+            measurementId: "G-D03VMJQKWC"
+        };
 
-                <div className="flex-1 text-center sm:text-left space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{lastScanned.name}</h2>
-                  
-                  <div className="grid grid-cols-2 gap-2 pt-2 text-xs">
-                    <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/50">
-                      <p className="text-slate-400 font-medium">NISN</p>
-                      <p className="text-white font-mono font-bold text-sm">{lastScanned.nisn}</p>
-                    </div>
-                    <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/50">
-                      <p className="text-slate-400 font-medium">Kelas</p>
-                      <p className="text-white font-bold text-sm">{lastScanned.className}</p>
-                    </div>
-                    <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/50">
-                      <p className="text-slate-400 font-medium">Jam Scan</p>
-                      <p className="text-blue-400 font-mono font-bold text-sm">{lastScanned.scanTime} WIT</p>
-                    </div>
-                    <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/50">
-                      <p className="text-slate-400 font-medium">Tanggal</p>
-                      <p className="text-slate-200 font-bold text-xs pt-0.5">{lastScanned.date}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="py-16 text-center text-slate-500">
-                <QrCode className="w-16 h-16 mx-auto mb-3 opacity-20 animate-pulse" />
-                <p className="text-sm font-medium">Belum ada siswa yang melakukan scan hari ini.</p>
-                <p className="text-xs text-slate-600 mt-1">Silakan arahkan scanner QR ke kotak input di atas.</p>
-              </div>
-            )}
-          </div>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const ALLOWED_EMAIL = "proktorsmp6@gmail.com";
 
-          <div className="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs text-slate-400">
-            <span>Sistem Antrean WhatsApp: <strong className="text-blue-400">{queueStatus.menungg} Menunggu</strong></span>
-            <span>Status: <strong className="text-emerald-400">Aktif & Stabil</strong></span>
-          </div>
-        </div>
+        window.firebaseServices = { auth, db, storage, ALLOWED_EMAIL, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction, ref, uploadBytesResumable, getDownloadURL };
+    </script>
 
-        {/* Mini Quick Stats Column */}
-        <div className="space-y-4 flex flex-col justify-between">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Statistik Kehadiran Hari Ini</h3>
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+        const { auth, db, storage, ALLOWED_EMAIL, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, limit, updateDoc, runTransaction, ref, uploadBytesResumable, getDownloadURL } = window.firebaseServices;
+
+        // --- ICONS (SVG Inline) ---
+        const Icons = {
+            Dashboard: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+            Users: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
+            Scan: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>,
+            FileText: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+            BookOpen: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
+            LogOut: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
+            CheckCircle: () => <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            XCircle: () => <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Clock: () => <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Loader: () => <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
+            Upload: () => <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+        };
+
+        // --- UTILS: TIME (WIT - Asia/Jayapura) ---
+        const getNowWIT = () => {
+            const now = new Date();
+            // Force timezone to Asia/Jayapura
+            const formatterDate = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', year: 'numeric', month: '2-digit', day: '2-digit' });
+            const formatterTime = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             
-            <div className="space-y-3">
-              <StatRow label="Total Siswa" value={totalStudents} color="text-white" />
-              <StatRow label="Sudah Scan" value={totalScanned} color="text-blue-400" />
-              <StatRow label="Belum Scan" value={Math.max(0, totalStudents - totalScanned)} color="text-amber-400" />
-              <StatRow label="Hadir Tepat Waktu" value={totalHadir} color="text-emerald-400" />
-              <StatRow label="Terlambat" value={totalTerlambat} color="text-red-400" />
-            </div>
+            const dateParts = formatterDate.formatToParts(now);
+            const timeParts = formatterTime.formatToParts(now);
+            
+            const year = dateParts.find(p => p.type === 'year').value;
+            const month = dateParts.find(p => p.type === 'month').value;
+            const day = dateParts.find(p => p.type === 'day').value;
+            const hour = timeParts.find(p => p.type === 'hour').value;
+            const minute = timeParts.find(p => p.type === 'minute').value;
+            const second = timeParts.find(p => p.type === 'second').value;
 
-            <div className="mt-5 pt-4 border-t border-slate-800">
-              <div className="flex justify-between items-center mb-1 text-xs font-semibold">
-                <span className="text-slate-400">Persentase Kehadiran</span>
-                <span className="text-blue-400 font-bold">{percentage}%</span>
-              </div>
-              <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, percentage)}%` }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
+            const dateStr = `${year}-${month}-${day}`;
+            const timeStr = `${hour}:${minute}:${second}`;
+            const displayDate = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jayapura', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(now);
 
-      </div>
+            return { dateStr, timeStr, displayDate, timestamp: now.getTime() };
+        };
 
-      {/* Recent Scans Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center space-x-2">
-          <Activity className="w-4 h-4 text-blue-400" />
-          <span>Histori Scan Terbaru Hari Ini ({attendanceToday.length})</span>
-        </h3>
+        const checkAttendanceStatus = (timeStr) => {
+            // Batas Hadir: 07.20 WIT
+            return timeStr <= "07:20:59" ? "HADIR" : "TERLAMBAT";
+        };
 
-        {attendanceToday.length === 0 ? (
-          <p className="text-xs text-slate-500 py-6 text-center">Belum ada data scan.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
-                  <th className="py-3 px-4">Foto</th>
-                  <th className="py-3 px-4">Nama Siswa</th>
-                  <th className="py-3 px-4">NISN</th>
-                  <th className="py-3 px-4">Kelas</th>
-                  <th className="py-3 px-4">Jam Scan</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {attendanceToday.slice(0, 10).map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-2.5 px-4">
-                      <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
-                        {item.photoUrl ? (
-                          <img src={item.photoUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Users className="w-4 h-4 text-slate-500" />
+        const generateId = (date, nisn) => `${date}_${nisn}`;
+
+        // --- MOCK WHATSAPP TEMPLATES ---
+        const waTemplates = [
+            "Yth. Bapak/Ibu, Ananda {nama} kelas {kelas} telah absensi di SMPN 6 Manokwari pada {tanggal} pukul {jam} WIT. Ket: {status}. Terima kasih.",
+            "Informasi Absensi: Ananda {nama} ({kelas}) tercatat {status} pada {tanggal} pukul {jam} WIT. Salam dari SMPN 6 Manokwari.",
+            "Kepada Yth. Wali Murid, memberitahukan bahwa {nama} kelas {kelas} hadir di sekolah pukul {jam} WIT tgl {tanggal}. Status: {status}.",
+            "Pemberitahuan dari SMPN 6 Manokwari: {nama} kelas {kelas} telah memindai QR Code kehadiran pada {tanggal} jam {jam} WIT. Keterangan: {status}.",
+            "Yth. Bapak/Ibu Orang Tua/Wali, kami informasikan bahwa Ananda {nama}, kelas {kelas}, telah melakukan absensi di SMP Negeri 6 Manokwari pada {tanggal} pukul {jam} WIT dengan keterangan {status}."
+        ];
+
+        // Di aplikasi nyata ini di Cloud Functions. Di sini kita gunakan custom hook di root app.
+        const useWhatsAppQueueProcessor = () => {
+            const [queueStats, setQueueStats] = useState({ waiting: 0, sent: 0, failed: 0, isPaused: false, nextBatchIn: 0, batchCount: 0 });
+
+            useEffect(() => {
+                let intervalId;
+                let countdownId;
+
+                const processQueue = async () => {
+                    if (queueStats.isPaused) return;
+
+                    try {
+                        const q = query(collection(db, "whatsappQueue"), where("status", "==", "QUEUED"), orderBy("createdAt", "asc"), limit(5));
+                        const snapshot = await getDocs(q);
+
+                        if (snapshot.empty) {
+                            // Update stats real-time
+                            updateStatsDisplay();
+                            return;
+                        }
+
+                        const batch = writeBatch(db);
+                        snapshot.forEach((docSnap) => {
+                            // Simulasi API Call
+                            const isSuccess = Math.random() > 0.05; // 95% success rate
+                            const ref = doc(db, "whatsappQueue", docSnap.id);
+                            if (isSuccess) {
+                                batch.update(ref, { status: "SENT", sentAt: serverTimestamp() });
+                            } else {
+                                const currentAttempts = docSnap.data().attempts || 0;
+                                if (currentAttempts >= 4) {
+                                    batch.update(ref, { status: "FAILED_FINAL", errorMessage: "Max retries reached" });
+                                } else {
+                                    batch.update(ref, { status: "FAILED", attempts: currentAttempts + 1 });
+                                }
+                            }
+                        });
+
+                        await batch.commit();
+                        
+                        // Setelah batch selesai, pause 5 menit (Untuk demo/preview ini diset 10 detik agar terlihat, tapi untuk prod ubah ke 300)
+                        const pauseSeconds = 300; // 5 Menit
+                        setQueueStats(prev => ({ ...prev, isPaused: true, nextBatchIn: pauseSeconds, batchCount: prev.batchCount + 1 }));
+
+                    } catch (error) {
+                        console.error("Queue Processing Error:", error);
+                    }
+                };
+
+                const updateStatsDisplay = async () => {
+                    const statsRef = doc(db, "system", "wa_stats");
+                    // Dalam implementasi single file tanpa aggregasi cloud function, kita hitung kasar dari snapshot, 
+                    // namun karena ini 800 data/hari, query count sangat optimal. 
+                    // Disini kita biarkan frontend listener kecil untuk dashboard saja.
+                };
+
+                intervalId = setInterval(processQueue, 3000); // Check every 3 seconds if not paused
+
+                return () => { clearInterval(intervalId); clearInterval(countdownId); };
+            }, [queueStats.isPaused]);
+
+            // Countdown Timer effect
+            useEffect(() => {
+                let id;
+                if (queueStats.isPaused && queueStats.nextBatchIn > 0) {
+                    id = setInterval(() => {
+                        setQueueStats(prev => {
+                            if (prev.nextBatchIn <= 1) {
+                                clearInterval(id);
+                                return { ...prev, isPaused: false, nextBatchIn: 0 };
+                            }
+                            return { ...prev, nextBatchIn: prev.nextBatchIn - 1 };
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(id);
+            }, [queueStats.isPaused, queueStats.nextBatchIn]);
+
+            return queueStats;
+        };
+
+
+        
+        const MessageModal = ({ isOpen, title, message, type = "error", onClose }) => {
+            if (!isOpen) return null;
+            const isError = type === "error";
+            return (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-pop-in text-center">
+                        <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${isError ? 'bg-red-100' : 'bg-green-100'} mb-4`}>
+                            {isError ? <Icons.XCircle /> : <Icons.CheckCircle />}
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">{title}</h3>
+                        <p className="text-slate-600 text-sm mb-6">{message}</p>
+                        <button onClick={onClose} className={`w-full py-2.5 rounded-lg text-white font-medium ${isError ? 'bg-red-600 hover:bg-red-700' : 'bg-school-600 hover:bg-school-700'} transition`}>
+                            Mengerti
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Login = () => {
+            const [loading, setLoading] = useState(false);
+            const [errorMsg, setErrorMsg] = useState("");
+
+            const handleLogin = async () => {
+                setLoading(true);
+                setErrorMsg("");
+                try {
+                    // Set persistence to LOCAL so session survives reloads and browser restarts
+                    await setPersistence(auth, browserLocalPersistence);
+                    const provider = new GoogleAuthProvider();
+                    provider.setCustomParameters({ prompt: 'select_account' });
+                    
+                    const result = await signInWithPopup(auth, provider);
+                    const userEmail = result.user.email;
+                    
+                    if (userEmail !== ALLOWED_EMAIL) {
+                        await signOut(auth);
+                        setErrorMsg("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setErrorMsg("Terjadi kesalahan saat login.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-school-600 opacity-[0.03] pattern-grid-lg"></div>
+                    <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+                        <div className="bg-white py-10 px-6 shadow-2xl sm:rounded-2xl sm:px-10 border border-slate-100 text-center">
+                            <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMPN 6" className="mx-auto h-28 w-auto drop-shadow-md mb-6" />
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">ABSENSI SISWA</h2>
+                            <h3 className="text-lg font-semibold text-school-700 mb-2">SMP NEGERI 6 MANOKWARI</h3>
+                            <p className="text-sm text-slate-500 mb-8">Monitoring Kehadiran Siswa Berbasis QR Code</p>
+
+                            <button 
+                                onClick={handleLogin} 
+                                disabled={loading}
+                                className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-slate-300 rounded-xl shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-school-500 transition-all active:scale-95 disabled:opacity-70"
+                            >
+                                {loading ? <Icons.Loader /> : (
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+                                )}
+                                Masuk dengan Google
+                            </button>
+
+                            {errorMsg && (
+                                <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100 flex items-start gap-2 text-left">
+                                    <Icons.XCircle />
+                                    <span className="leading-snug">{errorMsg}</span>
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-center text-xs text-slate-400 mt-8">&copy; {new Date().getFullYear()} SMP Negeri 6 Manokwari</p>
+                    </div>
+                </div>
+            );
+        };
+
+
+        const ScannerPage = () => {
+            const [lastScan, setLastScan] = useState(null);
+            const [recentScans, setRecentScans] = useState([]);
+            const [status, setStatus] = useState({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
+            
+            // Ref untuk menjaga buffer ketikan dari scanner
+            const bufferRef = useRef('');
+            const isProcessingRef = useRef(false);
+
+            // Fetch initial recent scans for today
+            useEffect(() => {
+                const { dateStr } = getNowWIT();
+                const q = query(collection(db, "attendance"), where("date", "==", dateStr), orderBy("timestamp", "desc"), limit(5));
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const scans = [];
+                    snapshot.forEach(doc => scans.push({ id: doc.id, ...doc.data() }));
+                    setRecentScans(scans);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const processScan = async (nisnInput) => {
+                if (isProcessingRef.current) return;
+                isProcessingRef.current = true;
+                const nisn = nisnInput.trim();
+                const { dateStr, timeStr, displayDate, timestamp } = getNowWIT();
+                const attendanceId = generateId(dateStr, nisn);
+
+                try {
+                    // 1. Cek Duplikasi Cepat (Memory & DB)
+                    if (recentScans.some(s => s.nisn === nisn)) {
+                        throw new Error("DUPLICATE");
+                    }
+                    const attDocRef = doc(db, "attendance", attendanceId);
+                    const attDocSnap = await getDoc(attDocRef);
+                    if (attDocSnap.exists()) {
+                        throw new Error("DUPLICATE");
+                    }
+
+                    // 2. Lookup Data Siswa
+                    const studentRef = collection(db, "students");
+                    const q = query(studentRef, where("nisn", "==", nisn), limit(1));
+                    const studentSnap = await getDocs(q);
+                    
+                    if (studentSnap.empty) {
+                        throw new Error("NOT_FOUND");
+                    }
+
+                    const studentData = studentSnap.docs[0].data();
+                    const attStatus = checkAttendanceStatus(timeStr);
+
+                    const attendanceData = {
+                        nisn: studentData.nisn,
+                        studentName: studentData.name,
+                        class: studentData.class,
+                        photoUrl: studentData.photoUrl || '',
+                        date: dateStr,
+                        time: timeStr,
+                        status: attStatus,
+                        timestamp: timestamp, // using client timestamp for speed, rules can enforce
+                    };
+
+                    // 3. Simpan ke Firestore (Atomic jika memungkinkan, di sini pakai setDoc)
+                    await setDoc(attDocRef, attendanceData);
+
+                    // 4. Masukkan ke WhatsApp Queue (Background)
+                    if (studentData.parentPhone) {
+                        const template = waTemplates[Math.floor(Math.random() * waTemplates.length)];
+                        let msg = template
+                            .replace("{nama}", studentData.name)
+                            .replace("{kelas}", studentData.class)
+                            .replace("{tanggal}", displayDate)
+                            .replace("{jam}", timeStr)
+                            .replace("{status}", attStatus);
+                        
+                        await setDoc(doc(collection(db, "whatsappQueue")), {
+                            attendanceId,
+                            nisn: studentData.nisn,
+                            studentName: studentData.name,
+                            parentPhone: studentData.parentPhone,
+                            message: msg,
+                            status: "QUEUED",
+                            attempts: 0,
+                            createdAt: serverTimestamp()
+                        });
+                    }
+
+                    // 5. Update UI Langsung (Siswa Terakhir)
+                    setLastScan({
+                        ...attendanceData,
+                        displayDate
+                    });
+                    setStatus({ type: 'success', message: 'SCAN BERHASIL ✅', sub: '' });
+
+                    // Kembali ke status siap setelah 5 detik (tapi data terakhir tetap tampil)
+                    setTimeout(() => {
+                        setStatus({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
+                    }, 5000);
+
+                } catch (error) {
+                    let msg = "Terjadi kesalahan sistem.";
+                    if (error.message === "DUPLICATE") msg = "Absensi siswa sudah tercatat hari ini.";
+                    if (error.message === "NOT_FOUND") msg = `Data siswa dengan NISN ${nisn} belum terdaftar.`;
+                    
+                    setStatus({ type: 'error', message: 'SCAN GAGAL ❌', sub: msg });
+                    setTimeout(() => {
+                        setStatus({ type: 'idle', message: 'SIAP MELAKUKAN SCAN', sub: 'Silakan arahkan QR Code siswa ke scanner.' });
+                    }, 4000);
+                } finally {
+                    isProcessingRef.current = false;
+                }
+            };
+
+            // Global Keydown Listener untuk Scanner
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    // Abaikan jika mengetik di input text/textarea lain
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                    if (e.key === 'Enter') {
+                        if (bufferRef.current.length > 3) {
+                            processScan(bufferRef.current);
+                        }
+                        bufferRef.current = ''; // Reset buffer
+                    } else if (e.key.length === 1) { // Hanya tangkap karakter alphanumeric
+                        bufferRef.current += e.key;
+                    }
+                };
+
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [recentScans]); // Depend on recentScans for fast duplicate check
+
+            return (
+                <div className="h-full flex flex-col gap-6">
+                    {/* PANEL UTAMA - SISWA TERAKHIR SCAN */}
+                    <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col items-center justify-center relative p-8">
+                        {status.type === 'idle' && !lastScan && (
+                            <div className="text-center animate-pulse">
+                                <div className="mx-auto w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                                    <Icons.Scan className="w-12 h-12 text-school-600" />
+                                </div>
+                                <h2 className="text-3xl font-bold text-slate-800 mb-2">{status.message}</h2>
+                                <p className="text-slate-500 text-lg">{status.sub}</p>
+                            </div>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-4 font-bold text-white">{item.name}</td>
-                    <td className="py-2.5 px-4 font-mono text-slate-300">{item.nisn}</td>
-                    <td className="py-2.5 px-4 text-slate-300">{item.className}</td>
-                    <td className="py-2.5 px-4 font-mono text-blue-400 font-semibold">{item.scanTime} WIT</td>
-                    <td className="py-2.5 px-4">
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                        item.status === 'HADIR' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
-function StatRow({ label, value, color }) {
-  return (
-    <div className="flex justify-between items-center text-xs">
-      <span className="text-slate-400 font-medium">{label}</span>
-      <span className={`font-bold text-sm ${color}`}>{value}</span>
-    </div>
-  );
-}
-
-function DashboardView({ students, attendanceToday, queueStatus }) {
-  const totalStudents = students.length;
-  const totalScanned = attendanceToday.length;
-  const totalHadir = attendanceToday.filter(a => a.status === 'HADIR').length;
-  const totalTerlambat = attendanceToday.filter(a => a.status === 'TERLAMBAT').length;
-  const percentage = totalStudents > 0 ? ((totalScanned / totalStudents) * 100).toFixed(1) : 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <MetricCard title="Total Siswa" value={totalStudents} icon={<Users className="w-5 h-5 text-blue-400" />} />
-        <MetricCard title="Sudah Absen" value={totalScanned} icon={<QrCode className="w-5 h-5 text-emerald-400" />} />
-        <MetricCard title="Belum Absen" value={Math.max(0, totalStudents - totalScanned)} icon={<Clock className="w-5 h-5 text-amber-400" />} />
-        <MetricCard title="Hadir Tepat" value={totalHadir} icon={<CheckCircle2 className="w-5 h-5 text-emerald-400" />} />
-        <MetricCard title="Terlambat" value={totalTerlambat} icon={<AlertTriangle className="w-5 h-5 text-red-400" />} />
-        <MetricCard title="Persentase" value={`${percentage}%`} icon={<Award className="w-5 h-5 text-indigo-400" />} />
-      </div>
-
-      {/* WhatsApp Queue Status Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-            <Send className="w-4 h-4 text-blue-400" />
-            <span>Status Antrean WhatsApp (Queue API)</span>
-          </h3>
-          <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-xs font-bold">
-            BATCH 5 SISWA / 5 MENIT
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-            <p className="text-xs text-slate-400 font-medium">Pesan Menunggu</p>
-            <p className="text-2xl font-black text-amber-400 mt-1">{queueStatus.menungg}</p>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-            <p className="text-xs text-slate-400 font-medium">Pesan Berhasil Terkirim</p>
-            <p className="text-2xl font-black text-emerald-400 mt-1">{queueStatus.berhasil}</p>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-            <p className="text-xs text-slate-400 font-medium">Pesan Gagal / Retry</p>
-            <p className="text-2xl font-black text-red-400 mt-1">{queueStatus.gagal}</p>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-            <p className="text-xs text-slate-400 font-medium">Status Antrean</p>
-            <p className="text-lg font-bold text-blue-400 mt-1 flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>BERJALAN (BACKGROUND)</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MetricCard({ title, value, icon }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
-      <div className="flex justify-between items-center mb-3">
-        <span className="text-xs font-medium text-slate-400">{title}</span>
-        <div className="p-2 bg-slate-800/80 rounded-xl border border-slate-700/60">{icon}</div>
-      </div>
-      <p className="text-2xl font-black text-white tracking-tight">{value}</p>
-    </div>
-  );
-}
-
-function StudentsView({ students }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', nisn: '', className: '7A', parentPhone: '', photoUrl: '' });
-
-  const filteredStudents = useMemo(() => {
-    return students.filter(s => 
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      s.nisn.includes(searchQuery) || 
-      s.className.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [students, searchQuery]);
-
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.nisn || !formData.className) {
-      alert("Nama, NISN, dan Kelas wajib diisi!");
-      return;
-    }
-    try {
-      const studentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', formData.nisn);
-      await setDoc(studentDocRef, formData);
-      setIsAddModalOpen(false);
-      setFormData({ name: '', nisn: '', className: '7A', parentPhone: '', photoUrl: '' });
-      alert("Data siswa berhasil ditambahkan!");
-    } catch (err) {
-      console.error("Error adding student:", err);
-      alert("Gagal menambahkan siswa: " + err.message);
-    }
-  };
-
-  const handleDelete = async (nisn) => {
-    if (confirm(`Yakin ingin menghapus siswa dengan NISN ${nisn}?`)) {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', nisn));
-        alert("Siswa berhasil dihapus.");
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("Gagal menghapus siswa.");
-      }
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
-        <div className="relative flex-1 w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari berdasarkan Nama, NISN, atau Kelas..."
-            className="w-full bg-slate-950 border border-slate-700/80 rounded-2xl pl-11 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="flex items-center space-x-3 w-full sm:w-auto">
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Siswa</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Students Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4">Foto</th>
-                <th className="py-3 px-4">Nama Siswa</th>
-                <th className="py-3 px-4">NISN</th>
-                <th className="py-3 px-4">Kelas</th>
-                <th className="py-3 px-4">No. HP Orang Tua</th>
-                <th className="py-3 px-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredStudents.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="text-center py-8 text-slate-500">Tidak ada data siswa ditemukan.</td>
-                </tr>
-              ) : (
-                filteredStudents.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
-                        {s.photoUrl ? (
-                          <img src={s.photoUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Users className="w-5 h-5 text-slate-500" />
+                        {status.type === 'error' && (
+                            <div className="text-center bg-red-50 p-10 rounded-2xl w-full max-w-2xl border border-red-100 animate-pop-in">
+                                <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                    <Icons.XCircle className="w-10 h-10 text-red-600" />
+                                </div>
+                                <h2 className="text-3xl font-bold text-red-700 mb-2">{status.message}</h2>
+                                <p className="text-red-500 text-xl">{status.sub}</p>
+                            </div>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 font-bold text-white">{s.name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-300">{s.nisn}</td>
-                    <td className="py-3 px-4 text-slate-300">{s.className}</td>
-                    <td className="py-3 px-4 font-mono text-slate-300">{s.parentPhone || '-'}</td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => handleDelete(s.nisn)}
-                        className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl border border-red-500/20 transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      {/* Add Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-4">Tambah Data Siswa Baru</h3>
-            <form onSubmit={handleAddStudent} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 font-medium mb-1">Nama Lengkap Siswa</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white"
-                  placeholder="Contoh: Budi Santoso"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-medium mb-1">NISN</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.nisn}
-                  onChange={(e) => setFormData({ ...formData, nisn: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono"
-                  placeholder="Contoh: 1234567890"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-medium mb-1">Kelas</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.className}
-                  onChange={(e) => setFormData({ ...formData, className: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white"
-                  placeholder="Contoh: 8A"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-medium mb-1">Nomor HP Orang Tua (WhatsApp)</label>
-                <input
-                  type="text"
-                  value={formData.parentPhone}
-                  onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono"
-                  placeholder="Contoh: 081234567890"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-medium mb-1">URL Foto Siswa (Opsional)</label>
-                <input
-                  type="text"
-                  value={formData.photoUrl}
-                  onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white"
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30"
-                >
-                  Simpan Siswa
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+                        {lastScan && status.type !== 'error' && (
+                            <div className="w-full max-w-4xl flex flex-col items-center animate-pop-in">
+                                <div className="bg-green-100 text-green-800 px-6 py-2 rounded-full font-bold text-lg mb-8 shadow-sm flex items-center gap-2">
+                                    <Icons.CheckCircle /> ABSENSI BERHASIL
+                                </div>
+                                
+                                <div className="flex flex-col md:flex-row items-center md:items-start gap-10 w-full justify-center">
+                                    <div className="shrink-0 relative">
+                                        <div className="w-64 h-80 rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-slate-100 flex items-center justify-center">
+                                            {lastScan.photoUrl ? (
+                                                <img src={lastScan.photoUrl} alt="Siswa" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <svg className="w-32 h-32 text-slate-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                            )}
+                                        </div>
+                                        {/* Status Badge Overlap */}
+                                        <div className={`absolute -bottom-5 left-1/2 -translate-x-1/2 px-8 py-2 rounded-xl text-xl font-bold uppercase tracking-wider text-white shadow-lg ${lastScan.status === 'HADIR' ? 'bg-school-600' : 'bg-yellow-500'}`}>
+                                            {lastScan.status}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="text-center md:text-left flex flex-col gap-4 pt-4">
+                                        <div>
+                                            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">{lastScan.studentName}</h1>
+                                            <p className="text-xl text-slate-500 font-medium mt-1">NISN: {lastScan.nisn}</p>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-4 mt-4">
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <p className="text-sm text-slate-400 font-semibold uppercase">Kelas</p>
+                                                <p className="text-2xl font-bold text-school-700">{lastScan.class}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <p className="text-sm text-slate-400 font-semibold uppercase">Waktu</p>
+                                                <p className="text-2xl font-bold text-slate-800">{lastScan.time} <span className="text-sm">WIT</span></p>
+                                            </div>
+                                        </div>
+                                        <p className="text-slate-500 font-medium mt-2">{lastScan.displayDate}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* Invisible Input for mobile if needed, but we rely on global keydown */}
+                        <input type="text" className="opacity-0 absolute -z-10" />
+                    </div>
 
-function ReportsView({ students, attendanceToday }) {
-  const [reportType, setReportType] = useState('daily'); // 'daily', 'weekly', 'monthly'
+                    {/* HISTORI SCAN TERBARU */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <Icons.Clock /> SCAN TERBARU HARI INI
+                        </h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-slate-200 text-sm text-slate-500 uppercase tracking-wider">
+                                        <th className="pb-3 font-medium px-4">Siswa</th>
+                                        <th className="pb-3 font-medium px-4">Kelas</th>
+                                        <th className="pb-3 font-medium px-4">Waktu</th>
+                                        <th className="pb-3 font-medium px-4 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentScans.length === 0 ? (
+                                        <tr><td colSpan="4" className="text-center py-6 text-slate-400">Belum ada data scan.</td></tr>
+                                    ) : (
+                                        recentScans.map((scan) => (
+                                            <tr key={scan.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                <td className="py-3 px-4 flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                                                        {scan.photoUrl ? <img src={scan.photoUrl} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full bg-slate-300"></div>}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-slate-800">{scan.studentName}</p>
+                                                        <p className="text-xs text-slate-500">{scan.nisn}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-4 text-slate-700 font-medium">{scan.class}</td>
+                                                <td className="py-3 px-4 text-slate-600">{scan.time}</td>
+                                                <td className="py-3 px-4 text-right">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${scan.status === 'HADIR' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                        {scan.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex bg-slate-900 border border-slate-800 p-2 rounded-2xl max-w-md">
-        <button
-          onClick={() => setReportType('daily')}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${reportType === 'daily' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-        >
-          Rekap Hari Ini
-        </button>
-        <button
-          onClick={() => setReportType('weekly')}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${reportType === 'weekly' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-        >
-          Rekap Mingguan
-        </button>
-        <button
-          onClick={() => setReportType('monthly')}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${reportType === 'monthly' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-        >
-          Rekap Bulanan
-        </button>
-      </div>
+        const DashboardPage = ({ queueStats }) => {
+            const [stats, setStats] = useState({ totalStudents: 0, present: 0, late: 0, totalScanned: 0 });
+            
+            useEffect(() => {
+                const fetchStats = async () => {
+                    const { dateStr } = getNowWIT();
+                    // In a real app with 800+ users, avoid fetching all docs. Use aggregation queries.
+                    // For this environment, we simulate it with count (if available in this old SDK version, otherwise size)
+                    try {
+                        const stdSnap = await getDocs(collection(db, "students"));
+                        const totalStudents = stdSnap.size;
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-sm font-bold text-white">
-            {reportType === 'daily' && 'Laporan Absensi Harian'}
-            {reportType === 'weekly' && 'Laporan Absensi Mingguan'}
-            {reportType === 'monthly' && 'Laporan Absensi Bulanan'}
-          </h3>
-          <button
-            onClick={() => alert("File Excel rekap absensi berhasil disiapkan dan diunduh.")}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center space-x-2"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Download Excel Profesional</span>
-          </button>
-        </div>
+                        const attQ = query(collection(db, "attendance"), where("date", "==", dateStr));
+                        const attSnap = await getDocs(attQ);
+                        let present = 0;
+                        let late = 0;
+                        attSnap.forEach(doc => {
+                            if(doc.data().status === 'HADIR') present++;
+                            if(doc.data().status === 'TERLAMBAT') late++;
+                        });
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4">No</th>
-                <th className="py-3 px-4">Nama Siswa</th>
-                <th className="py-3 px-4">NISN</th>
-                <th className="py-3 px-4">Kelas</th>
-                <th className="py-3 px-4">Jam Scan</th>
-                <th className="py-3 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {attendanceToday.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="text-center py-8 text-slate-500">Belum ada data absensi hari ini.</td>
-                </tr>
-              ) : (
-                attendanceToday.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 text-slate-400 font-mono">{idx + 1}</td>
-                    <td className="py-3 px-4 font-bold text-white">{item.name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-300">{item.nisn}</td>
-                    <td className="py-3 px-4 text-slate-300">{item.className}</td>
-                    <td className="py-3 px-4 font-mono text-blue-400 font-semibold">{item.scanTime} WIT</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                        item.status === 'HADIR' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
+                        setStats({ totalStudents, present, late, totalScanned: present + late });
+                    } catch (error) {
+                        console.error("Error fetching stats", error);
+                    }
+                };
+                fetchStats();
+            }, []);
 
-function GuideView() {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl max-w-4xl space-y-6 text-slate-300 text-xs sm:text-sm">
-      <h2 className="text-xl font-black text-white mb-2">Panduan Penggunaan Aplikasi Absensi</h2>
-      <p className="text-slate-400 leading-relaxed">
-        Selamat datang di panduan resmi penggunaan Sistem Absensi QR Code SMP Negeri 6 Manokwari. Aplikasi ini dirancang khusus untuk proktor dan operator sekolah guna memproses ±800 siswa per hari secara cepat, aman, dan terintegrasi otomatis dengan WhatsApp.
-      </p>
+            const unScanned = stats.totalStudents - stats.totalScanned;
+            const percentage = stats.totalStudents === 0 ? 0 : Math.round((stats.totalScanned / stats.totalStudents) * 100);
 
-      <div className="space-y-4 pt-4 border-t border-slate-800">
-        <GuideStep num="1" title="Login Proktor" desc="Gunakan akun Google khusus proktor resmi (proktorsmp6@gmail.com). Sistem dilindungi dengan Firebase Auth & Security Rules ketat." />
-        <GuideStep num="2" title="Penggunaan Scanner QR Code" desc="Gunakan perangkat barcode/QR scanner eksternal. Input otomatis siap focus pada menu 'Scan Hari Ini'. Scanner akan membaca NISN dan menekan Enter secara instan." />
-        <GuideStep num="3" title="Aturan Keterlambatan WIT" desc="Batas waktu kehadiran adalah pukul 07.20 WIT. Scan <= 07.20 WIT dicatat HADIR, sedangkan > 07.20 WIT dicatat TERLAMBAT." />
-        <GuideStep num="4" title="Sistem Antrean WhatsApp" desc="Notifikasi WhatsApp dikirim otomatis ke orang tua/wali siswa melalui background queue (batch 5 pesan, jeda 5 menit) untuk menjaga kestabilan API." />
-        <GuideStep num="5" title="Rekap & Ekspor Data" desc="Gunakan menu Rekapan Absensi untuk melihat laporan harian, mingguan, maupun bulanan serta mengunduhnya ke format Excel profesional." />
-      </div>
-    </div>
-  );
-}
+            return (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-school-500">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">TOTAL SISWA</p>
+                            <h3 className="text-3xl font-bold text-slate-800">{stats.totalStudents}</h3>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-green-500">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">HADIR</p>
+                            <h3 className="text-3xl font-bold text-slate-800">{stats.present}</h3>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-yellow-500">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">TERLAMBAT</p>
+                            <h3 className="text-3xl font-bold text-slate-800">{stats.late}</h3>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-red-400">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">BELUM ABSEN</p>
+                            <h3 className="text-3xl font-bold text-slate-800">{unScanned > 0 ? unScanned : 0}</h3>
+                        </div>
+                    </div>
 
-function GuideStep({ num, title, desc }) {
-  return (
-    <div className="flex items-start space-x-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60">
-      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center shrink-0 text-xs">
-        {num}
-      </div>
-      <div>
-        <h3 className="font-bold text-white text-sm mb-1">{title}</h3>
-        <p className="text-xs text-slate-400 leading-relaxed">{desc}</p>
-      </div>
-    </div>
-  );
-}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Persentase Kehadiran Hari Ini</h3>
+                            <div className="flex items-center gap-6">
+                                <div className="relative w-32 h-32 shrink-0">
+                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="4" />
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray={`${percentage}, 100`} />
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-2xl font-bold text-slate-800">{percentage}%</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-slate-500">Sudah Scan</span>
+                                        <span className="font-semibold text-slate-800">{stats.totalScanned} Siswa</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-school-500 h-2 rounded-full" style={{width: `${percentage}%`}}></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
+                                Queue WhatsApp
+                                {queueStats.isPaused ? (
+                                    <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded">PAUSED</span>
+                                ) : (
+                                    <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-1 rounded">RUNNING</span>
+                                )}
+                            </h3>
+                            <div className="flex-1 space-y-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span className="text-sm text-slate-500">Batch Selesai</span>
+                                    <span className="font-bold text-slate-800">{queueStats.batchCount}</span>
+                                </div>
+                                {queueStats.isPaused && (
+                                    <div className="bg-school-50 p-3 rounded-lg border border-school-100 text-center">
+                                        <p className="text-xs text-school-600 font-semibold mb-1">Lanjut dalam</p>
+                                        <p className="text-xl font-bold text-school-800">
+                                            {Math.floor(queueStats.nextBatchIn / 60)}:{(queueStats.nextBatchIn % 60).toString().padStart(2, '0')}
+                                        </p>
+                                    </div>
+                                )}
+                                <p className="text-xs text-slate-400 mt-auto pt-4 text-center">Sistem otomatis mengirim 5 pesan dan jeda 5 menit.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+
+        const StudentsPage = () => {
+            const [students, setStudents] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [modalInfo, setModalInfo] = useState({ isOpen: false, title: '', message: '', type: 'success' });
+            
+            const fetchStudents = async () => {
+                setLoading(true);
+                const q = query(collection(db, "students"), orderBy("class", "asc"), orderBy("name", "asc"));
+                const snap = await getDocs(q);
+                const data = [];
+                snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+                setStudents(data);
+                setLoading(false);
+            };
+
+            useEffect(() => { fetchStudents(); }, []);
+
+            const handleExcelUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async (evt) => {
+                    const bstr = evt.target.result;
+                    const wb = XLSX.read(bstr, { type: 'binary' });
+                    const wsname = wb.SheetNames[0];
+                    const ws = wb.Sheets[wsname];
+                    const data = XLSX.utils.sheet_to_json(ws);
+                    
+                    let successCount = 0;
+                    let failCount = 0;
+                    const batch = writeBatch(db);
+                    
+                    // Simple validation
+                    for(let row of data) {
+                        if (row.NISN && row['Nama Siswa'] && row.Kelas) {
+                            const nisnStr = row.NISN.toString().trim();
+                            const docRef = doc(db, "students", nisnStr); // Use NISN as document ID for easy lookup
+                            batch.set(docRef, {
+                                nisn: nisnStr,
+                                name: row['Nama Siswa'].toString().trim(),
+                                class: row.Kelas.toString().trim().toUpperCase(),
+                                parentPhone: row['Nomor HP Orang Tua'] ? row['Nomor HP Orang Tua'].toString().trim() : "",
+                                photoUrl: "",
+                                updatedAt: serverTimestamp()
+                            });
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    }
+
+                    if (successCount > 0) {
+                        await batch.commit();
+                        setModalInfo({ isOpen: true, title: "Import Berhasil", message: `${successCount} data berhasil diimport. ${failCount} gagal.`, type: 'success' });
+                        fetchStudents();
+                    } else {
+                        setModalInfo({ isOpen: true, title: "Import Gagal", message: "Pastikan format kolom sesuai template.", type: 'error' });
+                    }
+                };
+                reader.readAsBinaryString(file);
+                e.target.value = ''; // reset
+            };
+
+            const downloadTemplate = () => {
+                const ws = XLSX.utils.json_to_sheet([{ "No": 1, "Nama Siswa": "Budi Santoso", "NISN": "1234567890", "Nomor HP Orang Tua": "081234567890", "Kelas": "8A" }]);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Template");
+                XLSX.writeFile(wb, "Template_Data_Siswa.xlsx");
+            };
+
+            const handlePhotoMassUpload = async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+                
+                setModalInfo({ isOpen: true, title: "Mengunggah Foto", message: `Memproses ${files.length} foto... Jangan tutup halaman.`, type: 'success' });
+                
+                let success = 0;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const nisn = file.name.split('.')[0]; // Asumsi nama file: 123456.jpg
+                    
+                    // Cek apakah NISN ada di database
+                    const docRef = doc(db, "students", nisn);
+                    const docSnap = await getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        const storageRef = ref(storage, `students/${nisn}`);
+                        await uploadBytesResumable(storageRef, file);
+                        const downloadURL = await getDownloadURL(storageRef);
+                        
+                        await updateDoc(docRef, { photoUrl: downloadURL });
+                        success++;
+                    }
+                }
+                
+                setModalInfo({ isOpen: true, title: "Upload Selesai", message: `${success} dari ${files.length} foto berhasil dipasangkan dengan data siswa.`, type: 'success' });
+                fetchStudents();
+            };
+
+            const handleDeleteAll = async () => {
+                const c1 = confirm("PERINGATAN BAHAYA: Anda yakin ingin menghapus SEMUA data siswa?");
+                if(c1) {
+                    const c2 = confirm("Apakah Anda benar-benar yakin? Tindakan ini tidak dapat dibatalkan.");
+                    if(c2) {
+                        // Untuk menghapus collection besar di frontend butuh batching, ini contoh simple
+                        const q = query(collection(db, "students"), limit(500));
+                        const snap = await getDocs(q);
+                        const batch = writeBatch(db);
+                        snap.forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+                        fetchStudents();
+                        setModalInfo({ isOpen: true, title: "Berhasil", message: "Data siswa telah dikosongkan.", type: 'success' });
+                    }
+                }
+            };
+
+            return (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[calc(100vh-8rem)]">
+                    <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <h2 className="text-xl font-bold text-slate-800">Data Siswa</h2>
+                        <div className="flex flex-wrap gap-2">
+                            <button onClick={downloadTemplate} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition">Download Template</button>
+                            
+                            <label className="px-4 py-2 bg-school-50 text-school-700 rounded-lg text-sm font-medium hover:bg-school-100 transition cursor-pointer flex items-center">
+                                <Icons.Upload /> Excel Massal
+                                <input type="file" accept=".xlsx, .xls" onChange={handleExcelUpload} className="hidden" />
+                            </label>
+                            
+                            <label className="px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition cursor-pointer flex items-center">
+                                <Icons.Upload /> Foto Massal
+                                <input type="file" multiple accept="image/*" onChange={handlePhotoMassUpload} className="hidden" />
+                            </label>
+
+                            <button onClick={handleDeleteAll} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">Hapus Semua</button>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 overflow-auto p-0 custom-scrollbar">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64 text-slate-400"><Icons.Loader /></div>
+                        ) : (
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50 sticky top-0 shadow-sm z-10">
+                                    <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        <th className="py-3 px-6 border-b border-slate-200">Siswa</th>
+                                        <th className="py-3 px-6 border-b border-slate-200">NISN</th>
+                                        <th className="py-3 px-6 border-b border-slate-200">Kelas</th>
+                                        <th className="py-3 px-6 border-b border-slate-200">No. WA Ortu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {students.map((student) => (
+                                        <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                            <td className="py-3 px-6 flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                                                    {student.photoUrl ? <img src={student.photoUrl} className="w-full h-full object-cover" /> : null}
+                                                </div>
+                                                <span className="font-medium text-slate-800">{student.name}</span>
+                                            </td>
+                                            <td className="py-3 px-6 text-slate-600">{student.nisn}</td>
+                                            <td className="py-3 px-6 text-slate-600 font-medium">{student.class}</td>
+                                            <td className="py-3 px-6 text-slate-600">{student.parentPhone || '-'}</td>
+                                        </tr>
+                                    ))}
+                                    {students.length === 0 && (
+                                        <tr><td colSpan="4" className="text-center py-10 text-slate-500">Belum ada data siswa. Gunakan fitur upload massal.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                    <MessageModal 
+                        isOpen={modalInfo.isOpen} 
+                        title={modalInfo.title} 
+                        message={modalInfo.message} 
+                        type={modalInfo.type}
+                        onClose={() => setModalInfo({ ...modalInfo, isOpen: false })} 
+                    />
+                </div>
+            );
+        };
+
+
+        const RecapPage = () => {
+            const handleExportDaily = async () => {
+                const { dateStr, displayDate } = getNowWIT();
+                const q = query(collection(db, "attendance"), where("date", "==", dateStr), orderBy("class", "asc"));
+                const snap = await getDocs(q);
+                
+                const data = [];
+                let no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({
+                        "No": no++,
+                        "Nama": d.studentName,
+                        "NISN": d.nisn,
+                        "Kelas": d.class,
+                        "Waktu Scan": d.time,
+                        "Status": d.status
+                    });
+                });
+
+                const ws = XLSX.utils.json_to_sheet(data);
+                
+                // Styling width
+                ws['!cols'] = [{wch:5}, {wch:30}, {wch:15}, {wch:10}, {wch:15}, {wch:15}];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Rekap_Harian");
+                XLSX.writeFile(wb, `Rekap_Absen_${dateStr}.xlsx`);
+            };
+
+            return (
+                <div className="max-w-4xl space-y-6">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                                <Icons.FileText />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">Rekap Harian</h3>
+                                <p className="text-slate-500">Download rekap absensi untuk hari ini. File berupa Excel (.xlsx) yang sudah rapi dan siap cetak.</p>
+                            </div>
+                        </div>
+                        <button onClick={handleExportDaily} className="bg-school-600 hover:bg-school-700 text-white font-medium py-3 px-6 rounded-xl shadow-sm transition">
+                            Download Rekap Hari Ini
+                        </button>
+                    </div>
+
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 opacity-60">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center shrink-0">
+                                <Icons.FileText />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">Rekap Mingguan & Bulanan</h3>
+                                <p className="text-slate-500">Fitur sedang dalam pengembangan pada versi ini. Untuk saat ini gunakan rekap harian dan gabungkan secara manual jika diperlukan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [authLoading, setAuthLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('scan');
+            const queueStats = useWhatsAppQueueProcessor(); // Start background process
+
+            useEffect(() => {
+                const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+                    if (currentUser && currentUser.email === ALLOWED_EMAIL) {
+                        setUser(currentUser);
+                    } else {
+                        setUser(null);
+                        if (currentUser) signOut(auth); // Sign out if wrong email cached
+                    }
+                    setAuthLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            if (authLoading) {
+                return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Icons.Loader /></div>;
+            }
+
+            if (!user) {
+                return <Login />;
+            }
+
+            const menuItems = [
+                { id: 'scan', label: 'Scan Hari Ini', icon: Icons.Scan },
+                { id: 'dashboard', label: 'Dashboard', icon: Icons.Dashboard },
+                { id: 'students', label: 'Data Siswa', icon: Icons.Users },
+                { id: 'recap', label: 'Rekapan Absensi', icon: Icons.FileText },
+            ];
+
+            return (
+                <div className="min-h-screen bg-slate-100 flex overflow-hidden">
+                    {/* SIDEBAR */}
+                    <aside className="w-72 bg-white shadow-xl z-20 flex flex-col hidden md:flex">
+                        <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
+                            <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo" className="h-16 w-auto mb-3" />
+                            <h1 className="font-bold text-slate-900 tracking-tight leading-tight">ABSENSI SISWA</h1>
+                            <p className="text-xs text-school-600 font-medium">SMPN 6 MANOKWARI</p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+                            {menuItems.map(item => {
+                                const Icon = item.icon;
+                                const isActive = activeTab === item.id;
+                                return (
+                                    <button 
+                                        key={item.id}
+                                        onClick={() => setActiveTab(item.id)}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                                            isActive 
+                                            ? 'bg-school-50 text-school-700 shadow-sm border border-school-100' 
+                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                                        }`}
+                                    >
+                                        <Icon />
+                                        {item.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className="p-4 border-t border-slate-100 bg-slate-50">
+                            <div className="flex items-center gap-3 mb-4 px-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <div className="text-xs">
+                                    <p className="text-slate-400">Login sebagai Proktor</p>
+                                    <p className="font-medium text-slate-700 truncate w-40" title={user.email}>{user.email}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => signOut(auth)} className="w-full flex justify-center items-center gap-2 py-2.5 px-4 bg-white border border-slate-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition">
+                                <Icons.LogOut /> Logout
+                            </button>
+                        </div>
+                    </aside>
+
+                    {/* MAIN CONTENT */}
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden">
+                        {/* Mobile Header */}
+                        <header className="md:hidden bg-white shadow-sm p-4 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-2">
+                                <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo" className="h-8" />
+                                <h1 className="font-bold text-slate-800 text-sm">SMPN 6 MANOKWARI</h1>
+                            </div>
+                            <select 
+                                value={activeTab} 
+                                onChange={(e) => setActiveTab(e.target.value)}
+                                className="bg-slate-50 border border-slate-200 rounded-lg text-sm px-2 py-1 font-medium"
+                            >
+                                {menuItems.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+                            </select>
+                        </header>
+
+                        <div className="flex-1 overflow-auto p-4 md:p-8 custom-scrollbar relative">
+                            {/* Render Content Based on Tab */}
+                            {activeTab === 'scan' && <ScannerPage />}
+                            {activeTab === 'dashboard' && <DashboardPage queueStats={queueStats} />}
+                            {activeTab === 'students' && <StudentsPage />}
+                            {activeTab === 'recap' && <RecapPage />}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
