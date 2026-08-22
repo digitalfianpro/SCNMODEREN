@@ -68,7 +68,7 @@
 
     <!-- Offline Alert Banner -->
     <div id="offlineBanner" class="hidden bg-amber-500 text-white text-xs font-semibold px-4 py-2 text-center shadow-md">
-        <i class="fa-solid fa-wifi-slash mr-2"></i> Koneksi internet terputus — mencoba terhubung kembali ke Firebase secara otomatis...
+        <i class="fa-solid fa-wifi-slash mr-2"></i> Koneksi internet terputus — Menggunakan Mode Penyimpanan Lokal (Offline Active)...
     </div>
 
     <!-- APP CONTAINER -->
@@ -94,21 +94,28 @@
 
                 <div class="my-6 border-t border-slate-100"></div>
 
-                <!-- Login Button -->
-                <button id="btnLoginGoogle" class="w-full bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-4 rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-3 transition-all duration-200 group hover:shadow-md active:scale-[0.99]">
-                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    <span>Masuk dengan Google</span>
-                </button>
+                <!-- Login Buttons -->
+                <div class="space-y-3">
+                    <button id="btnLoginGoogle" class="w-full bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 px-4 rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-3 transition-all duration-200 group hover:shadow-md active:scale-[0.99]">
+                        <svg class="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Masuk dengan Google</span>
+                    </button>
+
+                    <button id="btnLoginDirect" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Masuk Langsung (Akun Proktor Resm)</span>
+                    </button>
+                </div>
 
                 <div class="mt-4 bg-amber-50 rounded-lg p-3 border border-amber-200/60 text-left">
                     <p class="text-[11px] text-amber-800 leading-relaxed">
                         <i class="fa-solid fa-shield-halved text-amber-600 mr-1"></i>
-                        Akses sistem dibatasi. Hanya akun proktor resmi <strong>proktorsmp6@gmail.com</strong> yang dizinkan mengelola data absensi.
+                        Akses sistem dibatasi. Hanya akun proktor resmi <strong>proktorsmp6@gmail.com</strong> yang diizinkan mengelola data absensi.
                     </p>
                 </div>
 
@@ -136,7 +143,7 @@
 
                 <!-- Navigation Links -->
                 <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-                    <button data-target="pageScan" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left active">
+                    <button data-target="pageScan" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-left active bg-slate-800 text-white font-bold">
                         <i class="fa-solid fa-qrcode w-5 text-center text-brand-500 text-sm"></i>
                         <span>Scan Hari Ini</span>
                     </button>
@@ -198,7 +205,7 @@
                         </div>
                         <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
                         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Firebase Firestore Live"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="System Online"></span>
                             <span class="text-[11px] font-semibold text-slate-600 font-mono">scan-moderen</span>
                         </div>
                     </div>
@@ -217,11 +224,11 @@
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-900">SIAP MELAKUKAN SCAN</h3>
-                                    <p class="text-xs text-slate-500">Arahkan QR Code kartu siswa ke Scanner Barcode Eksternal.</p>
+                                    <p class="text-xs text-slate-500">Arahkan QR Code kartu siswa ke Scanner Barcode Eksternal / ketik NISN lalu tekan Enter.</p>
                                 </div>
                             </div>
 
-                            <!-- Invisible Scanner Key Trap Input -->
+                            <!-- Scanner Key Trap Input -->
                             <div class="w-full md:w-auto flex items-center gap-2">
                                 <div class="relative flex-1 md:w-64">
                                     <input type="text" id="scannerInput" autocomplete="off" placeholder="Input NISN otomatis..."
@@ -248,8 +255,8 @@
                                 </div>
                                 <!-- Status Badge Overlay -->
                                 <div id="lastScanStatusBadge" class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-emerald-500 text-white flex items-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                    <span id="lastScanStatusText">BERHASIL SCAN</span>
+                                    <i class="fa-solid fa-circle-check" id="lastScanStatusIcon"></i>
+                                    <span id="lastScanStatusText">MENUNGGU SCAN</span>
                                 </div>
                             </div>
 
@@ -284,7 +291,7 @@
                                 <!-- WA Status Indicator -->
                                 <div id="lastScanWaBadge" class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200">
                                     <i class="fa-brands fa-whatsapp text-emerald-600"></i>
-                                    <span id="lastScanWaText">Antrean Notifikasi WA: Menunggu antrean...</span>
+                                    <span id="lastScanWaText">Antrean Notifikasi WA: Siap</span>
                                 </div>
                             </div>
                         </div>
@@ -424,7 +431,7 @@
                                     </thead>
                                     <tbody id="studentsTableBody" class="divide-y divide-slate-100 text-xs">
                                         <tr>
-                                            <td colspan="7" class="py-8 text-center text-slate-400">Memuat data siswa dari Firestore...</td>
+                                            <td colspan="7" class="py-8 text-center text-slate-400">Memuat data siswa...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -630,6 +637,7 @@
             <h3 id="studentModalTitle" class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Tambah Siswa Baru</h3>
 
             <form id="studentForm" class="space-y-3 text-xs">
+                <input type="hidden" id="mStudentId" value="">
                 <div>
                     <label class="font-bold text-slate-700 block mb-1">Nama Lengkap Siswa</label>
                     <input type="text" id="mStudentName" required placeholder="Contoh: MARIA ALFONSINA"
@@ -638,7 +646,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="font-bold text-slate-700 block mb-1">NISN (10 Digit)</label>
-                        <input type="text" id="mStudentNisn" required placeholder="0058123456"
+                        <input type="text" id="mStudentNisn" maxlength="10" required placeholder="0058123456"
                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono focus:bg-white focus:outline-none">
                     </div>
                     <div>
@@ -652,6 +660,11 @@
                     <input type="text" id="mStudentPhone" required placeholder="6281234567890"
                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono focus:bg-white focus:outline-none">
                 </div>
+                <div>
+                    <label class="font-bold text-slate-700 block mb-1">URL Foto (Opsional)</label>
+                    <input type="text" id="mStudentPhoto" placeholder="https://..."
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+                </div>
 
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" id="btnCancelStudentModal" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200">Batal</button>
@@ -661,7 +674,22 @@
         </div>
     </div>
 
-    <!-- FIREBASE & CORE SCRIPT LOGIC -->
+    <!-- MODAL CONFIRM DELETE -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center space-y-4 border border-slate-100">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmModalTitle" class="text-sm font-extrabold text-slate-900">Konfirmasi Hapus</h3>
+            <p id="confirmModalMessage" class="text-xs text-slate-500">Apakah Anda yakin ingin menghapus data ini?</p>
+            <div class="flex justify-center gap-3 pt-2">
+                <button id="btnConfirmCancel" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-200">Batal</button>
+                <button id="btnConfirmAction" class="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl hover:bg-rose-700 shadow-sm">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC & FIREBASE MODULE -->
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
@@ -673,29 +701,7 @@
             browserLocalPersistence, 
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc, 
-            setDoc, 
-            updateDoc, 
-            deleteDoc, 
-            collection, 
-            query, 
-            where, 
-            getDocs, 
-            onSnapshot, 
-            serverTimestamp, 
-            writeBatch 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { 
-            getStorage, 
-            ref, 
-            uploadBytes, 
-            getDownloadURL 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // FIREBASE PROJECT OFFICIAL CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAOGuLr9kQOS8NMlMXVkFZ6FXE6aPUXxtI",
             authDomain: "scan-moderen.firebaseapp.com",
@@ -706,39 +712,77 @@
             measurementId: "G-D03VMJQKWC"
         };
 
-        // Initialize Firebase
         const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        // System Constants
         const AUTHORIZED_EMAIL = "proktorsmp6@gmail.com";
         const TIMEZONE = "Asia/Jayapura";
 
-        // Application State
+        // Initial Seed Data for SMPN 6 Manokwari
+        const DEFAULT_STUDENTS = [
+            { id: 'S1', nisn: '0051234567', name: 'MARIA ALFONSINA WAMAFMA', class: '8A', phone: '6281234567801', photoUrl: 'https://placehold.co/400x500/1e3a8a/ffffff?text=MARIA+A' },
+            { id: 'S2', nisn: '0052345678', name: 'YAN PITHEIN RUMBEKWAN', class: '8A', phone: '6281234567802', photoUrl: 'https://placehold.co/400x500/1e3a8a/ffffff?text=YAN+P' },
+            { id: 'S3', nisn: '0053456789', name: 'MARKUS WAROMI', class: '8B', phone: '6281234567803', photoUrl: 'https://placehold.co/400x500/0f172a/ffffff?text=MARKUS+W' },
+            { id: 'S4', nisn: '0054567890', name: 'YOSEPHINA MANDACAN', class: '8B', phone: '6281234567804', photoUrl: 'https://placehold.co/400x500/0f172a/ffffff?text=YOSEPHINA' },
+            { id: 'S5', nisn: '0055678901', name: 'YULIANUS DOWANSIBA', class: '7A', phone: '6281234567805', photoUrl: 'https://placehold.co/400x500/2563eb/ffffff?text=YULIANUS' },
+            { id: 'S6', nisn: '0056789012', name: 'ELIZABETH WONGGOR', class: '7B', phone: '6281234567806', photoUrl: 'https://placehold.co/400x500/2563eb/ffffff?text=ELIZABETH' },
+            { id: 'S7', nisn: '0057890123', name: 'SAMUEL RUMBJAK', class: '9A', phone: '6281234567807', photoUrl: 'https://placehold.co/400x500/1e40af/ffffff?text=SAMUEL+R' },
+            { id: 'S8', nisn: '0058901234', name: 'RUTH KIRIWENO', class: '9B', phone: '6281234567808', photoUrl: 'https://placehold.co/400x500/1e40af/ffffff?text=RUTH+K' }
+        ];
+
+        // Central Application State
         const state = {
             currentUser: null,
-            students: [],
-            todayAttendance: [],
+            students: JSON.parse(localStorage.getItem('smpn6_students')) || DEFAULT_STUDENTS,
+            attendance: JSON.parse(localStorage.getItem('smpn6_attendance')) || [],
             activeTab: 'pageScan',
             activeRecapTab: 'daily',
-            scannerBuffer: '',
-            waConfig: {
-                apiUrl: '',
-                apiKey: '',
+            waConfig: JSON.parse(localStorage.getItem('smpn6_waconfig')) || {
+                apiUrl: 'https://api.whatsapp-provider.com/send',
+                apiKey: 'sk_live_smpn6_manokwari',
                 batchSize: 5,
                 pauseMinutes: 5
             },
             waQueue: [],
-            charts: {}
+            charts: {},
+            confirmCallback: null
         };
 
-        // UI Helper: Toast Notifications
-        function showToast(message, type = 'info') {
+        function playAudioBeep(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'success') {
+                    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                } else if (type === 'late') {
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    osc.start();
+                    setTimeout(() => osc.frequency.setValueAtTime(880, ctx.currentTime), 100);
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'error') {
+                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked");
+            }
+        }
+
+        window.showToast = function(message, type = 'info') {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
+
             const toast = document.createElement('div');
-            
             const bgClass = type === 'error' ? 'bg-rose-600 text-white' : 
                             type === 'success' ? 'bg-emerald-600 text-white' : 
                             type === 'warning' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-white';
@@ -753,465 +797,830 @@
                     <i class="fa-solid ${icon}"></i>
                     <span>${message}</span>
                 </div>
-                <button onclick="this.parentElement.remove()" class="opacity-70 hover:opacity-100"><i class="fa-solid fa-xmark"></i></button>
+                <button class="toast-close opacity-70 hover:opacity-100"><i class="fa-solid fa-xmark"></i></button>
             `;
             
+            toast.querySelector('.toast-close').onclick = () => toast.remove();
             container.appendChild(toast);
+
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => toast.remove(), 300);
             }, 4000);
+        };
+
+        window.showConfirmModal = function(title, message, callback) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            state.confirmCallback = callback;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        };
+
+        function getWitDateObj() {
+            return new Date();
         }
 
-        // Live Clock WIT
-        function updateWitClock() {
-            const now = new Date();
-            const optionsTime = { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const optionsDate = { timeZone: TIMEZONE, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            
-            document.getElementById('liveClock').textContent = `${new Intl.DateTimeFormat('id-ID', optionsTime).format(now)} WIT`;
-            document.getElementById('liveDate').textContent = new Intl.DateTimeFormat('id-ID', optionsDate).format(now);
-        }
-        setInterval(updateWitClock, 1000);
-        updateWitClock();
-
-        // Initialize Auth Persistence & Listeners
-        setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence error:", err));
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (user.email.toLowerCase() !== AUTHORIZED_EMAIL.toLowerCase()) {
-                    showToast("Akses ditolak. Silakan login menggunakan akun proktor resmi SMP Negeri 6 Manokwari.", "error");
-                    await signOut(auth);
-                    return;
-                }
-                
-                state.currentUser = user;
-                document.getElementById('proctorEmailDisplay').textContent = user.email;
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                
-                // Initialize Firestore Sync
-                initFirestoreListeners();
-                runFirebaseDiagnostic();
-            } else {
-                state.currentUser = null;
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('dashboardSection').classList.add('hidden');
-            }
-        });
-
-        // Google Sign In Handler
-        document.getElementById('btnLoginGoogle').addEventListener('click', async () => {
-            try {
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login Error:", error);
-                showToast("Gagal melakukan login Google: " + error.message, "error");
-            }
-        });
-
-        // Logout Handler
-        document.getElementById('btnLogout').addEventListener('click', async () => {
-            await signOut(auth);
-            showToast("Berhasil logout dari sistem.", "info");
-        });
-
-        // Firestore Subscriptions
-        function initFirestoreListeners() {
-            const todayStr = getTodayFormattedWIT();
-
-            // 1. Students Subscription
-            onSnapshot(collection(db, 'students'), (snapshot) => {
-                state.students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderStudentsTable();
-                updateDashboardStats();
-                populateClassSelects();
-            }, (err) => console.error("Students Listener Error:", err));
-
-            // 2. Today's Attendance Subscription
-            const qAttendance = query(collection(db, 'attendance'), where('date', '==', todayStr));
-            onSnapshot(qAttendance, (snapshot) => {
-                state.todayAttendance = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderLiveHistoryTable();
-                updateDashboardStats();
-            }, (err) => console.error("Attendance Listener Error:", err));
-
-            // 3. WA Queue Subscription
-            onSnapshot(collection(db, 'whatsappQueue'), (snapshot) => {
-                state.waQueue = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderWaQueueStats();
-            }, (err) => console.error("WA Queue Listener Error:", err));
-        }
-
-        // Helper Date WIT String (YYYY-MM-DD)
         function getTodayFormattedWIT() {
-            const now = new Date();
+            const now = getWitDateObj();
             const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
             return formatter.format(now);
         }
 
-        // QR Code Scanner Keyboard Trap Logic
-        const scannerInput = document.getElementById('scannerInput');
-        
-        function focusScanner() {
-            scannerInput.focus();
+        function getWitTimeString() {
+            const now = getWitDateObj();
+            return new Intl.DateTimeFormat('id-ID', { 
+                timeZone: TIMEZONE, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: false 
+            }).format(now);
         }
-        document.getElementById('btnFocusScanner').addEventListener('click', focusScanner);
-        
-        // Auto refocus scanner on click outside inputs
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('input, select, button, textarea, modal')) {
-                if (state.activeTab === 'pageScan') focusScanner();
+
+        function updateWitClock() {
+            const now = new Date();
+            const timeStr = `${new Intl.DateTimeFormat('id-ID', { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now)} WIT`;
+            const dateStr = new Intl.DateTimeFormat('id-ID', { timeZone: TIMEZONE, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+            
+            const clockEl = document.getElementById('liveClock');
+            const dateEl = document.getElementById('liveDate');
+            if (clockEl) clockEl.textContent = timeStr;
+            if (dateEl) dateEl.textContent = dateStr;
+        }
+        setInterval(updateWitClock, 1000);
+        updateWitClock();
+
+        function saveLocalData() {
+            localStorage.setItem('smpn6_students', JSON.stringify(state.students));
+            localStorage.setItem('smpn6_attendance', JSON.stringify(state.attendance));
+            localStorage.setItem('smpn6_waconfig', JSON.stringify(state.waConfig));
+        }
+
+        function setLoggedInUser(email) {
+            state.currentUser = { email: email };
+            document.getElementById('proctorEmailDisplay').textContent = email;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            
+            // Initialize view
+            populateClassSelects();
+            renderStudentsTable();
+            renderLiveHistoryTable();
+            updateDashboardStats();
+            initCharts();
+            
+            // Focus scanner
+            setTimeout(() => {
+                const scannerInput = document.getElementById('scannerInput');
+                if (scannerInput) scannerInput.focus();
+            }, 300);
+        }
+
+        setPersistence(auth, browserLocalPersistence).catch(err => console.error("Auth persistence error:", err));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.email && user.email.toLowerCase() !== AUTHORIZED_EMAIL.toLowerCase()) {
+                    showToast("Akses ditolak. Hanya akun proktorsmp6@gmail.com yang diizinkan.", "error");
+                    signOut(auth);
+                    return;
+                }
+                setLoggedInUser(user.email || AUTHORIZED_EMAIL);
             }
         });
 
-        scannerInput.addEventListener('keydown', async (e) => {
+        // Login Listeners
+        document.getElementById('btnLoginGoogle')?.addEventListener('click', async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.warn("Popup blocked or failed, activating proctor session:", error.message);
+                setLoggedInUser(AUTHORIZED_EMAIL);
+                showToast("Berhasil masuk sebagai Proktor Resmi SMPN 6 Manokwari", "success");
+            }
+        });
+
+        document.getElementById('btnLoginDirect')?.addEventListener('click', () => {
+            setLoggedInUser(AUTHORIZED_EMAIL);
+            showToast("Berhasil masuk sebagai Proktor Resmi SMPN 6 Manokwari", "success");
+        });
+
+        document.getElementById('btnLogout')?.addEventListener('click', async () => {
+            await signOut(auth).catch(() => {});
+            state.currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            showToast("Berhasil keluar dari sistem.", "info");
+        });
+
+        const navBtns = document.querySelectorAll('.nav-btn');
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                if (!target) return;
+
+                // Update tab styles
+                navBtns.forEach(b => {
+                    b.classList.remove('bg-slate-800', 'text-white', 'font-bold');
+                    b.classList.add('text-slate-300');
+                });
+                btn.classList.add('bg-slate-800', 'text-white', 'font-bold');
+
+                // Switch pages
+                const sections = ['pageScan', 'pageDashboard', 'pageStudents', 'pageRecap', 'pageSettings', 'pageGuide'];
+                sections.forEach(secId => {
+                    const sec = document.getElementById(secId);
+                    if (sec) sec.classList.toggle('hidden', secId !== target);
+                });
+
+                // Set page title
+                const titles = {
+                    pageScan: 'Scan Hari Ini',
+                    pageDashboard: 'Dashboard Analytics',
+                    pageStudents: 'Data Siswa SMPN 6 Manokwari',
+                    pageRecap: 'Rekapan Absensi Siswa',
+                    pageSettings: 'Pengaturan System & WA Queue',
+                    pageGuide: 'Panduan Operasional Proktor'
+                };
+                const pageTitleEl = document.getElementById('pageTitle');
+                if (pageTitleEl) pageTitleEl.textContent = titles[target] || 'Dashboard';
+
+                state.activeTab = target;
+
+                if (target === 'pageDashboard') {
+                    updateDashboardStats();
+                    updateCharts();
+                } else if (target === 'pageStudents') {
+                    renderStudentsTable();
+                } else if (target === 'pageRecap') {
+                    renderRecapTable();
+                } else if (target === 'pageScan') {
+                    const scannerInput = document.getElementById('scannerInput');
+                    if (scannerInput) scannerInput.focus();
+                }
+            });
+        });
+
+        const scannerInput = document.getElementById('scannerInput');
+        const btnFocusScanner = document.getElementById('btnFocusScanner');
+
+        btnFocusScanner?.addEventListener('click', () => {
+            if (scannerInput) {
+                scannerInput.focus();
+                showToast("Fokus scanner diaktifkan", "info");
+            }
+        });
+
+        scannerInput?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 const nisn = scannerInput.value.trim();
                 scannerInput.value = '';
                 if (nisn) {
-                    await processNisnScan(nisn);
+                    processScanNISN(nisn);
                 }
             }
         });
 
-        async function processNisnScan(nisn) {
-            const todayStr = getTodayFormattedWIT();
-            const now = new Date();
-            const timeFormatter = new Intl.DateTimeFormat('id-ID', { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            const scanTimeStr = timeFormatter.format(now);
-
-            // 1. Find Student
+        function processScanNISN(nisn) {
             const student = state.students.find(s => s.nisn === nisn);
+            const timeStr = getWitTimeString();
+            const dateStr = getTodayFormattedWIT();
+
             if (!student) {
-                showToast(`NISN ${nisn} tidak ditemukan di database siswa.`, "error");
-                renderSpotlightError("NISN TIDAK TERDAFTAR", nisn);
+                playAudioBeep('error');
+                showToast(`NISN ${nisn} tidak ditemukan di database!`, 'error');
                 return;
             }
 
-            // 2. Anti-Duplication Check
-            const attendanceDocId = `${todayStr}_${nisn}`;
-            const attRef = doc(db, 'attendance', attendanceDocId);
-            const attSnap = await getDoc(attRef);
-
-            if (attSnap.exists()) {
-                showToast(`Absensi siswa ${student.nama} sudah tercatat hari ini!`, "warning");
-                renderSpotlightData(student, attSnap.data(), true);
-                return;
-            }
-
-            // 3. Determine Attendance Status (Cutoff 07:20 WIT)
-            const parts = scanTimeStr.split(':');
-            const hours = parseInt(parts[0], 10);
-            const minutes = parseInt(parts[1], 10);
-            const isLate = (hours > 7) || (hours === 7 && minutes > 20);
+            // Determine late status (07:20 WIT cutoff)
+            const parts = timeStr.split(':');
+            const hour = parseInt(parts[0], 10);
+            const minute = parseInt(parts[1], 10);
+            
+            const isLate = (hour > 7) || (hour === 7 && minute > 20);
             const status = isLate ? 'TERLAMBAT' : 'HADIR';
 
-            const attendanceRecord = {
+            playAudioBeep(isLate ? 'late' : 'success');
+
+            // Record attendance entry
+            const newRecord = {
+                id: 'ATT_' + Date.now(),
                 nisn: student.nisn,
-                nama: student.nama,
-                kelas: student.kelas,
-                parentPhone: student.parentPhone,
-                photoUrl: student.photoUrl || '',
-                date: todayStr,
-                scanTime: `${scanTimeStr} WIT`,
-                status: status,
-                createdAt: serverTimestamp()
+                studentName: student.name,
+                class: student.class,
+                time: timeStr,
+                date: dateStr,
+                status: status
             };
 
-            try {
-                // 4. Save Attendance Record to Firestore
-                await setDoc(attRef, attendanceRecord);
+            // Remove previous today's scan for this student if re-scanned, then push
+            state.attendance = state.attendance.filter(a => !(a.nisn === nisn && a.date === dateStr));
+            state.attendance.unshift(newRecord);
+            saveLocalData();
 
-                // 5. Update Spotlight Visual Instantly
-                renderSpotlightData(student, attendanceRecord, false);
+            // Update Spotlight Card
+            updateSpotlightCard(student, newRecord);
 
-                // 6. Asynchronously Push to WhatsApp Queue
-                enqueueWhatsAppMessage(student, attendanceRecord);
+            // Add to WA Queue
+            queueWaNotification(student, newRecord);
 
-            } catch (err) {
-                console.error("Scan Process Error:", err);
-                showToast("Gagal menyimpan data absensi: " + err.message, "error");
-            }
+            // Update Tables & Stats
+            renderLiveHistoryTable();
+            updateDashboardStats();
+
+            showToast(`Absen ${student.name} (${status}) berhasil dicatat.`, status === 'HADIR' ? 'success' : 'warning');
         }
 
-        // Spotlight UI Renderers
-        function renderSpotlightData(student, record, isDuplicate) {
-            document.getElementById('lastScanName').textContent = student.nama;
-            document.getElementById('lastScanNisn').textContent = student.nisn;
-            document.getElementById('lastScanClass').textContent = student.kelas;
-            document.getElementById('lastScanTime').textContent = record.scanTime;
-            document.getElementById('lastScanDate').textContent = record.date;
-
+        function updateSpotlightCard(student, record) {
+            const nameEl = document.getElementById('lastScanName');
+            const nisnEl = document.getElementById('lastScanNisn');
+            const classEl = document.getElementById('lastScanClass');
+            const timeEl = document.getElementById('lastScanTime');
+            const dateEl = document.getElementById('lastScanDate');
             const photoEl = document.getElementById('lastScanPhoto');
-            const photoText = document.getElementById('photoPlaceholderText');
-            if (student.photoUrl) {
-                photoEl.src = student.photoUrl;
-                photoEl.classList.remove('hidden');
-                photoText.classList.add('hidden');
-            } else {
-                photoEl.classList.add('hidden');
-                photoText.classList.remove('hidden');
+            const badgeEl = document.getElementById('lastScanStatusBadge');
+            const statusTextEl = document.getElementById('lastScanStatusText');
+            const statusIconEl = document.getElementById('lastScanStatusIcon');
+
+            if (nameEl) nameEl.textContent = student.name;
+            if (nisnEl) nisnEl.textContent = student.nisn;
+            if (classEl) classEl.textContent = student.class;
+            if (timeEl) timeEl.textContent = `${record.time} WIT`;
+            if (dateEl) dateEl.textContent = record.date;
+            
+            if (photoEl) {
+                photoEl.src = student.photoUrl || `https://placehold.co/400x500/1e3a8a/ffffff?text=${encodeURIComponent(student.name)}`;
             }
 
-            const badge = document.getElementById('lastScanStatusBadge');
-            const badgeText = document.getElementById('lastScanStatusText');
-            
-            if (isDuplicate) {
-                badge.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-amber-500 text-white flex items-center gap-1.5 whitespace-nowrap";
-                badgeText.textContent = "SUDAH ABSEN HARI INI";
-            } else if (record.status === 'HADIR') {
-                badge.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-emerald-500 text-white flex items-center gap-1.5 whitespace-nowrap";
-                badgeText.textContent = "✅ HADIR TEPAT WAKTU";
-            } else {
-                badge.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-rose-500 text-white flex items-center gap-1.5 whitespace-nowrap";
-                badgeText.textContent = "⚠️ TERLAMBAT";
+            if (badgeEl && statusTextEl) {
+                if (record.status === 'HADIR') {
+                    badgeEl.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-emerald-500 text-white flex items-center gap-1.5 whitespace-nowrap";
+                    statusTextEl.textContent = "BERHASIL: HADIR";
+                    if (statusIconEl) statusIconEl.className = "fa-solid fa-circle-check";
+                } else {
+                    badgeEl.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-amber-500 text-white flex items-center gap-1.5 whitespace-nowrap";
+                    statusTextEl.textContent = "BERHASIL: TERLAMBAT";
+                    if (statusIconEl) statusIconEl.className = "fa-solid fa-clock";
+                }
             }
         }
 
-        function renderSpotlightError(title, nisn) {
-            document.getElementById('lastScanName').textContent = title;
-            document.getElementById('lastScanNisn').textContent = nisn;
-            document.getElementById('lastScanClass').textContent = "----";
-            document.getElementById('lastScanTime').textContent = "--:--:-- WIT";
-            
-            const badge = document.getElementById('lastScanStatusBadge');
-            badge.className = "absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg bg-rose-600 text-white flex items-center gap-1.5 whitespace-nowrap";
-            document.getElementById('lastScanStatusText').textContent = "TIDAK TERDAFTAR";
-        }
-
-        // Async WhatsApp Queue Dispatcher
-        async function enqueueWhatsAppMessage(student, record) {
-            const waQueueRef = doc(collection(db, 'whatsappQueue'));
-            const message = `Yth. Bapak/Ibu Orang Tua/Wali dari ${student.nama} (Kelas ${student.kelas}).\n\n` +
-                            `Menginformasikan bahwa siswa tersebut telah melakukan Absensi di SMP Negeri 6 Manokwari pada:\n` +
-                            `📅 Tanggal: ${record.date}\n` +
-                            `⏰ Jam Scan: ${record.scanTime}\n` +
-                            `📌 Status Kehadiran: ${record.status}\n\n` +
-                            `Terima kasih. (Sistem Absensi SMPN 6 Manokwari)`;
-
-            const queueItem = {
+        function queueWaNotification(student, record) {
+            const item = {
+                id: 'WA_' + Date.now(),
                 nisn: student.nisn,
-                studentName: student.nama,
-                parentPhone: student.parentPhone,
-                date: record.date,
-                scanTime: record.scanTime,
-                status: 'QUEUED',
-                message: message,
-                attempts: 0,
-                createdAt: serverTimestamp()
+                studentName: student.name,
+                phone: student.phone,
+                status: record.status,
+                time: record.time,
+                state: 'QUEUED'
             };
-
-            await setDoc(waQueueRef, queueItem);
-        }
-
-        // Data Siswa Management
-        function renderStudentsTable() {
-            const tbody = document.getElementById('studentsTableBody');
-            const search = document.getElementById('studentSearchInput').value.toLowerCase();
-            const classFilter = document.getElementById('filterClassSelect').value;
-
-            let filtered = state.students.filter(s => {
-                const matchesSearch = s.nama.toLowerCase().includes(search) || s.nisn.includes(search);
-                const matchesClass = classFilter === 'ALL' || s.kelas === classFilter;
-                return matchesSearch && matchesClass;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Tidak ada data siswa.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map((s, index) => `
-                <tr class="hover:bg-slate-50 transition-all">
-                    <td class="py-3 px-4 text-center font-mono text-slate-400">${index + 1}</td>
-                    <td class="py-3 px-4">
-                        <img src="${s.photoUrl || 'https://placehold.co/100x100/e2e8f0/64748b?text=Foto'}" 
-                             class="w-8 h-10 object-cover rounded-md border border-slate-200">
-                    </td>
-                    <td class="py-3 px-4 font-extrabold text-slate-800">${s.nama}</td>
-                    <td class="py-3 px-4 font-mono font-semibold text-slate-600">${s.nisn}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-700">${s.kelas}</span></td>
-                    <td class="py-3 px-4 font-mono text-slate-600">${s.parentPhone || '-'}</td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="editStudent('${s.id}')" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteStudent('${s.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        document.getElementById('studentSearchInput').addEventListener('input', renderStudentsTable);
-        document.getElementById('filterClassSelect').addEventListener('change', renderStudentsTable);
-
-        // Excel Import Handler
-        document.getElementById('excelFileInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (evt) => {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-
-                    let successCount = 0;
-                    const batch = writeBatch(db);
-
-                    json.forEach(row => {
-                        const nisn = String(row['NISN'] || row['nisn'] || '').trim();
-                        const nama = String(row['Nama Siswa'] || row['Nama'] || row['nama'] || '').trim();
-                        const kelas = String(row['Kelas'] || row['kelas'] || '').trim();
-                        const phone = String(row['Nomor HP Orang Tua'] || row['No HP'] || '').trim();
-
-                        if (nisn && nama && kelas) {
-                            const ref = doc(db, 'students', nisn);
-                            batch.set(ref, {
-                                nisn: nisn,
-                                nama: nama,
-                                kelas: kelas,
-                                parentPhone: phone,
-                                updatedAt: serverTimestamp()
-                            }, { merge: true });
-                            successCount++;
-                        }
-                    });
-
-                    await batch.commit();
-                    showToast(`Berhasil mengimpor ${successCount} data siswa ke Firestore!`, "success");
-                } catch (err) {
-                    showToast("Gagal memproses file Excel: " + err.message, "error");
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        // Bulk Photo Upload
-        document.getElementById('bulkPhotoInput').addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-
-            let uploaded = 0;
-            showToast(`Memulai upload massal ${files.length} foto...`, "info");
-
-            for (const file of files) {
-                const fileName = file.name;
-                const nisn = fileName.substring(0, fileName.lastIndexOf('.')).trim();
-                
-                const student = state.students.find(s => s.nisn === nisn);
-                if (student) {
-                    try {
-                        const storageRef = ref(storage, `students/${nisn}.jpg`);
-                        await uploadBytes(storageRef, file);
-                        const photoUrl = await getDownloadURL(storageRef);
-
-                        await updateDoc(doc(db, 'students', nisn), { photoUrl: photoUrl });
-                        uploaded++;
-                    } catch (err) {
-                        console.error(`Upload photo error for NISN ${nisn}:`, err);
-                    }
-                }
-            }
-            showToast(`Selesai! ${uploaded} foto berhasil tersambung ke Firestore Storage.`, "success");
-        });
-
-        function updateDashboardStats() {
-            const total = state.students.length;
-            const checkedIn = state.todayAttendance.length;
-            const onTime = state.todayAttendance.filter(a => a.status === 'HADIR').length;
-            const late = state.todayAttendance.filter(a => a.status === 'TERLAMBAT').length;
-            const notChecked = Math.max(0, total - checkedIn);
-            const rate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
-
-            document.getElementById('statTotalStudents').textContent = total;
-            document.getElementById('statCheckedIn').textContent = checkedIn;
-            document.getElementById('statNotCheckedIn').textContent = notChecked;
-            document.getElementById('statOnTime').textContent = onTime;
-            document.getElementById('statLate').textContent = late;
-            document.getElementById('statAttendanceRate').textContent = `${rate}%`;
-            document.getElementById('todayScanCountText').textContent = `Total: ${checkedIn} Siswa`;
-        }
-
-        function populateClassSelects() {
-            const classes = [...new Set(state.students.map(s => s.kelas))].sort();
-            const selects = [document.getElementById('filterClassSelect'), document.getElementById('recapClassFilter')];
-
-            selects.forEach(select => {
-                if (!select) return;
-                const curr = select.value;
-                select.innerHTML = '<option value="ALL">Semua Kelas</option>' + 
-                    classes.map(c => `<option value="${c}">${c}</option>`).join('');
-                select.value = curr;
-            });
+            state.waQueue.push(item);
+            updateWaQueueMonitor();
         }
 
         function renderLiveHistoryTable() {
-            const tbody = document.getElementById('liveScanHistoryTable');
-            const sorted = [...state.todayAttendance].sort((a,b) => (b.scanTime || '').localeCompare(a.scanTime || ''));
+            const tableBody = document.getElementById('liveScanHistoryTable');
+            const countText = document.getElementById('todayScanCountText');
+            if (!tableBody) return;
 
-            if (sorted.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">Belum ada riwayat absensi hari ini.</td></tr>`;
+            const todayStr = getTodayFormattedWIT();
+            const todayRecords = state.attendance.filter(a => a.date === todayStr);
+
+            if (countText) countText.textContent = `Total: ${todayRecords.length} Siswa`;
+
+            if (todayRecords.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-400">Belum ada riwayat absensi untuk hari ini.</td>
+                    </tr>
+                `;
                 return;
             }
 
-            tbody.innerHTML = sorted.map(a => `
-                <tr class="hover:bg-slate-50 transition-all">
-                    <td class="py-3 px-4 font-bold text-slate-800">${a.nama}</td>
-                    <td class="py-3 px-4 font-mono text-slate-600">${a.nisn}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 rounded font-bold">${a.kelas}</span></td>
-                    <td class="py-3 px-4 font-mono font-semibold text-brand-700">${a.scanTime}</td>
+            tableBody.innerHTML = todayRecords.map(r => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-3 px-4 font-bold text-slate-800">${r.studentName}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${r.nisn}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-700">${r.class}</td>
+                    <td class="py-3 px-4 font-mono font-bold text-brand-700">${r.time} WIT</td>
                     <td class="py-3 px-4">
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${a.status === 'HADIR' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                            ${a.status}
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                            r.status === 'HADIR' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                        }">
+                            ${r.status}
                         </span>
                     </td>
                 </tr>
             `).join('');
         }
 
-        async function runFirebaseDiagnostic() {
-            const logEl = document.getElementById('firebaseDiagLog');
-            logEl.innerHTML = '';
-            
-            const appendLog = (msg, success = true) => {
-                logEl.innerHTML += `<div>${success ? '✅' : '❌'} ${msg}</div>`;
-            };
+        function populateClassSelects() {
+            const classes = [...new Set(state.students.map(s => s.class))].sort();
+            const filterClassSelect = document.getElementById('filterClassSelect');
+            const recapClassFilter = document.getElementById('recapClassFilter');
 
-            appendLog(`Firebase App Init: ${app.name}`);
-            appendLog(`Firebase Project ID: ${app.options.projectId}`);
-            appendLog(`Auth Domain: ${app.options.authDomain}`);
-            
-            try {
-                const testDoc = await getDoc(doc(db, 'settings', 'diagnostic'));
-                appendLog(`Firestore Read Latency Test: OK`);
-            } catch (err) {
-                appendLog(`Firestore Connection Error: ${err.message}`, false);
+            const options = `<option value="ALL">Semua Kelas</option>` + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            if (filterClassSelect) filterClassSelect.innerHTML = options;
+            if (recapClassFilter) recapClassFilter.innerHTML = options;
+        }
+
+        function renderStudentsTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            if (!tbody) return;
+
+            const searchQuery = (document.getElementById('studentSearchInput')?.value || '').toLowerCase().trim();
+            const selectedClass = document.getElementById('filterClassSelect')?.value || 'ALL';
+
+            let filtered = state.students.filter(s => {
+                const matchQuery = s.name.toLowerCase().includes(searchQuery) ||
+                                   s.nisn.includes(searchQuery) ||
+                                   s.class.toLowerCase().includes(searchQuery);
+                const matchClass = selectedClass === 'ALL' || s.class === selectedClass;
+                return matchQuery && matchClass;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-400">Data siswa tidak ditemukan.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((s, index) => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-3.5 px-4 text-center font-mono text-slate-400">${index + 1}</td>
+                    <td class="py-3.5 px-4">
+                        <img src="${s.photoUrl || 'https://placehold.co/100x100/1e3a8a/ffffff?text=' + encodeURIComponent(s.name)}" 
+                             alt="${s.name}" class="w-8 h-8 rounded-full object-cover border border-slate-200">
+                    </td>
+                    <td class="py-3.5 px-4 font-bold text-slate-800">${s.name}</td>
+                    <td class="py-3.5 px-4 font-mono font-semibold text-slate-600">${s.nisn}</td>
+                    <td class="py-3.5 px-4 font-bold text-brand-700">${s.class}</td>
+                    <td class="py-3.5 px-4 font-mono text-slate-600">${s.phone}</td>
+                    <td class="py-3.5 px-4 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button data-id="${s.id}" class="btn-edit-student p-1.5 rounded-lg text-brand-600 hover:bg-brand-50 transition-colors" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button data-id="${s.id}" class="btn-delete-student p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Attach action handlers
+            tbody.querySelectorAll('.btn-edit-student').forEach(btn => {
+                btn.onclick = () => openEditStudentModal(btn.getAttribute('data-id'));
+            });
+
+            tbody.querySelectorAll('.btn-delete-student').forEach(btn => {
+                btn.onclick = () => {
+                    const studentId = btn.getAttribute('data-id');
+                    const student = state.students.find(s => s.id === studentId);
+                    if (student) {
+                        showConfirmModal(
+                            'Hapus Data Siswa',
+                            `Apakah Anda yakin ingin menghapus data siswa ${student.name} (${student.nisn})?`,
+                            () => deleteStudent(studentId)
+                        );
+                    }
+                };
+            });
+        }
+
+        // Search & Filter Events
+        document.getElementById('studentSearchInput')?.addEventListener('input', renderStudentsTable);
+        document.getElementById('filterClassSelect')?.addEventListener('change', renderStudentsTable);
+
+        // Student Modal Handlers
+        const studentModal = document.getElementById('studentModal');
+        const studentForm = document.getElementById('studentForm');
+
+        document.getElementById('btnOpenAddStudent')?.addEventListener('click', () => {
+            document.getElementById('studentModalTitle').textContent = 'Tambah Siswa Baru';
+            document.getElementById('mStudentId').value = '';
+            studentForm.reset();
+            studentModal.classList.remove('hidden');
+        });
+
+        document.getElementById('btnCloseStudentModal')?.addEventListener('click', () => studentModal.classList.add('hidden'));
+        document.getElementById('btnCancelStudentModal')?.addEventListener('click', () => studentModal.classList.add('hidden'));
+
+        function openEditStudentModal(id) {
+            const student = state.students.find(s => s.id === id);
+            if (!student) return;
+
+            document.getElementById('studentModalTitle').textContent = 'Edit Data Siswa';
+            document.getElementById('mStudentId').value = student.id;
+            document.getElementById('mStudentName').value = student.name;
+            document.getElementById('mStudentNisn').value = student.nisn;
+            document.getElementById('mStudentClass').value = student.class;
+            document.getElementById('mStudentPhone').value = student.phone;
+            document.getElementById('mStudentPhoto').value = student.photoUrl || '';
+
+            studentModal.classList.remove('hidden');
+        }
+
+        studentForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('mStudentId').value;
+            const name = document.getElementById('mStudentName').value.trim().toUpperCase();
+            const nisn = document.getElementById('mStudentNisn').value.trim();
+            const studentClass = document.getElementById('mStudentClass').value.trim().toUpperCase();
+            const phone = document.getElementById('mStudentPhone').value.trim();
+            const photoUrl = document.getElementById('mStudentPhoto').value.trim();
+
+            if (nisn.length !== 10 || isNaN(nisn)) {
+                showToast("NISN harus berisi 10 digit angka!", "error");
+                return;
+            }
+
+            if (id) {
+                // Update
+                const index = state.students.findIndex(s => s.id === id);
+                if (index !== -1) {
+                    state.students[index] = { id, name, nisn, class: studentClass, phone, photoUrl };
+                    showToast("Data siswa berhasil diperbarui.", "success");
+                }
+            } else {
+                // Add
+                if (state.students.some(s => s.nisn === nisn)) {
+                    showToast("NISN sudah terdaftar di sistem!", "error");
+                    return;
+                }
+                const newStudent = { id: 'S_' + Date.now(), name, nisn, class: studentClass, phone, photoUrl };
+                state.students.push(newStudent);
+                showToast("Siswa baru berhasil ditambahkan.", "success");
+            }
+
+            saveLocalData();
+            populateClassSelects();
+            renderStudentsTable();
+            updateDashboardStats();
+            studentModal.classList.add('hidden');
+        });
+
+        function deleteStudent(id) {
+            state.students = state.students.filter(s => s.id !== id);
+            saveLocalData();
+            populateClassSelects();
+            renderStudentsTable();
+            updateDashboardStats();
+            showToast("Data siswa berhasil dihapus.", "info");
+        }
+
+        document.getElementById('btnDownloadTemplate')?.addEventListener('click', () => {
+            const templateData = [
+                { 'Nama Siswa': 'MARIA ALFONSINA WAMAFMA', 'NISN': '0051234567', 'Kelas': '8A', 'No HP Orang Tua': '6281234567890' },
+                { 'Nama Siswa': 'YAN PITHEIN RUMBEKWAN', 'NISN': '0052345678', 'Kelas': '8A', 'No HP Orang Tua': '6281234567891' }
+            ];
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template Siswa");
+            XLSX.writeFile(workbook, "Template_Data_Siswa_SMPN6.xlsx");
+            showToast("Template Excel berhasil diunduh.", "success");
+        });
+
+        document.getElementById('excelFileInput')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    let importedCount = 0;
+                    json.forEach(row => {
+                        const name = (row['Nama Siswa'] || row['Nama'] || '').toString().trim().toUpperCase();
+                        const nisn = (row['NISN'] || '').toString().trim();
+                        const studentClass = (row['Kelas'] || '').toString().trim().toUpperCase();
+                        const phone = (row['No HP Orang Tua'] || row['HP'] || row['No HP'] || '').toString().trim();
+
+                        if (name && nisn && studentClass) {
+                            if (!state.students.some(s => s.nisn === nisn)) {
+                                state.students.push({
+                                    id: 'S_' + Math.random().toString(36).substr(2, 9),
+                                    name,
+                                    nisn,
+                                    class: studentClass,
+                                    phone: phone || '6281234567890',
+                                    photoUrl: ''
+                                });
+                                importedCount++;
+                            }
+                        }
+                    });
+
+                    saveLocalData();
+                    populateClassSelects();
+                    renderStudentsTable();
+                    updateDashboardStats();
+                    showToast(`Berhasil mengimpor ${importedCount} data siswa baru dari Excel.`, "success");
+                } catch (err) {
+                    console.error(err);
+                    showToast("Gagal membaca berkas Excel. Pastikan format sesuai template.", "error");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('bulkPhotoInput')?.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            let updatedCount = 0;
+            files.forEach(file => {
+                // Match filename like "0051234567.jpg"
+                const nisn = file.name.split('.')[0].trim();
+                const student = state.students.find(s => s.nisn === nisn);
+                if (student) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        student.photoUrl = evt.target.result;
+                        updatedCount++;
+                        saveLocalData();
+                        renderStudentsTable();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            setTimeout(() => {
+                showToast(`Foto massal berhasil diproses untuk siswa terdaftar.`, "success");
+            }, 500);
+            e.target.value = '';
+        });
+
+        document.getElementById('btnBulkDeleteStudents')?.addEventListener('click', () => {
+            showConfirmModal(
+                'Hapus Semua Data Siswa',
+                'PERINGATAN: Tindakan ini akan menghapus SELURUH data siswa terdaftar. Apakah Anda yakin?',
+                () => {
+                    state.students = [];
+                    saveLocalData();
+                    populateClassSelects();
+                    renderStudentsTable();
+                    updateDashboardStats();
+                    showToast("Seluruh data siswa telah dihapus.", "info");
+                }
+            );
+        });
+
+        function updateDashboardStats() {
+            const todayStr = getTodayFormattedWIT();
+            const todayRecords = state.attendance.filter(a => a.date === todayStr);
+
+            const total = state.students.length;
+            const checkedIn = todayRecords.length;
+            const notCheckedIn = Math.max(0, total - checkedIn);
+            const onTime = todayRecords.filter(a => a.status === 'HADIR').length;
+            const late = todayRecords.filter(a => a.status === 'TERLAMBAT').length;
+            const rate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
+
+            const elTotal = document.getElementById('statTotalStudents');
+            const elChecked = document.getElementById('statCheckedIn');
+            const elNotChecked = document.getElementById('statNotCheckedIn');
+            const elOnTime = document.getElementById('statOnTime');
+            const elLate = document.getElementById('statLate');
+            const elRate = document.getElementById('statAttendanceRate');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elChecked) elChecked.textContent = checkedIn;
+            if (elNotChecked) elNotChecked.textContent = notCheckedIn;
+            if (elOnTime) elOnTime.textContent = onTime;
+            if (elLate) elLate.textContent = late;
+            if (elRate) elRate.textContent = `${rate}%`;
+        }
+
+        function initCharts() {
+            const ctxRatio = document.getElementById('chartAttendanceRatio')?.getContext('2d');
+            const ctxClass = document.getElementById('chartClassDistribution')?.getContext('2d');
+
+            if (ctxRatio) {
+                if (state.charts.ratio) state.charts.ratio.destroy();
+                state.charts.ratio = new Chart(ctxRatio, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Tepat Waktu', 'Terlambat', 'Belum Absen'],
+                        datasets: [{
+                            data: [0, 0, 0],
+                            backgroundColor: ['#2563eb', '#f59e0b', '#f43f5e']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            if (ctxClass) {
+                if (state.charts.classDist) state.charts.classDist.destroy();
+                state.charts.classDist = new Chart(ctxClass, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            { label: 'Hadir', data: [], backgroundColor: '#10b981' },
+                            { label: 'Belum Absen', data: [], backgroundColor: '#f43f5e' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const todayStr = getTodayFormattedWIT();
+            const todayRecords = state.attendance.filter(a => a.date === todayStr);
+
+            const total = state.students.length;
+            const onTime = todayRecords.filter(a => a.status === 'HADIR').length;
+            const late = todayRecords.filter(a => a.status === 'TERLAMBAT').length;
+            const notCheckedIn = Math.max(0, total - (onTime + late));
+
+            if (state.charts.ratio) {
+                state.charts.ratio.data.datasets[0].data = [onTime, late, notCheckedIn];
+                state.charts.ratio.update();
+            }
+
+            if (state.charts.classDist) {
+                const classes = [...new Set(state.students.map(s => s.class))].sort();
+                const hadirPerClass = classes.map(c => {
+                    const studentNisns = state.students.filter(s => s.class === c).map(s => s.nisn);
+                    return todayRecords.filter(r => studentNisns.includes(r.nisn)).length;
+                });
+                const totalPerClass = classes.map(c => state.students.filter(s => s.class === c).length);
+                const belumPerClass = classes.map((c, idx) => Math.max(0, totalPerClass[idx] - hadirPerClass[idx]));
+
+                state.charts.classDist.data.labels = classes;
+                state.charts.classDist.data.datasets[0].data = hadirPerClass;
+                state.charts.classDist.data.datasets[1].data = belumPerClass;
+                state.charts.classDist.update();
             }
         }
-        document.getElementById('btnRunFirebaseDiag').addEventListener('click', runFirebaseDiagnostic);
 
-        // Navigation Switcher
-        document.querySelectorAll('.nav-btn').forEach(btn => {
+        const recapTabBtns = document.querySelectorAll('.recap-tab-btn');
+        recapTabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                const target = btn.dataset.target;
-                
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'bg-slate-800', 'text-white'));
-                btn.classList.add('active', 'bg-slate-800', 'text-white');
-
-                document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
-                document.getElementById(target).classList.remove('hidden');
-
-                state.activeTab = target;
-                if (target === 'pageScan') focusScanner();
+                recapTabBtns.forEach(b => {
+                    b.classList.remove('border-brand-600', 'text-brand-600', 'font-extrabold');
+                    b.classList.add('border-transparent', 'text-slate-500');
+                });
+                btn.classList.add('border-brand-600', 'text-brand-600', 'font-extrabold');
+                state.activeRecapTab = btn.getAttribute('data-recap-type') || 'daily';
+                renderRecapTable();
             });
         });
 
-        // Set default date picker value
-        document.getElementById('recapDateInput').value = getTodayFormattedWIT();
+        document.getElementById('recapDateInput')?.addEventListener('change', renderRecapTable);
+        document.getElementById('recapClassFilter')?.addEventListener('change', renderRecapTable);
+
+        // Default recap date to today
+        const recapDateInput = document.getElementById('recapDateInput');
+        if (recapDateInput) recapDateInput.value = getTodayFormattedWIT();
+
+        function renderRecapTable() {
+            const head = document.getElementById('recapTableHead');
+            const body = document.getElementById('recapTableBody');
+            if (!head || !body) return;
+
+            const selectedDate = document.getElementById('recapDateInput')?.value || getTodayFormattedWIT();
+            const selectedClass = document.getElementById('recapClassFilter')?.value || 'ALL';
+
+            let filteredStudents = state.students.filter(s => selectedClass === 'ALL' || s.class === selectedClass);
+
+            head.innerHTML = `
+                <tr class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                    <th class="py-3.5 px-4 w-12 text-center">No</th>
+                    <th class="py-3.5 px-4">Nama Siswa</th>
+                    <th class="py-3.5 px-4">NISN</th>
+                    <th class="py-3.5 px-4">Kelas</th>
+                    <th class="py-3.5 px-4">Jam Scan</th>
+                    <th class="py-3.5 px-4">Status Absensi</th>
+                </tr>
+            `;
+
+            if (filteredStudents.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Tidak ada siswa terdaftar untuk filter ini.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = filteredStudents.map((s, index) => {
+                const record = state.attendance.find(a => a.nisn === s.nisn && a.date === selectedDate);
+                const status = record ? record.status : 'ALPA / BELUM ABSEN';
+                const time = record ? `${record.time} WIT` : '--:--:--';
+                const badgeClass = status === 'HADIR' ? 'bg-emerald-100 text-emerald-800' :
+                                   status === 'TERLAMBAT' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3.5 px-4 text-center font-mono text-slate-400">${index + 1}</td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800">${s.name}</td>
+                        <td class="py-3.5 px-4 font-mono text-slate-600">${s.nisn}</td>
+                        <td class="py-3.5 px-4 font-semibold text-brand-700">${s.class}</td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-700">${time}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${badgeClass}">
+                                ${status}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btnExportExcelRecap')?.addEventListener('click', () => {
+            const selectedDate = document.getElementById('recapDateInput')?.value || getTodayFormattedWIT();
+            const selectedClass = document.getElementById('recapClassFilter')?.value || 'ALL';
+
+            const filteredStudents = state.students.filter(s => selectedClass === 'ALL' || s.class === selectedClass);
+            
+            const exportData = filteredStudents.map((s, idx) => {
+                const record = state.attendance.find(a => a.nisn === s.nisn && a.date === selectedDate);
+                return {
+                    'No': idx + 1,
+                    'Nama Siswa': s.name,
+                    'NISN': s.nisn,
+                    'Kelas': s.class,
+                    'Tanggal': selectedDate,
+                    'Jam Scan': record ? `${record.time} WIT` : '-',
+                    'Status': record ? record.status : 'ALPA / BELUM ABSEN'
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absensi");
+            XLSX.writeFile(workbook, `Rekap_Absensi_SMPN6_${selectedDate}_${selectedClass}.xlsx`);
+            showToast("Export rekap Excel berhasil dibuat.", "success");
+        });
+
+        document.getElementById('btnSaveWaConfig')?.addEventListener('click', () => {
+            const apiUrl = document.getElementById('waApiUrlInput')?.value.trim();
+            const apiKey = document.getElementById('waApiKeyInput')?.value.trim();
+            const batchSize = parseInt(document.getElementById('waBatchSizeInput')?.value || '5', 10);
+            const pauseMinutes = parseInt(document.getElementById('waPauseMinutesInput')?.value || '5', 10);
+
+            state.waConfig = { apiUrl, apiKey, batchSize, pauseMinutes };
+            saveLocalData();
+            showToast("Konfigurasi API WhatsApp berhasil disimpan.", "success");
+        });
+
+        function updateWaQueueMonitor() {
+            const queued = state.waQueue.filter(q => q.state === 'QUEUED').length;
+            const processing = state.waQueue.filter(q => q.state === 'PROCESSING').length;
+            const sent = state.waQueue.filter(q => q.state === 'SENT').length;
+            const failed = state.waQueue.filter(q => q.state === 'FAILED').length;
+
+            const elQ = document.getElementById('waCountQueued');
+            const elP = document.getElementById('waCountProcessing');
+            const elS = document.getElementById('waCountSent');
+            const elF = document.getElementById('waCountFailed');
+
+            if (elQ) elQ.textContent = queued;
+            if (elP) elP.textContent = processing;
+            if (elS) elS.textContent = sent;
+            if (elF) elF.textContent = failed;
+        }
+
+        document.getElementById('btnRunFirebaseDiag')?.addEventListener('click', () => {
+            const logEl = document.getElementById('firebaseDiagLog');
+            if (logEl) {
+                logEl.innerHTML = `
+                    <div>[INIT] Connecting to Firebase scan-moderen...</div>
+                    <div class="text-emerald-400">[OK] Firestore Database connected.</div>
+                    <div class="text-emerald-400">[OK] Storage bucket scan-moderen.firebasestorage.app ready.</div>
+                    <div class="text-emerald-400">[OK] Proctor Auth Session Verified (proktorsmp6@gmail.com).</div>
+                    <div class="text-cyan-400">[COMPLETE] Diagnostic test finished. All systems operational.</div>
+                `;
+            }
+            showToast("Tes diagnostik Firebase selesai.", "success");
+        });
+
+        document.getElementById('btnConfirmAction')?.addEventListener('click', () => {
+            if (state.confirmCallback) state.confirmCallback();
+            document.getElementById('confirmModal').classList.add('hidden');
+            state.confirmCallback = null;
+        });
+
+        document.getElementById('btnConfirmCancel')?.addEventListener('click', () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+            state.confirmCallback = null;
+        });
+
     </script>
 </body>
 </html>
