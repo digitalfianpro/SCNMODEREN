@@ -975,11 +975,11 @@
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="downloadTemplate()" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 shadow-sm">
-                            <i class="ph ph-download-simple text-lg"></i> Template CSV
+                            <i class="ph ph-download-simple text-lg"></i> Template Excel
                         </button>
                         <label class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 cursor-pointer shadow-md">
-                            <i class="ph ph-file-csv text-lg"></i> Upload CSV (Excel)
-                            <input type="file" id="excelUpload" accept=".csv" class="hidden" onchange="handleExcelUpload(event)">
+                            <i class="ph ph-file-xls text-lg"></i> Upload Data (Excel)
+                            <input type="file" id="excelUpload" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="hidden" onchange="handleExcelUpload(event)">
                         </label>
                         <label class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 cursor-pointer shadow-md">
                             <i class="ph ph-images text-lg"></i> Upload Foto Massal
@@ -1170,49 +1170,78 @@
         }
 
         function downloadTemplate() {
-            const csvContent = "NISN,NamaLengkap,Kelas,NoHP_OrangTua\n1234567890,Budi Santoso,7A,08123456789\n0987654321,Siti Aminah,8B,08987654321";
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Template_Siswa.csv";
-            link.click();
+            // Membangun file Excel langsung untuk template
+            const dataTemplate = [
+                { NISN: "1234567890", NamaLengkap: "Budi Santoso", Kelas: "7A", NoHP_OrangTua: "08123456789" },
+                { NISN: "0987654321", NamaLengkap: "Siti Aminah", Kelas: "8B", NoHP_OrangTua: "08987654321" }
+            ];
+            const ws = XLSX.utils.json_to_sheet(dataTemplate);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data Siswa");
+            XLSX.writeFile(wb, "Template_Siswa.xlsx");
         }
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
-            Swal.fire({title: 'Memproses CSV...', text: 'Tunggu sebentar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({title: 'Memproses Excel...', text: 'Membaca ribuan data dalam hitungan detik...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: async function(results) {
-                    let count = 0;
-                    const tx = db.transaction('rw', db.students, async () => {
-                        for(const row of results.data) {
-                            const nisn = row['NISN']?.trim() || row['nisn']?.trim();
-                            if(nisn) {
-                                // Put akan menambahkan jika baru, dan memperbarui (override) jika sudah ada.
-                                await db.students.put({
-                                    nisn: nisn,
-                                    name: row['NamaLengkap'] || row['nama'] || row['name'] || '-',
-                                    class: row['Kelas'] || row['kelas'] || row['class'] || '-',
-                                    parent_phone: row['NoHP_OrangTua'] || row['nohp'] || row['phone'] || '-',
-                                    photo: null 
-                                });
-                                count++;
-                            }
-                        }
-                    });
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    // Membaca file menggunakan SheetJS (XLSX)
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
                     
-                    tx.then(() => {
-                        e.target.value = ''; // reset file input
-                        Swal.fire('Proses Selesai', `${count} baris data berhasil diimpor dengan cepat!`, 'success');
+                    // Konversi ke format JSON
+                    const results = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                    
+                    let studentsToInsert = [];
+                    
+                    // Looping data dari excel
+                    for(const row of results) {
+                        // Fungsi pintar untuk mencari nama kolom Excel secara fleksibel (mengabaikan huruf besar/kecil & spasi)
+                        const getVal = (keys) => {
+                            for(let key in row) {
+                                if(keys.includes(key.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+                                    return String(row[key]).trim();
+                                }
+                            }
+                            return '';
+                        };
+
+                        const nisn = getVal(['nisn', 'nomorinduk', 'id']);
+                        if(nisn) {
+                            studentsToInsert.push({
+                                nisn: nisn,
+                                name: getVal(['namalengkap', 'nama', 'name', 'namasiswa']) || '-',
+                                class: getVal(['kelas', 'class', 'rombel']) || '-',
+                                parent_phone: getVal(['nohporangtua', 'nohp', 'phone', 'whatsapp', 'notelp', 'telepon']) || '-',
+                                photo: null 
+                            });
+                        }
+                    }
+
+                    if (studentsToInsert.length > 0) {
+                        // Fitur bulkPut: Memasukkan ribuan data ke IndexedDB sekaligus dalam milidetik
+                        await db.students.bulkPut(studentsToInsert);
+                        Swal.fire('Proses Selesai', `${studentsToInsert.length} baris data berhasil diimpor dengan super cepat!`, 'success');
                         loadStudentData();
-                    }).catch(err => {
-                        Swal.fire('Error Import', 'Terjadi kegagalan: ' + err, 'error');
-                    });
+                    } else {
+                        Swal.fire('Gagal', 'Tidak ada data valid yang diproses. Pastikan kolom "NISN" ada di file Excel Anda.', 'warning');
+                    }
+                    
+                } catch (error) {
+                    Swal.fire('Error Import', 'File gagal diproses. Pastikan formatnya adalah Excel (.xlsx / .xls). Error: ' + error.message, 'error');
+                } finally {
+                    e.target.value = ''; // Reset input agar bisa upload file yang sama lagi jika dibutuhkan
                 }
-            });
+            };
+            
+            // Baca file sebagai ArrayBuffer yang dibutuhkan oleh library XLSX
+            reader.readAsArrayBuffer(file);
         }
 
         function handlePhotoUpload(e) {
