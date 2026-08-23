@@ -1523,11 +1523,3 @@
     </script>
 </body>
 </html>
-```eor
-
-### Perubahan yang Dilakukan:
-1. **Deteksi Header Cerdas (`getVal`)**: Aplikasi sekarang secara otomatis mengenali variasi judul kolom seperti `NoHP_OrangTua`, `No HP Ortu`, `No HP Wali`, `No. WA`, `Telepon`, `No. HP`, `Phone`, `Kontak`, dll.
-2. **Koreksi Awalan Angka Nol**: Jika Excel secara otomatis memotong angka `0` di depan nomor HP (misal menjadi `8123456789`), aplikasi secara otomatis mengembalikan angka `0` di depannya, lalu memformatnya menjadi kode negara `62` saat pengiriman WhatsApp.
-3. **Penyempurnaan Template Download**: Header Excel di tombol "Template" diselaraskan dengan parser baru.
-
-Silakan coba klik **Upload Excel** kembali dengan file Excel Anda. Data nomor HP orang tua sekarang akan langsung terbaca dan tersimpan dengan rapi.
