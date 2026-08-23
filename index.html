@@ -450,9 +450,9 @@
                     return;
                 }
 
-                let phone = msg.phone;
-                if (phone && phone.startsWith('0')) phone = '62' + phone.substring(1);
-                if (phone) phone = phone.replace(/\D/g,'');
+                let phone = msg.phone ? String(msg.phone).replace(/\D/g, '') : '';
+                if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+                else if (phone.startsWith('8')) phone = '62' + phone;
 
                 if (phone && phone.length >= 10 && phone.length <= 15) {
                     try {
@@ -922,7 +922,7 @@
             let html = '';
             students.slice(0, 100).forEach(s => {
                 const photoSrc = s.photo || getAvatar(s.name);
-                html += `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6"><img src="${photoSrc}" class="w-10 h-10 rounded-full object-cover"></td><td class="py-3 px-6 font-mono">${s.nisn}</td><td class="py-3 px-6 font-bold">${s.name}</td><td class="py-3 px-6">${s.class}</td><td class="py-3 px-6">${s.parent_phone}</td><td class="py-3 px-6 text-right"><button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 p-2 rounded-lg mr-1"><i class="ph ph-pencil-simple"></i></button><button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 p-2 rounded-lg"><i class="ph ph-trash"></i></button></td></tr>`;
+                html += `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6"><img src="${photoSrc}" class="w-10 h-10 rounded-full object-cover"></td><td class="py-3 px-6 font-mono">${s.nisn}</td><td class="py-3 px-6 font-bold">${s.name}</td><td class="py-3 px-6">${s.class}</td><td class="py-3 px-6 font-mono">${s.parent_phone}</td><td class="py-3 px-6 text-right"><button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 p-2 rounded-lg mr-1"><i class="ph ph-pencil-simple"></i></button><button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 p-2 rounded-lg"><i class="ph ph-trash"></i></button></td></tr>`;
             });
             tbody.innerHTML = html;
         }
@@ -987,8 +987,8 @@
         }
 
         function downloadTemplate() {
-            const ws = XLSX.utils.json_to_sheet([{ NISN: "12345", NamaLengkap: "Budi", Kelas: "7A", NoHP_OrangTua: "0812" }]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, "Template.xlsx");
+            const ws = XLSX.utils.json_to_sheet([{ NISN: "12345", NamaLengkap: "Budi", Kelas: "7A", NoHP_OrangTua: "081234567890" }]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, "Template_Siswa_SMPN6.xlsx");
         }
 
         function handleExcelUpload(e) {
@@ -1005,15 +1005,52 @@
                         let toInsert = [];
                         
                         for(const row of results) {
-                            const getVal = (keys) => { for(let k in row) if(keys.includes(k.toLowerCase().replace(/[^a-z0-9]/g, ''))) return String(row[k]).trim(); return ''; };
-                            const nisn = getVal(['nisn', 'nomorinduk', 'id']);
-                            if(nisn) toInsert.push({ nisn, name: getVal(['nama', 'namalengkap']) || '-', class: getVal(['kelas']) || '-', parent_phone: getVal(['nohp', 'whatsapp', 'telepon']) || '-', photo: null });
+                            // Algoritma pencocokan header cerdas
+                            const getVal = (keys) => { 
+                                // Step 1: Cari persis
+                                for(let k in row) {
+                                    const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    if(keys.includes(cleanKey)) {
+                                        return String(row[k]).trim();
+                                    }
+                                }
+                                // Step 2: Cari jika substring mengandung kata kunci
+                                for(let k in row) {
+                                    const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    for(let key of keys) {
+                                        if(cleanKey.includes(key)) return String(row[k]).trim();
+                                    }
+                                }
+                                return ''; 
+                            };
+
+                            const nisn = getVal(['nisn', 'nis', 'nomorinduk', 'id']);
+                            const name = getVal(['namalengkap', 'namasiswa', 'nama', 'name']);
+                            const cls = getVal(['kelas', 'class', 'rombel']);
+                            
+                            // Ekstraksi & Format Nomor Telepon
+                            let rawPhone = getVal(['nohporangtua', 'nohportu', 'nohpwali', 'nohp', 'whatsapp', 'telepon', 'phone', 'wa', 'hp', 'notelp', 'nomorhp', 'kontak']);
+                            
+                            if (rawPhone) {
+                                rawPhone = rawPhone.replace(/\D/g, ''); // Ambil hanya digit angka
+                                if (rawPhone.startsWith('8')) rawPhone = '0' + rawPhone; // Perbaiki jika angka 0 paling depan terhapus oleh Excel
+                            }
+
+                            if(nisn) {
+                                toInsert.push({ 
+                                    nisn, 
+                                    name: name || '-', 
+                                    class: cls || '-', 
+                                    parent_phone: rawPhone || '-', 
+                                    photo: null 
+                                });
+                            }
                         }
                         if (toInsert.length > 0) {
                             await db.students.bulkPut(toInsert);
-                            Swal.fire('Sukses', `${toInsert.length} data diimpor!`, 'success');
+                            Swal.fire('Sukses', `${toInsert.length} data berhasil diimpor!`, 'success');
                             loadStudentData(); populateClassFilter();
-                        } else Swal.fire('Gagal', 'Tidak ada NISN.', 'warning');
+                        } else Swal.fire('Gagal', 'Tidak ada data NISN yang valid ditemukan.', 'warning');
                     } catch (error) { Swal.fire('Error', error.message, 'error'); } 
                     finally { e.target.value = ''; }
                 };
@@ -1486,3 +1523,11 @@
     </script>
 </body>
 </html>
+```eor
+
+### Perubahan yang Dilakukan:
+1. **Deteksi Header Cerdas (`getVal`)**: Aplikasi sekarang secara otomatis mengenali variasi judul kolom seperti `NoHP_OrangTua`, `No HP Ortu`, `No HP Wali`, `No. WA`, `Telepon`, `No. HP`, `Phone`, `Kontak`, dll.
+2. **Koreksi Awalan Angka Nol**: Jika Excel secara otomatis memotong angka `0` di depan nomor HP (misal menjadi `8123456789`), aplikasi secara otomatis mengembalikan angka `0` di depannya, lalu memformatnya menjadi kode negara `62` saat pengiriman WhatsApp.
+3. **Penyempurnaan Template Download**: Header Excel di tombol "Template" diselaraskan dengan parser baru.
+
+Silakan coba klik **Upload Excel** kembali dengan file Excel Anda. Data nomor HP orang tua sekarang akan langsung terbaca dan tersimpan dengan rapi.
