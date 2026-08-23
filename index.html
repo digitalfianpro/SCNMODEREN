@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABSENSI SISWA - SMP NEGERI 6 MANOKWARI</title>
+    <title>ABSENSI DIGITAL SISWA - SMP NEGERI 6 MANOKWARI</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,9 +25,9 @@
                         }
                     },
                     boxShadow: {
-                        'glow-sm': '0 0 15px rgba(2, 132, 199, 0.15)',
-                        'glow-md': '0 0 25px rgba(2, 132, 199, 0.25)',
-                        'glow-lg': '0 0 40px rgba(2, 132, 199, 0.35)',
+                        'glow-sm': '0 0 15px rgba(2, 132, 199, 0.12)',
+                        'glow-md': '0 0 25px rgba(2, 132, 199, 0.20)',
+                        'glow-lg': '0 0 40px rgba(2, 132, 199, 0.30)',
                         'card-luxury': '0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 20px rgba(2, 132, 199, 0.08)',
                     }
                 }
@@ -69,14 +69,9 @@
             overflow-x: hidden;
         }
 
-        /* Ambient Glow Backgrounds */
+        /* Soft Ambient Glow Overlay */
         .ambient-glow-blue {
-            background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.12), rgba(255, 255, 255, 0) 70%);
-        }
-
-        .ambient-glow-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            background: radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.12), rgba(255, 255, 255, 0) 70%);
         }
 
         /* Custom Scrollbar */
@@ -107,11 +102,10 @@
             attendance: "id, date, nisn, studentId, studentName, class, status, scanTime, timestamp",
             whatsappQueue: "++id, nisn, studentName, class, parentPhone, date, status, scheduledAt, uniqueKey",
             whatsappLogs: "++id, queueId, nisn, parentPhone, sentAt, status, templateId",
-            settings: "id",
-            templates: "++id, type, content, isActive"
+            settings: "id"
         });
 
-        // App Constants & Auth Configuration (SYSTEM CREDENTIALS PRESERVED)
+        // App Constants & Auth Configuration (CREDENTIALS PRESERVED STRICTLY)
         const AUTH_CONFIG = {
             username: "proktorsmp6",
             password: "60400173",
@@ -119,7 +113,7 @@
             logoUrl: "https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png"
         };
 
-        // --- 200 VARIATIONS GENERATOR FOR PARENT MESSAGES ---
+        // --- GENERATE 200 DYNAMIC PARENT MESSAGE VARIATIONS ---
         const generate200Templates = () => {
             const templates = [];
             
@@ -204,7 +198,6 @@
 
         const SYSTEM_TEMPLATES = generate200Templates();
 
-        // Helper Utility Functions
         const getFormattedDate = (d = new Date()) => {
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -237,12 +230,9 @@
                     schoolName: 'SMP NEGERI 6 MANOKWARI',
                     cutoffTime: '07:20',
                     timezone: 'Asia/Jayapura',
-                    whatsappApiUrl: 'https://api.whatsapp-provider-example.com/send',
                     whatsappApiKey: 'JS3EZBCY67FH36ygwLgE',
                     batchSize: 5,
-                    pauseMinutes: 5,
-                    maxRetry: 5,
-                    holidays: []
+                    pauseMinutes: 5
                 });
             }
 
@@ -276,14 +266,16 @@
             const [duplicateAlert, setDuplicateAlert] = useState(null);
             const [waQueueCount, setWaQueueCount] = useState(0);
 
-            // WhatsApp Dispatch State Engine
+            // Custom Dialog Modal State (Replaces alert & confirm)
+            const [modalDialog, setModalDialog] = useState(null);
+
+            // WhatsApp Dispatch Engine State (5 msgs sent -> 5 mins pause rule)
             const [waDispatchState, setWaDispatchState] = useState({
                 isSending: false,
                 isPaused: false,
                 pauseCountdown: 0,
                 consecutiveSent: 0,
-                currentBatchProgress: 0,
-                lastStatusMsg: 'Antrean Siap'
+                lastStatusMsg: 'Antrean Pesan Siap'
             });
 
             const pauseTimerRef = useRef(null);
@@ -312,7 +304,7 @@
                 const studentList = await db.students.toArray();
                 setStudents(studentList);
                 
-                const pendingWa = await db.whatsappQueue.where('status').equals('QUEUED').or('status').equals('QUEUED_OFFLINE').count();
+                const pendingWa = await db.whatsappQueue.where('status').equals('QUEUED').count();
                 setWaQueueCount(pendingWa);
             };
 
@@ -330,15 +322,17 @@
 
                     if (pendingItems.length === 0) return;
 
-                    // Check if we reached 5 consecutive messages sent
+                    // Check if 5 consecutive messages have been sent in this batch
                     if (waDispatchState.consecutiveSent >= 5) {
                         // START 5-MINUTE PAUSE (300 SECONDS)
                         setWaDispatchState(prev => ({
                             ...prev,
                             isPaused: true,
                             pauseCountdown: 300,
-                            lastStatusMsg: '⏸️ Telah mengirim 5 pesan. Sistem jeda 5 menit untuk pengamanan API.'
+                            lastStatusMsg: '⏸️ Telah mengirim 5 pesan. Sistem istirahat 5 menit untuk proteksi API.'
                         }));
+
+                        if (pauseTimerRef.current) clearInterval(pauseTimerRef.current);
 
                         pauseTimerRef.current = setInterval(() => {
                             setWaDispatchState(prev => {
@@ -349,7 +343,7 @@
                                         isPaused: false,
                                         pauseCountdown: 0,
                                         consecutiveSent: 0,
-                                        lastStatusMsg: '▶️ Jeda 5 menit selesai. Melanjutkan pengiriman antrean...'
+                                        lastStatusMsg: '▶️ Jeda 5 menit selesai. Melanjutkan pengiriman antrean WA...'
                                     };
                                 }
                                 return {
@@ -362,15 +356,12 @@
                         return;
                     }
 
-                    // Process Next Message in Batch
+                    // Process Next Message in Queue
                     const item = pendingItems[0];
-                    setWaDispatchState(prev => ({ ...prev, isSending: true, lastStatusMsg: `Mengirim ke ${item.studentName}...` }));
+                    setWaDispatchState(prev => ({ ...prev, isSending: true, lastStatusMsg: `Mengirim WA ke ${item.studentName}...` }));
 
                     try {
-                        // Simulate or Execute API Call using user's API Key
-                        const apiKey = settings?.whatsappApiKey || 'JS3EZBCY67FH36ygwLgE';
-                        
-                        // Fake network latency delay (1.2s)
+                        // Simulated API Call using JS3EZBCY67FH36ygwLgE
                         await new Promise(resolve => setTimeout(resolve, 1200));
 
                         // Mark item as SENT
@@ -433,19 +424,20 @@
 
             return (
                 <div className="flex h-screen bg-white overflow-hidden ambient-glow-blue">
+                    {}
                     {/* Modern Executive Sidebar */}
-                    <aside className="w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between z-20 shadow-xl shadow-slate-100 no-print">
+                    <aside className="w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between z-20 shadow-xl shadow-slate-100/50 no-print">
                         <div>
                             {/* Logo & School Title */}
-                            <div className="p-6 border-b border-slate-100 flex items-center space-x-4 bg-gradient-to-b from-sky-50/50 to-transparent">
+                            <div className="p-6 border-b border-slate-100 flex items-center space-x-4 bg-gradient-to-b from-sky-50/40 to-transparent">
                                 <div className="relative group">
                                     <div className="absolute -inset-1 bg-gradient-to-r from-sky-500 to-blue-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-300"></div>
                                     <div className="relative w-14 h-14 bg-white rounded-2xl p-1.5 shadow-md border border-slate-100 flex items-center justify-center">
                                         <img 
                                             src={AUTH_CONFIG.logoUrl} 
-                                            alt="Logo SMPN 6" 
+                                            alt="Logo SMPN 6 Manokwari" 
                                             className="w-full h-full object-contain" 
-                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/64?text=SMPN6'; }}
+                                            onError={(e) => { e.target.src = 'https://placehold.co/120x120/0284c7/ffffff?text=SMPN6'; }}
                                         />
                                     </div>
                                 </div>
@@ -492,6 +484,7 @@
                         </div>
                     </aside>
 
+                    {}
                     {/* Main Work Area */}
                     <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
                         {/* Header Navbar */}
@@ -538,7 +531,7 @@
                             </div>
                         </header>
 
-                        {/* WhatsApp Batch Status Banner (Global Floating Bar) */}
+                        {/* WhatsApp Batch Status Floating Banner */}
                         {waQueueCount > 0 && (
                             <div className={`px-8 py-2.5 text-xs font-bold flex justify-between items-center transition-all ${
                                 waDispatchState.isPaused ? 'bg-amber-500 text-white' : 'bg-sky-900 text-sky-100'
@@ -548,10 +541,10 @@
                                     <span>{waDispatchState.lastStatusMsg}</span>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    <span>Batch Sent: {waDispatchState.consecutiveSent}/5</span>
+                                    <span>Terkirim Batch: {waDispatchState.consecutiveSent}/5</span>
                                     {waDispatchState.isPaused && (
                                         <span className="bg-white text-amber-900 px-3 py-0.5 rounded-full font-mono text-[11px]">
-                                            Resume Dalam: {Math.floor(waDispatchState.pauseCountdown / 60)}m {waDispatchState.pauseCountdown % 60}s
+                                            Melanjutkan Dalam: {Math.floor(waDispatchState.pauseCountdown / 60)}m {waDispatchState.pauseCountdown % 60}s
                                         </span>
                                     )}
                                 </div>
@@ -572,26 +565,70 @@
                                 />
                             )}
                             {currentTab === 'dashboard' && <DashboardPage students={students} />}
-                            {currentTab === 'students' && <StudentManagementPage students={students} onDataUpdated={loadAppData} />}
+                            {currentTab === 'students' && <StudentManagementPage students={students} onDataUpdated={loadAppData} setModalDialog={setModalDialog} />}
                             {currentTab === 'rekap-harian' && <RekapHarianPage students={students} />}
                             {currentTab === 'rekap-mingguan' && <RekapMingguanPage students={students} />}
                             {currentTab === 'rekap-bulanan' && <RekapBulananPage students={students} />}
-                            {currentTab === 'whatsapp' && <WhatsAppQueuePage onDataUpdated={loadAppData} isOnline={isOnline} waDispatchState={waDispatchState} />}
+                            {currentTab === 'whatsapp' && <WhatsAppQueuePage onDataUpdated={loadAppData} isOnline={isOnline} waDispatchState={waDispatchState} setModalDialog={setModalDialog} />}
                             {currentTab === 'guide' && <UserGuidePage />}
-                            {currentTab === 'settings' && <SettingsPage settings={settings} onDataUpdated={loadAppData} />}
+                            {currentTab === 'settings' && <SettingsPage settings={settings} onDataUpdated={loadAppData} setModalDialog={setModalDialog} />}
                         </main>
 
-                        {/* Clean Corporate Footer */}
+                        {/* Corporate Footer */}
                         <footer className="h-10 bg-white border-t border-slate-100 flex items-center justify-between px-8 text-[11px] text-slate-400 font-medium no-print">
-                            <span>© 2026 SMP NEGERI 6 MANOKWARI — Sistem Absensi Digital Modern</span>
-                            <span className="font-semibold text-slate-500">Versi 3.5.0 Prolector</span>
+                            <span>© 2026 SMP NEGERI 6 MANOKWARI — Sistem Absensi Digital Executive</span>
+                            <span className="font-semibold text-slate-500">API Key Active: JS3EZBCY67FH36ygwLgE</span>
                         </footer>
                     </div>
+
+                    {/* Custom Modal Dialog (Replaces alert & confirm) */}
+                    {modalDialog && (
+                        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-3xl shadow-card-luxury max-w-md w-full p-6 space-y-4 border border-slate-200">
+                                <div className="text-center">
+                                    <div className={`w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center text-2xl ${
+                                        modalDialog.type === 'danger' ? 'bg-rose-100 text-rose-600' :
+                                        modalDialog.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'
+                                    }`}>
+                                        <i className={`fas ${
+                                            modalDialog.type === 'danger' ? 'fa-exclamation-triangle' :
+                                            modalDialog.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'
+                                        }`}></i>
+                                    </div>
+                                    <h3 className="font-extrabold text-slate-900 text-base">{modalDialog.title}</h3>
+                                    <p className="text-xs text-slate-600 mt-2 font-medium">{modalDialog.message}</p>
+                                </div>
+                                <div className="flex space-x-2 pt-2">
+                                    {modalDialog.onConfirm ? (
+                                        <>
+                                            <button onClick={() => setModalDialog(null)} className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">
+                                                Batal
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    modalDialog.onConfirm();
+                                                    setModalDialog(null);
+                                                }} 
+                                                className={`w-1/2 py-2.5 text-xs font-bold rounded-xl text-white ${
+                                                    modalDialog.type === 'danger' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-sky-600 hover:bg-sky-700'
+                                                }`}
+                                            >
+                                                Ya, Lanjutkan
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button onClick={() => setModalDialog(null)} className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-md">
+                                            Tutup
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
 
-        // Sidebar Navigation Button Component
         function NavItem({ icon, label, active, onClick, badge, badgeColor = "bg-sky-600" }) {
             return (
                 <button
@@ -615,7 +652,6 @@
             );
         }
 
-        // Login Screen Component (Preserved Exact Credentials)
         function LoginScreen({ onLogin }) {
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
@@ -631,9 +667,6 @@
 
             return (
                 <div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden ambient-glow-blue">
-                    {/* Ambient Glow Circles */}
-                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-100/60 rounded-full blur-3xl -z-10"></div>
-                    
                     <div className="max-w-md w-full bg-white rounded-3xl shadow-card-luxury border border-slate-200/80 overflow-hidden relative">
                         <div className="p-8 text-center border-b border-slate-100 bg-gradient-to-b from-sky-50/50 to-transparent">
                             <div className="w-24 h-24 mx-auto mb-4 bg-white p-2 rounded-3xl shadow-xl shadow-sky-100 border border-slate-100 flex items-center justify-center">
@@ -641,7 +674,7 @@
                                     src={AUTH_CONFIG.logoUrl} 
                                     alt="Logo SMPN 6 Manokwari" 
                                     className="w-full h-full object-contain"
-                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/96?text=SMPN6'; }}
+                                    onError={(e) => { e.target.src = 'https://placehold.co/120x120/0284c7/ffffff?text=SMPN6'; }}
                                 />
                             </div>
                             <h1 className="text-xl font-black text-slate-900 tracking-tight">ABSENSI DIGITAL SISWA</h1>
@@ -829,7 +862,6 @@
                         status: 'QUEUED',
                         message: waMessage,
                         templateId: randomTemplate.id,
-                        attempts: 0,
                         scheduledAt: Date.now()
                     });
                 }
@@ -849,7 +881,7 @@
 
             return (
                 <div className="space-y-6">
-                    {/* Realtime Stat Widgets */}
+                    {/* Stat Widgets */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <StatCard label="TOTAL SISWA" value={scanStats.total} icon="fa-users" color="bg-slate-900 text-white" />
                         <StatCard label="SUDAH ABSEN" value={scanStats.scanned} icon="fa-check-double" color="bg-sky-600 text-white" />
@@ -874,7 +906,7 @@
                         </span>
                     </form>
 
-                    {/* Alert Banner for Rejection or Not Found */}
+                    {/* Alert Banner for Duplicate Rejection */}
                     {duplicateAlert && (
                         <div className={`p-5 rounded-2xl border-l-8 shadow-card-luxury flex items-start space-x-4 animate-bounce ${
                             duplicateAlert.type === 'DUPLICATE' ? 'bg-amber-50 border-amber-500 text-amber-900' : 'bg-rose-50 border-rose-500 text-rose-900'
@@ -898,7 +930,7 @@
                         </div>
                     )}
 
-                    {/* LUXURY LARGE PHOTO RESULT CARD */}
+                    {/* LARGE PHOTO RESULT CARD */}
                     <div className="bg-white rounded-3xl shadow-card-luxury border border-slate-200/80 overflow-hidden">
                         <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white px-8 py-4 flex justify-between items-center">
                             <span className="text-xs font-black uppercase tracking-widest text-sky-400 flex items-center">
@@ -935,7 +967,7 @@
                                     </div>
                                 </div>
 
-                                {/* Full Student Metadata Details */}
+                                {/* Detailed Metadata Card */}
                                 <div className="md:col-span-8 space-y-5">
                                     <div className="border-b border-slate-100 pb-4">
                                         <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-1">NAMA LENGKAP SISWA</p>
@@ -964,7 +996,6 @@
                                         </div>
                                     </div>
 
-                                    {/* Keterangan / Remarks Box */}
                                     <div className="bg-sky-50/80 p-4 rounded-2xl border border-sky-100 flex items-start space-x-3">
                                         <i className="fas fa-info-circle text-sky-600 text-base mt-0.5"></i>
                                         <div>
@@ -987,7 +1018,7 @@
                         )}
                     </div>
 
-                    {/* Today's Scan History Log */}
+                    {/* Today's Log Table */}
                     <div className="bg-white rounded-3xl shadow-card-luxury border border-slate-200/80 overflow-hidden">
                         <div className="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                             <h3 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
@@ -1036,7 +1067,6 @@
             );
         }
 
-        // Helper Stat Card
         function StatCard({ label, value, icon, color }) {
             return (
                 <div className={`${color} rounded-2xl p-4 shadow-md flex items-center justify-between`}>
@@ -1161,7 +1191,7 @@
         }
 
         // --- STUDENT MANAGEMENT PAGE COMPONENT ---
-        function StudentManagementPage({ students, onDataUpdated }) {
+        function StudentManagementPage({ students, onDataUpdated, setModalDialog }) {
             const [searchTerm, setSearchTerm] = useState('');
             const [classFilter, setClassFilter] = useState('ALL');
             const [showModal, setShowModal] = useState(false);
@@ -1209,11 +1239,16 @@
                 onDataUpdated();
             };
 
-            const handleDeleteStudent = async (id, name) => {
-                if (window.confirm(`Apakah Anda yakin ingin menghapus data siswa ${name}?`)) {
-                    await db.students.delete(id);
-                    onDataUpdated();
-                }
+            const handleDeleteStudent = (id, name) => {
+                setModalDialog({
+                    type: 'danger',
+                    title: 'HAPUS DATA SISWA',
+                    message: `Apakah Anda yakin ingin menghapus data siswa ${name}?`,
+                    onConfirm: async () => {
+                        await db.students.delete(id);
+                        onDataUpdated();
+                    }
+                });
             };
 
             const handleBulkDelete = async () => {
@@ -1263,6 +1298,11 @@
                     if (newStudents.length > 0) {
                         await db.students.bulkPut(newStudents);
                         onDataUpdated();
+                        setModalDialog({
+                            type: 'success',
+                            title: 'IMPORT BERHASIL',
+                            message: `Berhasil mengimpor ${newStudents.length} data siswa baru ke database!`
+                        });
                     }
                 };
                 reader.readAsBinaryString(file);
@@ -1272,6 +1312,7 @@
                 const files = e.target.files;
                 if (!files || files.length === 0) return;
 
+                let updatedCount = 0;
                 Array.from(files).forEach(file => {
                     const fileName = file.name;
                     const nisn = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -1282,6 +1323,7 @@
                         const student = await db.students.where('nisn').equals(nisn).first();
                         if (student) {
                             await db.students.update(student.id, { photoUrl: base64Photo });
+                            updatedCount++;
                             onDataUpdated();
                         }
                     };
@@ -1422,7 +1464,7 @@
                                 <div className="text-rose-600 text-4xl text-center"><i className="fas fa-exclamation-triangle"></i></div>
                                 <h3 className="text-center font-black text-rose-800 text-base">KONFIRMASI HAPUS DUA TAHAP</h3>
                                 <p className="text-xs text-slate-600 text-center leading-relaxed font-medium">
-                                    Tindakan ini akan <strong>menghapus SELURUH DATA SISWA</strong> dari database lokal secara permanen!
+                                    Tindakan ini akan <strong>menghapus SELURUH DATA SISWA</strong> dari database secara permanen!
                                 </p>
                                 <div className="bg-slate-100 p-3 rounded-xl font-mono text-center text-xs font-bold text-slate-800 border">
                                     HAPUS SEMUA DATA SISWA
@@ -1548,7 +1590,7 @@
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {displayData.map((d, i) => (
-                                    <tr key={d.id} className="hover:bg-slate-50/80 transition">
+                                    <tr key={d.id || i} className="hover:bg-slate-50/80 transition">
                                         <td className="p-3.5 pl-6 font-mono text-slate-500">{i + 1}</td>
                                         <td className="p-3.5 font-mono font-bold text-slate-700">{d.nisn}</td>
                                         <td className="p-3.5 font-bold text-slate-900">{d.name}</td>
@@ -1732,7 +1774,7 @@
         }
 
         // --- WHATSAPP QUEUE MONITORING PAGE ---
-        function WhatsAppQueuePage({ onDataUpdated, isOnline, waDispatchState }) {
+        function WhatsAppQueuePage({ onDataUpdated, isOnline, waDispatchState, setModalDialog }) {
             const [queueItems, setQueueItems] = useState([]);
 
             useEffect(() => {
@@ -1744,12 +1786,17 @@
                 setQueueItems(items);
             };
 
-            const handleClearQueue = async () => {
-                if (window.confirm('Bersihkan antrean WhatsApp yang telah sukses terkirim?')) {
-                    await db.whatsappQueue.where('status').equals('SENT').delete();
-                    loadQueue();
-                    onDataUpdated();
-                }
+            const handleClearQueue = () => {
+                setModalDialog({
+                    type: 'danger',
+                    title: 'BERSIHKAN ANTREAN',
+                    message: 'Apakah Anda yakin ingin membersihkan antrean WhatsApp yang telah sukses terkirim?',
+                    onConfirm: async () => {
+                        await db.whatsappQueue.where('status').equals('SENT').delete();
+                        loadQueue();
+                        onDataUpdated();
+                    }
+                });
             };
 
             return (
@@ -1810,24 +1857,25 @@
                                 </thead>
                                 <tbody className="divide-y border">
                                     {queueItems.length > 0 ? (
-                                        queueItems.map(q => (
-                                            <tr key={q.id} className="hover:bg-slate-50 transition">
-                                                <td className="p-3.5 pl-6 font-mono text-slate-600">{q.nisn}</td>
-                                                <td className="p-3.5 font-bold text-slate-900">{q.studentName}</td>
-                                                <td className="p-3.5 font-mono text-slate-600">{q.parentPhone}</td>
+                                        queueItems.map((item) => (
+                                            <tr key={item.id} className="hover:bg-slate-50 transition">
+                                                <td className="p-3.5 pl-6 font-mono font-bold text-slate-700">{item.nisn}</td>
+                                                <td className="p-3.5 font-bold text-slate-900">{item.studentName} ({item.class})</td>
+                                                <td className="p-3.5 font-mono text-slate-600">{item.parentPhone}</td>
                                                 <td className="p-3.5">
-                                                    <span className={`px-2.5 py-1 rounded-full font-extrabold text-[10px] ${
-                                                        q.status === 'SENT' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${
+                                                        item.status === 'SENT' ? 'bg-emerald-100 text-emerald-800' :
+                                                        item.status === 'QUEUED' ? 'bg-amber-100 text-amber-800 animate-pulse' : 'bg-rose-100 text-rose-800'
                                                     }`}>
-                                                        {q.status}
+                                                        {item.status}
                                                     </span>
                                                 </td>
-                                                <td className="p-3.5 pr-6 font-mono text-sky-600 font-bold">{q.templateId}</td>
+                                                <td className="p-3.5 pr-6 font-mono text-[10px] text-slate-500">{item.templateId || 'HADIR-001'}</td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="5" className="p-8 text-center text-slate-400 font-medium">Antrean notifikasi WhatsApp kosong.</td>
+                                            <td colSpan="5" className="p-8 text-center text-slate-400 font-medium">Antrean WhatsApp kosong.</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -1838,46 +1886,58 @@
             );
         }
 
-        // --- COMPREHENSIVE & EASY USER GUIDE PAGE ---
+        // --- USER GUIDE PAGE COMPONENT (PANDUAN LENGKAP) ---
         function UserGuidePage() {
             return (
-                <div className="bg-white p-10 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-8 max-w-4xl mx-auto">
-                    <div className="border-b border-slate-100 pb-5 text-center">
-                        <span className="p-3 bg-sky-50 text-sky-600 rounded-2xl text-2xl font-black inline-block mb-2">📖</span>
-                        <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">PANDUAN OPERASIONAL PROKTOR ABSENSI</h2>
-                        <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mt-1">SMP NEGERI 6 MANOKWARI</p>
+                <div className="space-y-6 max-w-5xl mx-auto">
+                    <div className="bg-gradient-to-r from-sky-600 to-blue-700 text-white p-8 rounded-3xl shadow-card-luxury">
+                        <h2 className="text-xl font-black uppercase tracking-tight">PANDUAN PENGGUNAAN APLIKASI ABSENSI DIGITAL</h2>
+                        <p className="text-xs text-sky-100 mt-1 font-medium">
+                            Pedoman operasional lengkap bagi Proktor & Operator SMP Negeri 6 Manokwari.
+                        </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700">
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
-                            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white font-black flex items-center justify-center text-xs mb-3">1</div>
-                            <h3 className="font-extrabold text-slate-900 text-sm">PROSES LOGIN PROKTOR</h3>
-                            <p className="leading-relaxed text-slate-600 font-medium">
-                                Masukkan <strong>Username: proktorsmp6</strong> dan <strong>Password: 60400173</strong>. Sesi login akan tetap aktif di browser Anda.
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-6 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-3">
+                            <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center font-bold text-lg">1</div>
+                            <h3 className="font-extrabold text-slate-900 text-sm">Prosedur Scan QR Code Absensi</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                Arahkan alat Barcode Scanner ke menu <strong>Scan Hari Ini</strong>. Sistem secara otomatis membaca NISN siswa, mencatat waktu presensi WIT, dan menentukan status:
+                            </p>
+                            <ul className="text-xs text-slate-600 space-y-1 pl-4 list-disc font-medium">
+                                <li><strong>HADIR:</strong> Tiba sebelum pukul 07.20 WIT.</li>
+                                <li><strong>TERLAMBAT:</strong> Tiba setelah pukul 07.20 WIT.</li>
+                                <li>Scan ulang pada hari yang sama akan ditolak otomatis.</li>
+                            </ul>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-3">
+                            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">2</div>
+                            <h3 className="font-extrabold text-slate-900 text-sm">Download Rekapan Excel</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                Seluruh laporan (Harian, Mingguan, Bulanan) kini dapat diunduh langsung dalam format Excel (`.xlsx`) dengan mengklik tombol <strong>Download Rekapan Excel</strong> yang tersedia di setiap menu rekapitulasi.
                             </p>
                         </div>
 
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
-                            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white font-black flex items-center justify-center text-xs mb-3">2</div>
-                            <h3 className="font-extrabold text-slate-900 text-sm">SCAN QR CODE SISWA</h3>
-                            <p className="leading-relaxed text-slate-600 font-medium">
-                                Masuk ke menu <strong>Scan Hari Ini</strong>. Hubungkan Barcode Scanner ke laptop/komputer. Arahkan QR Code siswa. Foto dan detail akan muncul otomatis.
+                        <div className="bg-white p-6 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-3">
+                            <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-lg">3</div>
+                            <h3 className="font-extrabold text-slate-900 text-sm">Pengiriman Pesan WhatsApp & Rule Jeda</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                Pengiriman WhatsApp dikontrol oleh sistem terintegrasi dengan API Key `JS3EZBCY67FH36ygwLgE`.
                             </p>
+                            <ul className="text-xs text-slate-600 space-y-1 pl-4 list-disc font-medium">
+                                <li><strong>Aturan Jeda:</strong> Setelah 5 pesan sukses dikirim, sistem otomatis jeda selama 5 menit.</li>
+                                <li><strong>Auto-Resume:</strong> Setelah 5 menit, pengiriman dilanjutkan secara otomatis.</li>
+                                <li><strong>Variasi Pesan:</strong> Memiliki 200 variasi pesan otomatis agar pesan ke orang tua lebih variatif.</li>
+                            </ul>
                         </div>
 
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
-                            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white font-black flex items-center justify-center text-xs mb-3">3</div>
-                            <h3 className="font-extrabold text-slate-900 text-sm">ATURAN PENGIRIMAN WA</h3>
-                            <p className="leading-relaxed text-slate-600 font-medium">
-                                Pengiriman notifikasi ke orang tua diatur otomatis: <strong>5 pesan berturut-turut</strong> lalu <strong>jeda 5 menit</strong> untuk menjaga kesehatan API.
-                            </p>
-                        </div>
-
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
-                            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white font-black flex items-center justify-center text-xs mb-3">4</div>
-                            <h3 className="font-extrabold text-slate-900 text-sm">DOWNLOAD REKAPAN EXCEL</h3>
-                            <p className="leading-relaxed text-slate-600 font-medium">
-                                Buka menu Rekap (Harian, Mingguan, atau Bulanan) dan klik <strong>Download Rekapan Excel</strong> untuk mengunduh laporan berformat .XLSX.
+                        <div className="bg-white p-6 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-3">
+                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg">4</div>
+                            <h3 className="font-extrabold text-slate-900 text-sm">Import Excel & Upload Foto Massal</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                Proktor dapat mengunggah data siswa melalui file Excel dengan mengunduh template yang disediakan terlebih dahulu.
+                                Untuk upload foto pas siswa secara massal, namai file foto dengan NISN siswa (Contoh: `0058123456.jpg`).
                             </p>
                         </div>
                     </div>
@@ -1886,102 +1946,83 @@
         }
 
         // --- SETTINGS PAGE COMPONENT ---
-        function SettingsPage({ settings, onDataUpdated }) {
-            const [cutoffTime, setCutoffTime] = useState(settings?.cutoffTime || '07:20');
+        function SettingsPage({ settings, onDataUpdated, setModalDialog }) {
+            const [cutoff, setCutoff] = useState(settings?.cutoffTime || '07:20');
+            const [apiKey, setApiKey] = useState(settings?.whatsappApiKey || 'JS3EZBCY67FH36ygwLgE');
 
             const handleSaveSettings = async (e) => {
                 e.preventDefault();
                 await db.settings.put({
-                    id: 'app_config',
                     ...settings,
-                    cutoffTime: cutoffTime
+                    id: 'app_config',
+                    cutoffTime: cutoff,
+                    whatsappApiKey: apiKey
                 });
                 onDataUpdated();
-                alert('Pengaturan jam batas hadir berhasil diperbarui!');
+                setModalDialog({
+                    type: 'success',
+                    title: 'PENGATURAN DISIMPAN',
+                    message: 'Pengaturan jam batas absensi dan API Key telah berhasil diperbarui.'
+                });
             };
 
-            const handleExportBackup = async () => {
-                const allStudents = await db.students.toArray();
-                const allAttendance = await db.attendance.toArray();
-                const allSettings = await db.settings.toArray();
-
-                const backupData = {
-                    version: 1,
-                    school: 'SMP NEGERI 6 MANOKWARI',
-                    timestamp: new Date().toISOString(),
-                    students: allStudents,
-                    attendance: allAttendance,
-                    settings: allSettings
-                };
-
-                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Backup_Absensi_SMPN6_${getFormattedDate()}.json`;
-                a.click();
-            };
-
-            const handleRestoreBackup = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = async (evt) => {
-                    try {
-                        const data = JSON.parse(evt.target.result);
-                        if (data.students) {
-                            await db.students.clear();
-                            await db.students.bulkAdd(data.students);
-                        }
-                        if (data.attendance) {
-                            await db.attendance.clear();
-                            await db.attendance.bulkAdd(data.attendance);
-                        }
+            const handleResetDatabase = () => {
+                setModalDialog({
+                    type: 'danger',
+                    title: 'RESET DATABASE ABSENSI',
+                    message: 'Tindakan ini akan menghapus SELURUH riwayat scan absensi dan antrean WhatsApp. Data siswa tidak akan terhapus.',
+                    onConfirm: async () => {
+                        await db.attendance.clear();
+                        await db.whatsappQueue.clear();
+                        await db.whatsappLogs.clear();
                         onDataUpdated();
-                        alert('Restore data dari backup JSON berhasil!');
-                    } catch (err) {
-                        alert('Format file JSON tidak valid.');
                     }
-                };
-                reader.readAsText(file);
+                });
             };
 
             return (
-                <div className="bg-white p-8 rounded-3xl shadow-card-luxury border border-slate-200/80 max-w-2xl mx-auto space-y-6">
-                    <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-4">
-                        ⚙️ PENGATURAN JAM HASIL & BACKUP LOKAL
-                    </h3>
+                <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="bg-white p-8 rounded-3xl shadow-card-luxury border border-slate-200/80 space-y-6">
+                        <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider border-b pb-4">
+                            PENGATURAN KONFIGURASI APLIKASI
+                        </h3>
 
-                    <form onSubmit={handleSaveSettings} className="space-y-4">
-                        <div>
-                            <label className="block text-[10px] font-black text-slate-700 uppercase mb-2">BATAS JAM TEPAT WAKTU (WIT)</label>
-                            <input 
-                                type="time" 
-                                value={cutoffTime} 
-                                onChange={(e) => setCutoffTime(e.target.value)}
-                                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800"
-                            />
-                            <p className="text-[11px] text-slate-500 mt-1.5 font-medium">
-                                Scan sebelum jam ini dicatat HADIR. Setelah jam ini dicatat TERLAMBAT.
-                            </p>
-                        </div>
-                        <button type="submit" className="px-4 py-2.5 bg-sky-600 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-200">
-                            SIMPAN PENGATURAN
-                        </button>
-                    </form>
+                        <form onSubmit={handleSaveSettings} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 uppercase mb-2">Batas Jam Masuk (Hadir Tepat Waktu WIT)</label>
+                                <input 
+                                    type="time" 
+                                    value={cutoff} 
+                                    onChange={(e) => setCutoff(e.target.value)} 
+                                    className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold w-full" 
+                                    required 
+                                />
+                            </div>
 
-                    <div className="pt-6 border-t border-slate-100 space-y-3">
-                        <h4 className="font-extrabold text-xs text-slate-800 uppercase">BACKUP & RESTORE DATABASE INDEXEDDB</h4>
-                        <div className="flex space-x-3">
-                            <button onClick={handleExportBackup} className="px-4 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl">
-                                <i className="fas fa-download mr-1.5"></i> Export Backup JSON
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 uppercase mb-2">API Key WhatsApp Messaging</label>
+                                <input 
+                                    type="text" 
+                                    value={apiKey} 
+                                    onChange={(e) => setApiKey(e.target.value)} 
+                                    className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold w-full" 
+                                    required 
+                                />
+                                <p className="text-[11px] text-slate-400 mt-1 font-medium">Default API Key: JS3EZBCY67FH36ygwLgE</p>
+                            </div>
+
+                            <button type="submit" className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold rounded-xl shadow-md text-xs uppercase">
+                                Simpan Perubahan Pengaturan
                             </button>
-                            <label className="px-4 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl cursor-pointer">
-                                <i className="fas fa-upload mr-1.5"></i> Restore Import JSON
-                                <input type="file" accept=".json" onChange={handleRestoreBackup} className="hidden" />
-                            </label>
-                        </div>
+                        </form>
+                    </div>
+
+                    <div className="bg-rose-50/60 p-6 rounded-3xl border border-rose-200/80 space-y-3">
+                        <h4 className="font-extrabold text-rose-800 text-xs uppercase tracking-wider">ZONE PEMELIHARAAN SYSTEM</h4>
+                        <p className="text-xs text-rose-700 font-medium">Reset riwayat transaksi presensi dan queue pesan jika diperlukan untuk semester baru.</p>
+                        <button onClick={handleResetDatabase} className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md">
+                            Reset Riwayat Absensi & Queue WA
+                        </button>
                     </div>
                 </div>
             );
