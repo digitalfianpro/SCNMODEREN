@@ -264,7 +264,7 @@
         db.version(1).stores({
             students: 'nisn, name, class, parent_phone, photo',
             attendance: '++id, nisn, date, time, status, timestamp', 
-            queue: '++id, phone, message, status, timestamp',
+            queue: '++id, nisn, date, phone, message, status, timestamp',
             settings: 'key, value'
         });
 
@@ -273,6 +273,7 @@
         const PASS_CODE = "60400173";
         let currentMenu = 'dashboard';
         let html5QrCode = null;
+        let currentEditingPhoto = null; // Variabel penampung foto saat edit manual
         
         let queueRunning = false;
         let messagesSentThisBatch = 0;
@@ -280,9 +281,59 @@
         let barcodeBuffer = '';
         let barcodeTimeout = null;
 
-        const greetings = ["Selamat pagi Bapak/Ibu,", "Salam sejahtera,", "Halo Bapak/Ibu yang terhormat,", "Assalamu'alaikum Bapak/Ibu,", "Mohon izin menginformasikan Bapak/Ibu,"];
-        const intros = ["kami memberitahukan bahwa", "menginformasikan bahwa", "berikut adalah laporan kehadiran untuk", "sistem kami mencatat kehadiran", "kami sampaikan laporan scan kehadiran"];
-        const outtros = ["Terima kasih atas perhatiannya.", "Semoga hari Anda menyenangkan.", "Terima kasih, salam hangat dari sekolah.", "Semoga siswa kita semangat belajar hari ini.", "Mari kita dukung terus pendidikan anak kita."];
+        // Ratusan variasi komponen pesan ramah, sopan, dan modern untuk orang tua
+        const greetingsList = [
+            "Selamat pagi Bapak/Ibu Wali Murid yang terhormat,",
+            "Salam sejahtera Bapak/Ibu Orang Tua siswa,",
+            "Yth. Bapak/Ibu Orang Tua/Wali dari ananda,",
+            "Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali Murid,",
+            "Halo Bapak/Ibu yang kami hormati,",
+            "Tabea! Yth. Orang Tua/Wali Siswa SMPN 6 Manokwari,",
+            "Salam hangat dan doa terbaik untuk Bapak/Ibu sekeluarga,",
+            "Mohon izin menyampaikan informasi presensi, Bapak/Ibu yang terhormat,",
+            "Semoga Bapak/Ibu senantiasa sehat dan berlimpah berkah,",
+            "Salam hormat dari tim kedisiplinan & pendidik sekolah,"
+        ];
+
+        const introsList = [
+            "Dengan hormat, kami sampaikan bahwa sistem presensi cerdas sekolah telah mencatat kehadiran ananda hari ini.",
+            "Menginformasikan bahwa putra/putri Bapak/Ibu telah tiba di lingkungan sekolah dan melakukan scan kartu presensi.",
+            "Berikut kami lampirkan rincian kedatangan dan status presensi harian ananda di SMP Negeri 6 Manokwari.",
+            "Sistem absensi digital mencatat data kedatangan ananda secara real-time pada pagi hari ini.",
+            "Kabar presensi harian: Ananda telah memindai kartu presensi di gerbang sekolah dengan rincian berikut.",
+            "Melalui pesan otomatis ini, pihak sekolah memberitahukan data kehadiran ananda terkini:",
+            "Kami informasikan laporan presensi harian ananda dengan rincian data sebagai berikut:"
+        ];
+
+        const tepatNotesList = [
+            "✨ *Catatan:* Apresiasi tinggi untuk ketepatan waktu ananda! Kebiasaan disiplin ini sangat mendukung proses belajarnya di sekolah.",
+            "🌟 *Catatan:* Ananda hadir tepat waktu dan siap mengikuti seluruh rangkaian kegiatan belajar mengajar hari ini.",
+            "💡 *Catatan:* Terima kasih Bapak/Ibu atas dukungan bimbingan di rumah sehingga ananda senantiasa disiplin dan tepat waktu.",
+            "👍 *Catatan:* Kehadiran tepat waktu merupakan modal awal pembentukan karakter unggul ananda di sekolah.",
+            "👏 *Catatan:* Ananda menunjukkan semangat belajar yang luar biasa pagi ini dengan hadir tepat waktu."
+        ];
+
+        const terlambatNotesList = [
+            "⚠️ *Catatan:* Ananda tercatat *TERLAMBAT* tiba di sekolah. Mohon bantuan Bapak/Ibu untuk membimbing ananda agar dapat berangkat lebih awal esok hari.",
+            "📌 *Catatan:* Kami mohon kerja sama Bapak/Ibu untuk bersama-sama mengingatkan ananda mengenai pentingnya kedisiplinan waktu belajar.",
+            "🔔 *Catatan:* Mohon evaluasi jam berangkat ananda dari rumah agar esok hari dapat tiba tepat waktu sebelum jam pelajaran dimulai.",
+            "ℹ️ *Catatan:* Kedisiplinan waktu sangat memengaruhi konsentrasi belajar. Mari tingkatkan kedisiplinan ananda demi masa depannya."
+        ];
+
+        const closingsList = [
+            "Terima kasih atas perhatian, kepercayaan, dan kerja sama Bapak/Ibu yang senantiasa mendukung program sekolah.",
+            "Mari bersama kita wujudkan generasi yang disiplin, cerdas, dan berkarakter mulia.",
+            "Semoga ananda diberikan kemudahan, kelancaran, dan ilmu yang bermanfaat pada pembelajaran hari ini.",
+            "Demikian informasi ini kami sampaikan. Selamat beraktivitas untuk Bapak/Ibu sekeluarga.",
+            "Salam hormat dan terima kasih atas sinergi baik antara orang tua dan pihak sekolah."
+        ];
+
+        const signaturesList = [
+            "— *Sistem Presensi Cerdas SMPN 6 Manokwari*",
+            "— *Tim Kesiswaan & Kedisiplinan SMPN 6 Manokwari*",
+            "— *Layanan Informasi Presensi Otomatis Sekolah*",
+            "— *Humas & Layanan Wali Murid SMPN 6 Manokwari*"
+        ];
 
         // --- 3. UTILITY FUNCTIONS ---
         function getWITTime() {
@@ -306,11 +357,16 @@
             return `${h}:${m}`;
         }
 
-        // Fungsi baru untuk mengambil nama hari dalam bahasa Indonesia
         function getIndonesianDayName(dateString) {
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const d = new Date(dateString);
             return days[d.getDay()];
+        }
+
+        function getIndonesianFormattedDate(dateString) {
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const d = new Date(dateString);
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         }
 
         function updateClock() {
@@ -330,12 +386,25 @@
         updateClock();
 
         function generateMessage(student, time, status) {
-            const g = greetings[Math.floor(Math.random() * greetings.length)];
-            const i = intros[Math.floor(Math.random() * intros.length)];
-            const o = outtros[Math.floor(Math.random() * outtros.length)];
-            const statusText = status === 'Terlambat' ? '*TERLAMBAT*' : 'Tepat Waktu';
+            // Pemilihan acak dari puluhan opsi untuk menciptakan ratusan kombinasi pesan unik
+            const greeting = greetingsList[Math.floor(Math.random() * greetingsList.length)];
+            const intro = introsList[Math.floor(Math.random() * introsList.length)];
             
-            return `${g} ${i} ananda:\n\n👤 Nama: ${student.name}\n📚 Kelas: ${student.class}\n📅 Tanggal: ${getDateOnlyWIT()}\n⏰ Waktu Scan: ${time} WIT\n📊 Status: ${statusText}\n\n${o}`;
+            const isLate = status === 'Terlambat';
+            const note = isLate 
+                ? terlambatNotesList[Math.floor(Math.random() * terlambatNotesList.length)]
+                : tepatNotesList[Math.floor(Math.random() * tepatNotesList.length)];
+                
+            const closing = closingsList[Math.floor(Math.random() * closingsList.length)];
+            const signature = signaturesList[Math.floor(Math.random() * signaturesList.length)];
+
+            const todayStr = getDateOnlyWIT();
+            const dayName = getIndonesianDayName(todayStr);
+            const formattedDate = getIndonesianFormattedDate(todayStr);
+
+            const statusBadge = isLate ? "🔴 *TERLAMBAT*" : "🟢 *TEPAT WAKTU*";
+
+            return `${greeting}\n\n${intro}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 *LAPORAN PRESENSI SISWA*\n━━━━━━━━━━━━━━━━━━━━━━\n👤 *Nama Siswa* : ${student.name}\n🆔 *NISN*       : ${student.nisn}\n📚 *Kelas*      : ${student.class}\n📅 *Hari/Tgl*   : ${dayName}, ${formattedDate}\n⏰ *Jam Presensi*: ${time} WIT\n📊 *Status*     : ${statusBadge}\n━━━━━━━━━━━━━━━━━━━━━━\n\n${note}\n\n${closing}\n\n${signature}`;
         }
 
         function getAvatar(name) {
@@ -352,18 +421,14 @@
 
         // --- 4. CORE LOGIC (SCAN & WA QUEUE) ---
         
-        // --- WHATSAPP BACKGROUND WORKER ---
         async function processWhatsAppQueue() {
-            // Cegah tumpang tindih proses jika request sebelumnya belum selesai
             if (queueRunning) return;
             
             try {
-                // Selalu update UI Counter indikator pending di sidebar
                 const pendingCount = await db.queue.where('status').equals('pending').count();
                 const countDisplay = document.getElementById('waQueueCount');
                 if (countDisplay) countDisplay.innerText = pendingCount;
 
-                // Cek dan terapkan jeda sistem (Anti-Spam)
                 if (Date.now() < batchPauseEndTime) {
                     let remaining = Math.ceil((batchPauseEndTime - Date.now()) / 1000);
                     const timerDisplay = document.getElementById('waTimerDisplay');
@@ -376,23 +441,19 @@
                     if (timerDisplay) timerDisplay.innerText = `Jeda aktif: -`;
                 }
 
-                // Jika tidak ada antrean, istirahat dan kembalikan lampu indikator ke hijau
                 if (pendingCount === 0) {
                     const dot = document.getElementById('waStatusDot');
                     if(dot) dot.className = 'w-2 h-2 rounded-full bg-green-400';
                     return;
                 }
 
-                // Mulai memproses antrean pesan
                 queueRunning = true;
                 const dot = document.getElementById('waStatusDot');
                 if(dot) dot.className = 'w-2 h-2 rounded-full bg-blue-500 animate-bounce'; 
 
-                // Ambil 1 pesan pending terlama dari database
                 const msg = await db.queue.where('status').equals('pending').first();
                 if (!msg) { queueRunning = false; return; }
 
-                // Batching Logic: Kirim maksimal 10 pesan beruntun, lalu jeda 5 detik
                 messagesSentThisBatch++;
                 if (messagesSentThisBatch > 10) {
                     batchPauseEndTime = Date.now() + 5000; 
@@ -402,30 +463,24 @@
                 }
 
                 let phone = msg.phone;
-                
-                // Normalisasi nomor HP ke format Internasional 62...
                 if (phone && phone.startsWith('0')) phone = '62' + phone.substring(1);
-                // Bersihkan karakter selain angka (spasi, strip dll)
                 if (phone) phone = phone.replace(/\D/g,'');
 
-                // Validasi panjang nomor HP agar valid
                 if (phone && phone.length >= 10 && phone.length <= 15) {
                     try {
-                        // Memanggil API Fonnte (Berdasarkan format Token API_KEY yang Anda miliki)
                         const response = await fetch('https://api.fonnte.com/send', {
                             method: 'POST',
                             headers: { 'Authorization': API_KEY_WA },
                             body: new URLSearchParams({ 
                                 target: phone, 
                                 message: msg.message, 
-                                delay: '2', // Jeda antar pesan dari sisi server Fonnte
+                                delay: '2',
                                 countryCode: '62' 
                             })
                         });
 
                         const result = await response.json();
                         
-                        // Perbarui status pengiriman di database internal
                         if (result.status) {
                             await db.queue.update(msg.id, { status: 'sent', response: JSON.stringify(result) });
                         } else {
@@ -433,11 +488,9 @@
                         }
                     } catch (apiError) {
                         console.error("API Error WA:", apiError);
-                        // Ubah status ke error agar tidak terus-menerus nyangkut pending
                         await db.queue.update(msg.id, { status: 'error', error: apiError.message });
                     }
                 } else {
-                    // Tandai nomor tidak valid jika gagal di-filter
                     await db.queue.update(msg.id, { status: 'invalid_phone', error: 'Nomor HP tidak valid' });
                 }
 
@@ -445,6 +498,94 @@
                 console.error("Sistem Antrean Error:", error);
             } finally {
                 queueRunning = false;
+            }
+        }
+
+        setInterval(processWhatsAppQueue, 3000);
+
+        async function processScan(scannedData) {
+            const nisn = scannedData.trim();
+            const today = getDateOnlyWIT();
+            const timeNow = getTimeOnlyWIT();
+            
+            try {
+                const student = await db.students.get(nisn);
+                if (!student) {
+                    playSound('error');
+                    Swal.fire({ 
+                        icon: 'error', 
+                        title: 'AKSES DITOLAK', 
+                        text: `Data siswa dengan NISN (${nisn}) tidak terdaftar di database master.`, 
+                        confirmButtonColor: '#1e3a8a', 
+                        timer: 3000, 
+                        timerProgressBar: true, 
+                        showConfirmButton: false 
+                    });
+                    return;
+                }
+
+                // 1. PENCEGAHAN SCAN DOBEL (PREVENT DOUBLE SCAN)
+                const existingScan = await db.attendance.where({ nisn: nisn, date: today }).first();
+                if (existingScan) {
+                    playSound('warning');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '⚠️ PRESENSI SUDAH TERCATAT',
+                        html: `
+                            <div class="text-left bg-amber-50 p-4 rounded-2xl border border-amber-200 text-amber-900 text-sm space-y-2 mt-2">
+                                <p class="font-bold text-base text-amber-800 border-b border-amber-200 pb-2">Siswa Ini Sudah Melakukan Scan Hari Ini!</p>
+                                <p>👤 <b>Nama:</b> ${student.name}</p>
+                                <p>📚 <b>Kelas:</b> ${student.class}</p>
+                                <p>⏰ <b>Jam Scan Pertama:</b> <span class="font-bold text-blue-700">${existingScan.time} WIT</span></p>
+                                <p>📊 <b>Status Absensi:</b> <span class="font-bold">${existingScan.status}</span></p>
+                            </div>
+                            <p class="text-xs text-red-500 font-semibold mt-3">Sistem menolak scan ganda untuk mencegah manipulasi data presensi.</p>
+                        `,
+                        confirmButtonColor: '#fbbf24',
+                        confirmButtonText: 'Saya Mengerti'
+                    });
+                    return;
+                }
+
+                let limitSetting = await db.settings.get('lateLimit');
+                let lateLimitStr = limitSetting ? limitSetting.value : "07:20";
+                let status = 'Tepat Waktu';
+                
+                const [scanH, scanM] = timeNow.split(':').map(Number);
+                const [limitH, limitM] = lateLimitStr.split(':').map(Number);
+                
+                if ((scanH > limitH) || (scanH === limitH && scanM > limitM)) {
+                    status = 'Terlambat';
+                }
+
+                // Simpan Data Absensi Ke Database
+                await db.attendance.add({
+                    nisn: nisn, date: today, time: timeNow, status: status, timestamp: getWITTime().getTime()
+                });
+
+                // 2. PENCEGAHAN PESAN DOBEL KE ORANG TUA (PREVENT DOUBLE WA MESSAGE ON SAME DAY)
+                const existingQueue = await db.queue.where({ nisn: nisn, date: today }).first();
+                if (!existingQueue) {
+                    const waMessage = generateMessage(student, timeNow, status);
+                    await db.queue.add({
+                        nisn: nisn,
+                        date: today,
+                        phone: student.parent_phone || '-',
+                        message: waMessage,
+                        status: 'pending',
+                        timestamp: getWITTime().getTime()
+                    });
+                } else {
+                    console.warn(`Pesan WA untuk siswa NISN ${nisn} pada tanggal ${today} sudah pernah diantrekan/terkirim.`);
+                }
+
+                displayScanResult(student, timeNow, status);
+                playSound('success');
+                if (currentMenu === 'scan') loadTodayScansForSidebar(false);
+
+            } catch (err) {
+                console.error(err);
+                Toast.fire({ icon: 'error', title: 'Terjadi kesalahan sistem saat memproses presensi.' });
             }
         }
 
@@ -460,14 +601,14 @@
                 const student = await db.students.get(nisn);
                 if (!student) {
                     playSound('error');
-                    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: `Data siswa dengan NISN ${nisn} tidak ditemukan.`, confirmButtonColor: '#1e3a8a' });
+                    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: `Data siswa dengan NISN ${nisn} tidak ditemukan.`, confirmButtonColor: '#1e3a8a', timer: 2500, timerProgressBar: true, showConfirmButton: false });
                     return;
                 }
 
                 const existingScan = await db.attendance.where({ nisn: nisn, date: today }).first();
                 if (existingScan) {
                     playSound('warning');
-                    Swal.fire({ icon: 'warning', title: 'Sudah Absen', text: `${student.name} sudah melakukan scan hari ini pada ${existingScan.time} WIT.`, confirmButtonColor: '#fbbf24' });
+                    Swal.fire({ icon: 'warning', title: 'Sudah Absen', text: `${student.name} sudah melakukan scan hari ini pada ${existingScan.time} WIT.`, confirmButtonColor: '#fbbf24', timer: 2500, timerProgressBar: true, showConfirmButton: false });
                     return;
                 }
 
@@ -992,12 +1133,18 @@
                 </div>
 
                 <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[65vh]">
-                    <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                        <div class="relative w-full max-w-sm">
-                            <i class="ph ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
-                            <input type="text" id="searchStudent" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-inner" oninput="loadStudentData()">
+                    <div class="p-5 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex-1 flex flex-col sm:flex-row gap-3 w-full">
+                            <div class="relative w-full max-w-sm">
+                                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                                <input type="text" id="searchStudent" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-inner" oninput="loadStudentData()">
+                            </div>
+                            <select id="classFilter" onchange="loadStudentData()" class="w-full sm:w-auto min-w-[140px] rounded-xl border border-gray-200 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-sm cursor-pointer font-medium text-gray-700">
+                                <option value="">Semua Kelas</option>
+                                <!-- Option Kelas Dimuat Otomatis -->
+                            </select>
                         </div>
-                        <button onclick="openStudentModal()" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 shadow-md">
+                        <button onclick="openStudentModal()" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold transition text-sm flex items-center justify-center gap-2 shadow-md w-full md:w-auto shrink-0">
                             <i class="ph ph-plus-circle text-lg"></i> Tambah Manual
                         </button>
                     </div>
@@ -1022,12 +1169,24 @@
 
                 <!-- Modal Form Entry Siswa -->
                 <div id="studentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform transition-all animate-zoom-in">
+                    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform transition-all animate-zoom-in max-h-[90vh] overflow-y-auto">
                         <div class="flex justify-between items-center mb-6">
                             <h3 id="modalTitle" class="text-2xl font-bold text-gray-800 tracking-tight">Form Data Siswa</h3>
-                            <button onclick="closeStudentModal()" class="text-gray-400 hover:text-red-500"><i class="ph ph-x-circle text-3xl"></i></button>
+                            <button onclick="closeStudentModal()" class="text-gray-400 hover:text-red-500 transition-colors"><i class="ph ph-x-circle text-3xl"></i></button>
                         </div>
-                        <form id="studentForm" class="space-y-5">
+                        <form id="studentForm" class="space-y-4">
+                            <!-- Area Upload Foto Manual -->
+                            <div class="flex flex-col items-center justify-center mb-2">
+                                <div class="relative group cursor-pointer" onclick="document.getElementById('s_photo').click()">
+                                    <img id="modalPhotoPreview" src="" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-md group-hover:opacity-70 transition duration-300">
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                                        <i class="ph ph-camera text-2xl text-gray-800 drop-shadow-md bg-white/70 p-2 rounded-full backdrop-blur-sm"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="s_photo" accept="image/*" class="hidden" onchange="previewModalPhoto(event)">
+                                <p class="text-[10px] text-gray-500 mt-2 text-center font-bold bg-gray-100 px-3 py-1 rounded-full uppercase tracking-wider">Klik foto untuk ubah</p>
+                            </div>
+
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nomor Induk / NISN</label>
                                 <input type="text" id="s_nisn" required class="w-full rounded-xl border border-gray-200 px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition">
@@ -1052,25 +1211,48 @@
                 </div>
             `;
             loadStudentData();
+            populateClassFilter();
+        }
+
+        async function populateClassFilter() {
+            const classFilter = document.getElementById('classFilter');
+            if(!classFilter) return;
+            
+            const students = await db.students.toArray();
+            // Ambil nama-nama kelas yang unik, lalu urutkan
+            const classes = [...new Set(students.map(s => s.class))].filter(c => c && c !== '-').sort();
+            
+            const currentValue = classFilter.value;
+            classFilter.innerHTML = '<option value="">Semua Kelas</option>';
+            classes.forEach(c => {
+                classFilter.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+            classFilter.value = currentValue; // Kembalikan ke pilihan sebelumnya jika ada
         }
 
         async function loadStudentData() {
             const tbody = document.getElementById('studentTableBody');
             if(!tbody) return;
             const search = document.getElementById('searchStudent')?.value.toLowerCase() || '';
+            const selectedClass = document.getElementById('classFilter')?.value || '';
             
             let students = await db.students.toArray();
+            
+            // Filter berdasarkan pilihan dropdown kelas
+            if (selectedClass) {
+                students = students.filter(s => s.class === selectedClass);
+            }
+
             if(search) {
                 students = students.filter(s => s.name.toLowerCase().includes(search) || s.nisn.toLowerCase().includes(search));
             }
 
             if(students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-16 text-gray-400 bg-gray-50/50"><i class="ph ph-users-three text-6xl block mb-4 opacity-30"></i><span class="text-lg font-medium">Data Siswa Kosong</span><br>Silahkan tambah manual atau upload CSV</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-16 text-gray-400 bg-gray-50/50"><i class="ph ph-users-three text-6xl block mb-4 opacity-30"></i><span class="text-lg font-medium">Data Siswa Kosong</span><br>Silahkan tambah manual atau ubah filter pencarian</td></tr>';
                 return;
             }
 
             let html = '';
-            // Render limit untuk menjaga performa antarmuka (maksimal 100 per tampilan)
             const displayLimit = 100; 
             const displayData = students.slice(0, displayLimit);
 
@@ -1084,21 +1266,35 @@
                         <td class="py-3 px-6"><span class="bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-md text-xs">${s.class}</span></td>
                         <td class="py-3 px-6 text-gray-600 font-mono text-sm">${s.parent_phone}</td>
                         <td class="py-3 px-6 text-right opacity-50 group-hover:opacity-100 transition">
-                            <button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition shadow-sm"><i class="ph ph-pencil-simple text-lg"></i></button>
-                            <button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 hover:bg-red-600 hover:text-white p-2 rounded-lg transition shadow-sm ml-1"><i class="ph ph-trash text-lg"></i></button>
+                            <button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition shadow-sm" title="Edit Data & Foto"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 hover:bg-red-600 hover:text-white p-2 rounded-lg transition shadow-sm ml-1" title="Hapus Siswa"><i class="ph ph-trash text-lg"></i></button>
                         </td>
                     </tr>
                 `;
             });
             
             if (students.length > displayLimit) {
-                 html += `<tr><td colspan="6" class="text-center py-5 text-sm text-gray-500 font-medium bg-gray-50">Menampilkan ${displayLimit} dari ${students.length} total data. Ketik di pencarian untuk memfilter selebihnya.</td></tr>`;
+                 html += `<tr><td colspan="6" class="text-center py-5 text-sm text-gray-500 font-medium bg-gray-50">Menampilkan ${displayLimit} dari ${students.length} total data berdasarkan filter. Gunakan pencarian untuk lebih spesifik.</td></tr>`;
             }
 
             tbody.innerHTML = html;
         }
 
+        // Fungsi membaca file foto secara lokal ke Base64 (Tepat Sasaran)
+        function previewModalPhoto(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentEditingPhoto = event.target.result;
+                document.getElementById('modalPhotoPreview').src = currentEditingPhoto;
+            };
+            reader.readAsDataURL(file);
+        }
+
         function openStudentModal() {
+            currentEditingPhoto = null; // Reset foto
+            document.getElementById('modalPhotoPreview').src = getAvatar('S'); // Avatar default
             document.getElementById('studentForm').reset();
             document.getElementById('s_nisn').readOnly = false;
             document.getElementById('modalTitle').innerText = 'Entry Data Siswa Baru';
@@ -1113,6 +1309,10 @@
         async function editStudent(nisn) {
             const s = await db.students.get(nisn);
             if(!s) return;
+            
+            currentEditingPhoto = s.photo || null; // Pasang foto saat ini atau null
+            document.getElementById('modalPhotoPreview').src = s.photo || getAvatar(s.name);
+            
             document.getElementById('s_nisn').value = s.nisn;
             document.getElementById('s_nisn').readOnly = true;
             document.getElementById('s_name').value = s.name;
@@ -1128,14 +1328,15 @@
             e.preventDefault();
             const nisn = document.getElementById('s_nisn').value.trim();
             const existing = await db.students.get(nisn);
-            if(existing) return Swal.fire({icon: 'error', title: 'Akses Ditolak', text: 'NISN tersebut sudah terdaftar di sistem!'});
+            if(existing) return Swal.fire({icon: 'error', title: 'Data Ditolak', text: 'NISN tersebut sudah terdaftar di sistem!', timer: 3000, timerProgressBar: true, showConfirmButton: false});
 
             await db.students.add({
                 nisn: nisn, name: document.getElementById('s_name').value.trim(),
                 class: document.getElementById('s_class').value.trim(),
-                parent_phone: document.getElementById('s_phone').value.trim(), photo: null
+                parent_phone: document.getElementById('s_phone').value.trim(), 
+                photo: currentEditingPhoto
             });
-            closeStudentModal(); loadStudentData();
+            closeStudentModal(); loadStudentData(); populateClassFilter();
             Toast.fire({icon: 'success', title: 'Data tersimpan.'});
         }
 
@@ -1145,9 +1346,10 @@
             await db.students.update(nisn, {
                 name: document.getElementById('s_name').value.trim(),
                 class: document.getElementById('s_class').value.trim(),
-                parent_phone: document.getElementById('s_phone').value.trim()
+                parent_phone: document.getElementById('s_phone').value.trim(),
+                photo: currentEditingPhoto // Update foto baru (jika ada)
             });
-            closeStudentModal(); loadStudentData();
+            closeStudentModal(); loadStudentData(); populateClassFilter();
             Toast.fire({icon: 'success', title: 'Data berhasil diubah.'});
         }
 
@@ -1155,7 +1357,7 @@
             const result = await Swal.fire({ title: 'Hapus data ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus!' });
             if(result.isConfirmed) {
                 await db.students.delete(nisn);
-                loadStudentData();
+                loadStudentData(); populateClassFilter();
                 Toast.fire({icon: 'success', title: 'Data Dihapus'});
             }
         }
@@ -1164,7 +1366,7 @@
             const result = await Swal.fire({ title: 'PEMBERITAHUAN KRITIS', text: 'Semua master data siswa akan dihapus permanen. Lanjutkan?', icon: 'error', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'HAPUS SEMUA' });
             if(result.isConfirmed) {
                 await db.students.clear();
-                loadStudentData();
+                loadStudentData(); populateClassFilter();
                 Toast.fire({icon: 'success', title: 'Database Dikosongkan'});
             }
         }
@@ -1229,6 +1431,7 @@
                         await db.students.bulkPut(studentsToInsert);
                         Swal.fire('Proses Selesai', `${studentsToInsert.length} baris data berhasil diimpor dengan super cepat!`, 'success');
                         loadStudentData();
+                        populateClassFilter(); // Segarkan dropdown pilihan kelas setelah impor
                     } else {
                         Swal.fire('Gagal', 'Tidak ada data valid yang diproses. Pastikan kolom "NISN" ada di file Excel Anda.', 'warning');
                     }
