@@ -117,14 +117,7 @@
 
         .stat-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
-
-        .premium-card {
-            background: #ffffff;
-            border-radius: 1.25rem;
-            border: 1px solid rgba(229, 231, 235, 0.8);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            transition: all 0.3s ease;
-        }
+        .premium-card { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
     </style>
     <script>
         window.tailwind = window.tailwind || {};
@@ -135,7 +128,6 @@
 </head>
 <body class="text-gray-800 antialiased overflow-hidden h-screen w-screen flex flex-col">
 
-    <!-- Login Page -->
     <div id="loginPage" class="login-bg h-screen w-full flex items-center justify-center fixed inset-0 z-50">
         <div class="login-content glass-panel p-10 rounded-3xl w-full max-w-md text-center transform transition-all">
             <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMP6" class="w-40 h-40 mx-auto mb-6 glowing-logo object-contain">
@@ -160,7 +152,6 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
     <div id="mainApp" class="hide h-screen w-full flex bg-white">
         
         <!-- Sidebar -->
@@ -203,7 +194,7 @@
                     <div class="text-[10px] text-gray-400">Antrean: <span id="waQueueCount" class="text-white font-bold">0</span> pesan</div>
                     <div class="text-[10px] text-gray-400" id="waTimerDisplay">Jeda aktif: -</div>
                 </div>
-                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 p-3 bg-red-500/20 hover:bg-red-500/40 text-red-100 rounded-lg transition-colors font-bold">
+                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 p-3 bg-red-500/20 hover:bg-red-500/40 text-red-100 rounded-lg transition-colors">
                     <i class="ph ph-sign-out"></i> Keluar
                 </button>
             </div>
@@ -251,7 +242,6 @@
         </main>
     </div>
 
-    <!-- JavaScript Application Logic -->
     <script>
         // --- 1. SETUP DATABASE (Dexie.js) ---
         const db = new Dexie("AbsensiPremiumDB");
@@ -276,6 +266,39 @@
         let batchPauseEndTime = 0;
         let barcodeBuffer = '';
         let barcodeTimeout = null;
+
+        // --- PASSWORD AUTHENTICATION (60400173) ---
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const p = document.getElementById('password').value;
+            if (p === '60400173') {
+                document.getElementById('loginPage').classList.add('hide');
+                document.getElementById('mainApp').classList.remove('hide');
+                switchMenu('dashboard');
+            } else {
+                Swal.fire({ icon: 'error', title: 'AKSES DITOLAK', text: 'Username atau Password yang Anda masukkan tidak valid!', confirmButtonColor: '#1e3a8a' });
+            }
+        });
+
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.replace('ph-eye-slash', 'ph-eye');
+            } else {
+                input.type = 'password';
+                this.classList.replace('ph-eye', 'ph-eye-slash');
+            }
+        });
+
+        function logout() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
+            }
+            document.getElementById('mainApp').classList.add('hide');
+            document.getElementById('loginPage').classList.remove('hide');
+            document.getElementById('loginForm').reset();
+        }
 
         // --- EXPANDED MESSAGE TEMPLATES ---
         const greetingsList = [
@@ -341,15 +364,15 @@
             "— *Tata Tertib Sekolah SMP Negeri 6*"
         ];
 
-        // --- 3. UTILITY FUNCTIONS ---
+        // --- STREAMING_CHUNK:Defining Utility Functions... ---
         function getWITTime() {
             const date = new Date();
             const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
             return new Date(utc + (3600000 * 9));
         }
 
-        function getDateOnlyWIT(dateObj = null) {
-            const wit = dateObj || getWITTime();
+        function getDateOnlyWIT() {
+            const wit = getWITTime();
             const y = wit.getFullYear();
             const m = String(wit.getMonth() + 1).padStart(2, '0');
             const d = String(wit.getDate()).padStart(2, '0');
@@ -365,13 +388,13 @@
 
         function getIndonesianDayName(dateString) {
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const d = new Date(dateString + 'T00:00:00');
+            const d = new Date(dateString);
             return days[d.getDay()];
         }
 
         function getIndonesianFormattedDate(dateString) {
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const d = new Date(dateString + 'T00:00:00');
+            const d = new Date(dateString);
             return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         }
 
@@ -408,15 +431,40 @@
         }
 
         function getAvatar(name) {
-            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'S';
             const colors = ['#1e3a8a', '#b91c1c', '#047857', '#6d28d9', '#c2410c'];
-            const color = colors[name.length % colors.length];
+            const color = colors[(name ? name.length : 0) % colors.length];
             return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${encodeURIComponent(color)}"/><text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">${initials}</text></svg>`;
         }
 
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
 
-        // --- 4. CORE LOGIC (SCAN & WA QUEUE) ---
+        // --- STREAMING_CHUNK:Implementing Navigation and Switch Menu Logic... ---
+        function switchMenu(menuName) {
+            currentMenu = menuName;
+            
+            // Highlight active menu in sidebar
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            const activeEl = document.getElementById(`menu-${menuName}`);
+            if (activeEl) activeEl.classList.add('active');
+
+            // Close camera if switching away from scan
+            if (menuName !== 'scan' && html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
+            }
+
+            const container = document.getElementById('contentArea');
+            if (!container) return;
+
+            if (menuName === 'dashboard') renderDashboard(container);
+            else if (menuName === 'scan') renderScanArea(container);
+            else if (menuName === 'reports') renderReports(container);
+            else if (menuName === 'data') renderDataManager(container);
+            else if (menuName === 'whatsapp') renderWASettings(container);
+            else if (menuName === 'guide') renderGuide(container);
+        }
+
+        // --- STREAMING_CHUNK:Implementing Core WA Queue Processing & Scanning Logic... ---
         async function processWhatsAppQueue() {
             if (queueRunning) return;
             try {
@@ -616,29 +664,29 @@
             }
         }
 
-        // --- REPORTS VIEW & DETAILED EXCEL EXPORTER ---
+        // --- STREAMING_CHUNK:Implementing Enhanced Reports View & Detailed Excel Export Functions... ---
         async function renderReports(container) {
             container.innerHTML = `
-                <div class="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
+                <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Rekapan Kehadiran Lengkap</h1>
                         <p class="text-gray-500 mt-1">Analisis dan laporan detail kehadiran siswa beserta persentasenya.</p>
                     </div>
-                    <div class="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
-                        <select id="reportFilter" class="bg-gray-50 border border-gray-200 font-medium text-gray-700 px-3 py-2 rounded-xl focus:ring-2 focus:ring-gold outline-none cursor-pointer">
+                    <div class="flex flex-wrap gap-2 bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">
+                        <select id="reportFilter" class="bg-transparent border-none font-medium text-gray-700 px-3 py-2 focus:ring-0 outline-none cursor-pointer text-sm">
                             <option value="today">Hari Ini</option>
                             <option value="week">7 Hari Terakhir</option>
                             <option value="month">Bulan Ini</option>
                             <option value="all">Seluruh Waktu</option>
                         </select>
-                        <button onclick="loadReportData()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-xl font-bold transition-all hover:shadow-md">Terapkan</button>
-                        <button onclick="exportWeeklyExcel()" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <button onclick="loadReportData()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-lg font-bold text-sm transition-all hover:shadow-md">Terapkan</button>
+                        <button onclick="exportWeeklyExcel()" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-3.5 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-1.5 shadow-md transform hover:-translate-y-0.5">
                             <i class="ph ph-file-xls text-lg"></i> Excel Perminggu
                         </button>
-                        <button onclick="exportMonthlyExcel()" class="bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            <i class="ph ph-calendar text-lg"></i> Excel Bulanan (Tgl 1-31)
+                        <button onclick="exportMonthlyExcel()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3.5 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-1.5 shadow-md transform hover:-translate-y-0.5">
+                            <i class="ph ph-calendar-check text-lg"></i> Excel Bulanan (Full Matrix)
                         </button>
-                        <button onclick="exportReportToCSV()" class="bg-gray-900 hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-900/30 text-white px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                        <button onclick="exportReportToCSV()" class="bg-gray-900 hover:bg-gray-800 text-white px-3.5 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-1.5 shadow-md">
                             <i class="ph ph-download-simple"></i> CSV
                         </button>
                     </div>
@@ -652,7 +700,13 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-yellow-50/50 text-gray-600 text-xs uppercase tracking-wider font-bold">
-                                    <th class="py-4 px-5 border-b border-yellow-100">Hari</th><th class="py-4 px-5 border-b border-yellow-100">Tanggal</th><th class="py-4 px-5 border-b border-yellow-100">Waktu</th><th class="py-4 px-5 border-b border-yellow-100">NISN</th><th class="py-4 px-5 border-b border-yellow-100">Nama Siswa</th><th class="py-4 px-5 border-b border-yellow-100">Kelas</th><th class="py-4 px-5 border-b border-yellow-100 text-center">Status</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">Hari</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">Tanggal</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">Waktu</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">NISN</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">Nama Siswa</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100">Kelas</th>
+                                    <th class="py-4 px-5 border-b border-yellow-100 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="reportTableBody"></tbody>
@@ -677,7 +731,8 @@
             if (filter === 'today') records = await db.attendance.where('date').equals(todayStr).reverse().sortBy('timestamp');
             else if (filter === 'week') {
                 const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7);
-                records = await db.attendance.where('date').between(getDateOnlyWIT(lastWeek), todayStr, true, true).reverse().sortBy('timestamp');
+                const lastWeekStr = `${lastWeek.getFullYear()}-${String(lastWeek.getMonth() + 1).padStart(2, '0')}-${String(lastWeek.getDate()).padStart(2, '0')}`;
+                records = await db.attendance.where('date').between(lastWeekStr, todayStr, true, true).reverse().sortBy('timestamp');
             } else if (filter === 'month') {
                 const prefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
                 records = await db.attendance.filter(r => r.date.startsWith(prefix)).reverse().sortBy('timestamp');
@@ -707,8 +762,8 @@
                     ? `<div class="bg-red-50 text-red-700 py-1 px-2 rounded text-xs font-bold w-28 mx-auto text-center border border-red-200">TERLAMBAT</div>`
                     : `<div class="bg-emerald-50 text-emerald-700 py-1 px-2 rounded text-xs font-bold w-28 mx-auto text-center border border-emerald-200">TEPAT WAKTU</div>`;
 
-                html += `<tr class="border-b border-gray-100 hover:bg-blue-50/50 ${isSunday ? 'bg-red-50/60 text-red-900 font-bold' : ''}">
-                    <td class="py-3 px-5 font-bold ${isSunday ? 'text-red-600' : ''}">${dayName}</td>
+                html += `<tr class="border-b border-gray-100 ${isSunday ? 'bg-red-50/70 text-red-900 font-medium' : 'hover:bg-blue-50/50'}">
+                    <td class="py-3 px-5 font-bold ${isSunday ? 'text-red-600' : ''}">${dayName} ${isSunday ? '🔴' : ''}</td>
                     <td class="py-3 px-5">${r.date}</td>
                     <td class="py-3 px-5 font-bold text-primary">${r.time}</td>
                     <td class="py-3 px-5 text-sm">${r.nisn}</td>
@@ -731,291 +786,198 @@
             `;
         }
 
-        // --- 1. REKAPAN EXCEL PERMINGGU DETAILED ---
+        // --- EXPORT REKAPAN PERMINGGU DETAIL (EXCEL) ---
         async function exportWeeklyExcel() {
-            Swal.fire({
-                title: 'Memproses Rekapan Perminggu...',
-                text: 'Menyiapkan data detail perminggu dan menghitung persentase...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            Swal.fire({ title: 'Menyiapkan Excel Mingguan...', text: 'Memproses data perminggu...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
                 const today = getWITTime();
-                const past7 = new Date(today);
-                past7.setDate(today.getDate() - 6);
+                const last7Days = new Date(today);
+                last7Days.setDate(today.getDate() - 6);
+                const startDateStr = `${last7Days.getFullYear()}-${String(last7Days.getMonth() + 1).padStart(2, '0')}-${String(last7Days.getDate()).padStart(2, '0')}`;
+                const endDateStr = getDateOnlyWIT();
 
-                const startDateStr = getDateOnlyWIT(past7);
-                const endDateStr = getDateOnlyWIT(today);
-
-                const records = await db.attendance.where('date').between(startDateStr, endDateStr, true, true).sortBy('timestamp');
+                const attendanceRecords = await db.attendance.where('date').between(startDateStr, endDateStr, true, true).toArray();
                 const allStudents = await db.students.toArray();
                 const studentMap = {}; allStudents.forEach(s => studentMap[s.nisn] = s);
 
-                // Group by Student for individual weekly attendance percentage
-                const totalDaysInWeek = 7;
-                let tableHtml = `
-                    <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; width: 100%;">
-                        <thead>
-                            <tr style="background-color: #1e3a8a; color: #ffffff; text-align: center; font-weight: bold; height: 40px;">
-                                <th colspan="10" style="font-size: 16px;">SMP NEGERI 6 MANOKWARI</th>
-                            </tr>
-                            <tr style="background-color: #172554; color: #fbbf24; text-align: center; font-weight: bold; height: 30px;">
-                                <th colspan="10" style="font-size: 13px;">LAPORAN DETAIL REKAPAN ABSENSI PERMINGGU (${startDateStr} s/d ${endDateStr})</th>
-                            </tr>
-                            <tr style="background-color: #f3f4f6; color: #1f2937; font-weight: bold; text-align: center; height: 30px;">
-                                <th style="width: 40px;">NO</th>
-                                <th style="width: 100px;">HARI</th>
-                                <th style="width: 110px;">TANGGAL</th>
-                                <th style="width: 110px;">NISN</th>
-                                <th style="width: 200px;">NAMA SISWA</th>
-                                <th style="width: 80px;">KELAS</th>
-                                <th style="width: 100px;">WAKTU</th>
-                                <th style="width: 130px;">STATUS HADIR</th>
-                                <th style="width: 150px;">PERSENTASE MINGGUAN</th>
-                                <th style="width: 200px;">KETERANGAN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                let excelRows = [];
+                // Title Rows
+                excelRows.push(["REKAPAN ABSENSI CERDAS PERMINGGU (7 HARI TERAKHIR)"]);
+                excelRows.push(["SMP NEGERI 6 MANOKWARI"]);
+                excelRows.push([`Periode: ${startDateStr} s/d ${endDateStr}`]);
+                excelRows.push([]); // Empty spacing row
 
-                if (records.length === 0) {
-                    tableHtml += `<tr><td colspan="10" style="text-align: center; padding: 20px;">Tidak ada record absensi dalam 7 hari terakhir.</td></tr>`;
-                } else {
-                    // Hitung total scan per siswa di minggu ini
-                    const scanCountPerStudent = {};
-                    records.forEach(r => {
-                        scanCountPerStudent[r.nisn] = (scanCountPerStudent[r.nisn] || 0) + 1;
-                    });
+                // Table Headers
+                excelRows.push(["No", "Hari", "Tanggal", "Jam Scan", "NISN", "Nama Siswa", "Kelas", "Status Kehadiran", "Persentase Individu", "Keterangan / Catatan"]);
 
-                    let no = 1;
-                    for (const r of records) {
-                        const dayName = getIndonesianDayName(r.date);
-                        const isSunday = dayName === 'Minggu';
-                        const s = studentMap[r.nisn] || { name: 'Data Terhapus', class: '-' };
-                        const studentPresentCount = scanCountPerStudent[r.nisn] || 0;
-                        const studentWeeklyPct = ((studentPresentCount / 6) * 100).toFixed(1) + '%'; // 6 hari sekolah aktif
+                let totalTepat = 0, totalTelat = 0;
 
-                        // Warna otomatis merah terang jika hari minggu
-                        const rowBgColor = isSunday ? '#fee2e2' : (no % 2 === 0 ? '#f9fafb' : '#ffffff');
-                        const dayTextColor = isSunday ? '#991b1b; font-weight: bold;' : '#111827;';
-                        const statusBadgeColor = r.status === 'Terlambat' ? 'color: #c2410c; font-weight: bold;' : 'color: #047857; font-weight: bold;';
-                        const keteranganText = isSunday ? 'HARI MINGGU (LIBUR)' : (r.status === 'Terlambat' ? 'Hadir Terlambat' : 'Tepat Waktu');
+                attendanceRecords.sort((a,b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
 
-                        tableHtml += `
-                            <tr style="background-color: ${rowBgColor}; height: 28px; text-align: center;">
-                                <td style="border: 1px solid #d1d5db;">${no++}</td>
-                                <td style="border: 1px solid #d1d5db; color: ${dayTextColor}">${dayName}</td>
-                                <td style="border: 1px solid #d1d5db;">${r.date}</td>
-                                <td style="border: 1px solid #d1d5db; font-family: monospace;">'${r.nisn}</td>
-                                <td style="border: 1px solid #d1d5db; text-align: left; padding-left: 8px;"><b>${s.name}</b></td>
-                                <td style="border: 1px solid #d1d5db;">${s.class}</td>
-                                <td style="border: 1px solid #d1d5db; font-weight: bold;">${r.time} WIT</td>
-                                <td style="border: 1px solid #d1d5db; ${statusBadgeColor}">${isSunday ? 'MINGGU' : r.status.toUpperCase()}</td>
-                                <td style="border: 1px solid #d1d5db; font-weight: bold; color: #1e3a8a;">${studentWeeklyPct}</td>
-                                <td style="border: 1px solid #d1d5db; ${isSunday ? 'color: #dc2626; font-weight: bold;' : ''}">${keteranganText}</td>
-                            </tr>
-                        `;
-                    }
+                let no = 1;
+                for (const rec of attendanceRecords) {
+                    const st = studentMap[rec.nisn] || { name: 'Siswa Terhapus', class: '-' };
+                    const dayName = getIndonesianDayName(rec.date);
+                    const isSunday = dayName === 'Minggu';
+
+                    if (rec.status === 'Terlambat') totalTelat++; else totalTepat++;
+
+                    // Count total attendance for this student in week
+                    const countStudentRecs = attendanceRecords.filter(r => r.nisn === rec.nisn).length;
+                    const studentPct = ((countStudentRecs / 6) * 100).toFixed(1) + "%"; // Normal 6 working days
+
+                    let notes = isSunday ? "🔴 HARI MINGGU / LIBUR" : (rec.status === 'Terlambat' ? "⚠️ Terlambat Masuk Sekolah" : "✨ Hadir Tepat Waktu");
+
+                    excelRows.push([
+                        no++,
+                        isSunday ? `🔴 ${dayName}` : dayName,
+                        rec.date,
+                        rec.time + " WIT",
+                        rec.nisn,
+                        st.name,
+                        st.class,
+                        rec.status,
+                        studentPct,
+                        notes
+                    ]);
                 }
 
-                tableHtml += `</tbody></table>`;
+                excelRows.push([]); // Empty row
+                excelRows.push(["RINGKASAN REKAPAN MINGGUAN"]);
+                excelRows.push(["Total Kehadiran Valid", attendanceRecords.length]);
+                excelRows.push(["Total Tepat Waktu", totalTepat, `${((totalTepat / (attendanceRecords.length || 1)) * 100).toFixed(1)}%`]);
+                excelRows.push(["Total Terlambat", totalTelat, `${((totalTelat / (attendanceRecords.length || 1)) * 100).toFixed(1)}%`]);
 
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = tableHtml;
-                const wb = XLSX.utils.table_to_book(tempDiv.querySelector('table'), { sheet: "Rekapan Perminggu" });
-                XLSX.writeFile(wb, `Rekapan_Perminggu_SMPN6_${startDateStr}_sd_${endDateStr}.xlsx`);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(excelRows);
 
-                Swal.fire({ icon: 'success', title: 'Berhasil Dibuat', text: 'File Excel Rekapan Perminggu siap diunduh!' });
+                // Column Widths
+                ws['!cols'] = [
+                    { wch: 5 },  // No
+                    { wch: 14 }, // Hari
+                    { wch: 14 }, // Tanggal
+                    { wch: 12 }, // Jam Scan
+                    { wch: 15 }, // NISN
+                    { wch: 30 }, // Nama Siswa
+                    { wch: 10 }, // Kelas
+                    { wch: 18 }, // Status
+                    { wch: 20 }, // Persentase
+                    { wch: 30 }  // Keterangan
+                ];
+
+                XLSX.utils.book_append_sheet(wb, ws, "Rekapan Mingguan");
+                XLSX.writeFile(wb, `Rekapan_Mingguan_SMPN6_${endDateStr}.xlsx`);
+                Swal.fire({ icon: 'success', title: 'Berhasil Export!', text: 'Rekapan perminggu telah diunduh dengan sangat detail.', timer: 2000, showConfirmButton: false });
             } catch (err) {
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Gagal Export', text: err.message });
+                Swal.fire('Error', 'Gagal memproses file Excel: ' + err.message, 'error');
             }
         }
 
-        // --- 2. REKAPAN EXCEL BULANAN MATRIX (TANGGAL 1 - SELESAI + WARNA MERAH AUTOMATIS HARI MINGGU) ---
+        // --- EXPORT REKAPAN BULANAN MATRIX DETAIL (EXCEL TANGGAL 1 S/D SELESAI) ---
         async function exportMonthlyExcel() {
-            const today = getWITTime();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth() + 1;
-
-            const { value: formValues } = await Swal.fire({
-                title: 'Pilih Bulan & Tahun Rekapan',
-                html: `
-                    <div class="flex flex-col gap-3 text-left">
-                        <label class="text-sm font-bold text-gray-700">Bulan:</label>
-                        <select id="swalMonth" class="swal2-input !mt-0 !w-full">
-                            <option value="1" ${currentMonth === 1 ? 'selected' : ''}>Januari</option>
-                            <option value="2" ${currentMonth === 2 ? 'selected' : ''}>Februari</option>
-                            <option value="3" ${currentMonth === 3 ? 'selected' : ''}>Maret</option>
-                            <option value="4" ${currentMonth === 4 ? 'selected' : ''}>April</option>
-                            <option value="5" ${currentMonth === 5 ? 'selected' : ''}>Mei</option>
-                            <option value="6" ${currentMonth === 6 ? 'selected' : ''}>Juni</option>
-                            <option value="7" ${currentMonth === 7 ? 'selected' : ''}>Juli</option>
-                            <option value="8" ${currentMonth === 8 ? 'selected' : ''}>Agustus</option>
-                            <option value="9" ${currentMonth === 9 ? 'selected' : ''}>September</option>
-                            <option value="10" ${currentMonth === 10 ? 'selected' : ''}>Oktober</option>
-                            <option value="11" ${currentMonth === 11 ? 'selected' : ''}>November</option>
-                            <option value="12" ${currentMonth === 12 ? 'selected' : ''}>Desember</option>
-                        </select>
-                        <label class="text-sm font-bold text-gray-700">Tahun:</label>
-                        <input id="swalYear" type="number" class="swal2-input !mt-0 !w-full" value="${currentYear}">
-                    </div>
-                `,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'Generate Excel',
-                confirmButtonColor: '#1e3a8a',
-                preConfirm: () => {
-                    return {
-                        month: parseInt(document.getElementById('swalMonth').value),
-                        year: parseInt(document.getElementById('swalYear').value)
-                    }
-                }
-            });
-
-            if (!formValues) return;
-
-            Swal.fire({
-                title: 'Menyusun Laporan Bulanan...',
-                text: 'Membuat tabel matriks tanggal 1 sampai selesai...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            Swal.fire({ title: 'Menyiapkan Rekapan Bulanan...', text: 'Membuat matriks tanggal 1 sampai selesai...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                const month = formValues.month;
-                const year = formValues.year;
-                const monthName = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][month - 1];
+                const now = getWITTime();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth(); // 0-11
+                const monthNameStr = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][currentMonth];
+                
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // 28, 29, 30, or 31
+                const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
 
-                // Hitung jumlah hari dalam bulan tersebut (28, 29, 30, atau 31)
-                const totalDays = new Date(year, month, 0).getDate();
                 const allStudents = await db.students.toArray();
-                allStudents.sort((a,b) => a.name.localeCompare(b.name));
+                const monthlyAttendance = await db.attendance.filter(r => r.date.startsWith(monthPrefix)).toArray();
 
-                // Ambil data absensi bulan ini
-                const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
-                const monthAttendance = await db.attendance.filter(a => a.date.startsWith(monthPrefix)).toArray();
+                let excelData = [];
+                excelData.push([`REKAPAN ABSENSI BULANAN MATRIKS DETAI (1 S/D ${daysInMonth} ${monthNameStr.toUpperCase()} ${currentYear})`]);
+                excelData.push(["SMP NEGERI 6 MANOKWARI"]);
+                excelData.push([`Tanggal Cetak: ${getDateOnlyWIT()} WIT`]);
+                excelData.push([]); // Blank row
 
-                // Map data absensi: { nisn_date: status }
-                const attMap = {};
-                monthAttendance.forEach(a => {
-                    attMap[`${a.nisn}_${a.date}`] = a.status;
-                });
+                // Row for Days of the week (Hari)
+                let headerDayNames = ["No", "NISN", "Nama Siswa", "Kelas"];
+                let headerDates = ["", "", "", ""];
 
-                // Deteksi hari minggu dan buat header tanggal
-                const daysInfo = [];
-                let effectiveSchoolDays = 0;
-
-                for (let d = 1; d <= totalDays; d++) {
-                    const dayStr = String(d).padStart(2, '0');
-                    const fullDate = `${monthPrefix}-${dayStr}`;
-                    const dayName = getIndonesianDayName(fullDate);
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+                    const dayName = getIndonesianDayName(dateStr);
                     const isSunday = dayName === 'Minggu';
-                    if (!isSunday) effectiveSchoolDays++;
-
-                    daysInfo.push({
-                        dayNum: d,
-                        fullDate: fullDate,
-                        dayName: dayName,
-                        isSunday: isSunday
-                    });
+                    headerDayNames.push(isSunday ? `🔴 MINGGU` : dayName);
+                    headerDates.push(d.toString());
                 }
 
-                // Generasi HTML Tabel Matriks untuk XLSX
-                let tableHtml = `
-                    <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px;">
-                        <thead>
-                            <tr style="background-color: #1e3a8a; color: #ffffff; text-align: center; font-weight: bold; height: 35px;">
-                                <th colspan="${totalDays + 8}" style="font-size: 16px;">SMP NEGERI 6 MANOKWARI</th>
-                            </tr>
-                            <tr style="background-color: #172554; color: #fbbf24; text-align: center; font-weight: bold; height: 30px;">
-                                <th colspan="${totalDays + 8}" style="font-size: 13px;">REKAPAN BULANAN ABSENSI SISWA - PERIODE ${monthName.toUpperCase()} ${year}</th>
-                            </tr>
-                            
-                            <!-- Header Tanggal 1 s/d Selesai -->
-                            <tr style="background-color: #e5e7eb; color: #111827; font-weight: bold; text-align: center;">
-                                <th rowspan="2" style="width: 30px; border: 1px solid #9ca3af;">NO</th>
-                                <th rowspan="2" style="width: 90px; border: 1px solid #9ca3af;">NISN</th>
-                                <th rowspan="2" style="width: 180px; border: 1px solid #9ca3af;">NAMA LENGKAP SISWA</th>
-                                <th rowspan="2" style="width: 60px; border: 1px solid #9ca3af;">KELAS</th>
-                                <th colspan="${totalDays}" style="border: 1px solid #9ca3af;">TANGGAL BUKAN (${monthName.toUpperCase()})</th>
-                                <th rowspan="2" style="width: 50px; background-color: #d1fae5; border: 1px solid #9ca3af;">H (TEPAT)</th>
-                                <th rowspan="2" style="width: 50px; background-color: #ffedd5; border: 1px solid #9ca3af;">T (TELAT)</th>
-                                <th rowspan="2" style="width: 50px; background-color: #fee2e2; border: 1px solid #9ca3af;">A (ALPA)</th>
-                                <th rowspan="2" style="width: 70px; background-color: #fef08a; border: 1px solid #9ca3af;">% HADIR</th>
-                            </tr>
-                            
-                            <tr style="text-align: center; font-weight: bold;">
-                `;
+                headerDayNames.push("Total Hadir (H)", "Total Telat (T)", "Total Kehadiran", "Persentase (%)", "Keterangan");
+                headerDates.push("H", "T", "Total", "%", "Status Akhir");
 
-                // Sub-Header Tanggal & Nama Hari (Merah otomatis jika Hari Minggu)
-                daysInfo.forEach(di => {
-                    const cellBg = di.isSunday ? 'background-color: #fca5a5; color: #7f1d1d;' : 'background-color: #f3f4f6; color: #1f2937;';
-                    const shortDay = di.dayName.substring(0, 3);
-                    tableHtml += `<th style="width: 28px; border: 1px solid #9ca3af; ${cellBg}">${di.dayNum}<br><span style="font-size: 8px;">${shortDay}</span></th>`;
-                });
+                excelData.push(headerDayNames);
+                excelData.push(headerDates);
 
-                tableHtml += `</tr></thead><tbody>`;
-
-                // Baris Data Siswa
                 let no = 1;
-                allStudents.forEach(s => {
-                    let totalTepat = 0;
+                for (const student of allStudents) {
+                    let row = [no++, student.nisn, student.name, student.class];
+                    let totalHadir = 0;
                     let totalTelat = 0;
-                    let totalHadirOverall = 0;
+                    let totalValidDays = 0;
 
-                    let rowCells = '';
-                    daysInfo.forEach(di => {
-                        if (di.isSunday) {
-                            // HARI MINGGU MERAH
-                            rowCells += `<td style="border: 1px solid #9ca3af; text-align: center; background-color: #fee2e2; color: #dc2626; font-weight: bold;">M</td>`;
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const dateStr = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+                        const dayName = getIndonesianDayName(dateStr);
+                        const isSunday = dayName === 'Minggu';
+
+                        if (isSunday) {
+                            row.push("🔴 [MINGGU]");
                         } else {
-                            const status = attMap[`${s.nisn}_${di.fullDate}`];
-                            if (status === 'Tepat Waktu') {
-                                totalTepat++;
-                                totalHadirOverall++;
-                                rowCells += `<td style="border: 1px solid #9ca3af; text-align: center; background-color: #d1fae5; color: #047857; font-weight: bold;">H</td>`;
-                            } else if (status === 'Terlambat') {
-                                totalTelat++;
-                                totalHadirOverall++;
-                                rowCells += `<td style="border: 1px solid #9ca3af; text-align: center; background-color: #ffedd5; color: #c2410c; font-weight: bold;">T</td>`;
+                            totalValidDays++;
+                            const rec = monthlyAttendance.find(a => a.nisn === student.nisn && a.date === dateStr);
+                            if (rec) {
+                                if (rec.status === 'Terlambat') {
+                                    row.push(`T (${rec.time})`);
+                                    totalTelat++;
+                                } else {
+                                    row.push(`H (${rec.time})`);
+                                    totalHadir++;
+                                }
                             } else {
-                                // Alpa / Tidak Hadir
-                                rowCells += `<td style="border: 1px solid #9ca3af; text-align: center; color: #9ca3af;">-</td>`;
+                                row.push("-");
                             }
                         }
-                    });
+                    }
 
-                    const totalAlpa = Math.max(0, effectiveSchoolDays - totalHadirOverall);
-                    const pctHadir = effectiveSchoolDays > 0 ? ((totalHadirOverall / effectiveSchoolDays) * 100).toFixed(1) + '%' : '0%';
+                    const totalActualAttendance = totalHadir + totalTelat;
+                    const percentage = totalValidDays > 0 ? ((totalActualAttendance / totalValidDays) * 100).toFixed(1) + "%" : "0%";
+                    let finalNote = totalActualAttendance === 0 ? "Tanpa Keterangan / Alpha" : (totalTelat > 3 ? "Perlu Pembinaan Keterlambatan" : "Disiplin Baik");
 
-                    tableHtml += `
-                        <tr style="height: 24px;">
-                            <td style="border: 1px solid #9ca3af; text-align: center;">${no++}</td>
-                            <td style="border: 1px solid #9ca3af; text-align: center; font-family: monospace;">'${s.nisn}</td>
-                            <td style="border: 1px solid #9ca3af; padding-left: 6px;"><b>${s.name}</b></td>
-                            <td style="border: 1px solid #9ca3af; text-align: center;">${s.class}</td>
-                            ${rowCells}
-                            <td style="border: 1px solid #9ca3af; text-align: center; font-weight: bold; background-color: #ecfdf5;">${totalTepat}</td>
-                            <td style="border: 1px solid #9ca3af; text-align: center; font-weight: bold; background-color: #fff7ed;">${totalTelat}</td>
-                            <td style="border: 1px solid #9ca3af; text-align: center; font-weight: bold; background-color: #fef2f2;">${totalAlpa}</td>
-                            <td style="border: 1px solid #9ca3af; text-align: center; font-weight: bold; background-color: #fefce8; color: #1e3a8a;">${pctHadir}</td>
-                        </tr>
-                    `;
-                });
+                    row.push(totalHadir, totalTelat, totalActualAttendance, percentage, finalNote);
+                    excelData.push(row);
+                }
 
-                tableHtml += `</tbody></table>`;
+                // Summary Row
+                excelData.push([]);
+                excelData.push(["KETERANGAN SIMBOL MATRIKS:"]);
+                excelData.push(["H (hh:mm)", "Hadir Tepat Waktu"]);
+                excelData.push(["T (hh:mm)", "Terlambat Tiba"]);
+                excelData.push(["🔴 [MINGGU]", "Hari Minggu (Otomatis Terdeteksi Merah/Libur)"]);
+                excelData.push(["-", "Tidak Mengisi Presensi (Absen)"]);
 
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = tableHtml;
-                const wb = XLSX.utils.table_to_book(tempDiv.querySelector('table'), { sheet: `Absensi ${monthName}` });
-                XLSX.writeFile(wb, `Rekapan_Bulanan_Absensi_SMPN6_${monthName}_${year}.xlsx`);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-                Swal.fire({ icon: 'success', title: 'Excel Bulanan Selesai!', text: `File Rekapan Bulanan Tanggal 1 - ${totalDays} ${monthName} ${year} telah berhasil didownload!` });
+                // Set auto widths for dates
+                let colWidths = [{ wch: 5 }, { wch: 15 }, { wch: 28 }, { wch: 10 }];
+                for (let d = 1; d <= daysInMonth; d++) colWidths.push({ wch: 12 });
+                colWidths.push({ wch: 14 }, { wch: 14 }, { wch: 15 }, { wch: 15 }, { wch: 28 });
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, `Bulan ${monthNameStr}`);
+                XLSX.writeFile(wb, `Rekapan_Bulanan_SMPN6_${monthNameStr}_${currentYear}.xlsx`);
+
+                Swal.fire({ icon: 'success', title: 'Berhasil Export Bulanan!', text: `Rekapan matriks tanggal 1 s/d ${daysInMonth} berhasil diunduh.`, timer: 2000, showConfirmButton: false });
             } catch (err) {
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Gagal Export Bulanan', text: err.message });
+                Swal.fire('Error', 'Gagal memproses Rekapan Bulanan: ' + err.message, 'error');
             }
         }
 
@@ -1026,7 +988,7 @@
             rows.forEach(r => {
                 const cols = r.querySelectorAll("td");
                 if(cols.length === 7) {
-                    csv += `"${cols[0].innerText}","${cols[1].innerText}","${cols[2].innerText}","${cols[3].innerText}","${cols[4].innerText}","${cols[5].innerText}","${cols[6].innerText}"\n`;
+                    csv += `"${cols[0].innerText.replace('🔴', '')}","${cols[1].innerText}","${cols[2].innerText}","${cols[3].innerText}","${cols[4].innerText}","${cols[5].innerText}","${cols[6].innerText}"\n`;
                 }
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1034,7 +996,7 @@
             link.click();
         }
 
-        // --- 5. AREA SCAN QR (HIGH SPEED OPTIMIZED) ---
+        // --- STREAMING_CHUNK:Implementing Fast Intelligent Camera QR Scanning & Area Scan UI... ---
         let lastScanTime = 0;
         
         async function renderScanArea(container) {
@@ -1044,7 +1006,7 @@
                         <div class="premium-card p-4 flex justify-between items-center">
                             <div><h2 class="text-2xl font-bold text-gray-800">Mesin Pemindai Cerdas</h2><p class="text-yellow-600 font-medium text-sm">Gunakan Alat Scanner atau Kamera HP/Webcam</p></div>
                             <button id="toggleCameraBtn" onclick="toggleCamera()" class="bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 px-5 py-3 rounded-xl hover:shadow-lg hover:shadow-yellow-200/50 transition-all flex items-center gap-2 border border-yellow-300 font-bold transform hover:-translate-y-1">
-                                <i class="ph ph-camera text-xl"></i> <span>Kamera Ultra-Fast</span>
+                                <i class="ph ph-camera text-xl"></i> <span>Aktifkan Kamera</span>
                             </button>
                         </div>
                         <div id="cameraContainer" class="hidden bg-black rounded-[1.5rem] overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.3)] relative w-full max-w-sm mx-auto border-4 border-yellow-400/50">
@@ -1068,14 +1030,13 @@
             if (camContainer.classList.contains('hidden')) {
                 camContainer.classList.remove('hidden');
                 if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
-
-                // Konfigurasi Ultra-Fast Respon Scan (30 FPS & Native Detector)
-                const config = {
-                    fps: 30,
-                    qrbox: function(vWidth, vHeight) {
-                        const minDim = Math.min(vWidth, vHeight);
-                        const boxSize = Math.floor(minDim * 0.75);
-                        return { width: boxSize, height: boxSize };
+                
+                // HIGH SPEED SMART QR SCAN CONFIGURATION
+                const config = { 
+                    fps: 25, 
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                        return { width: Math.floor(minEdge * 0.8), height: Math.floor(minEdge * 0.8) };
                     },
                     aspectRatio: 1.0,
                     experimentalFeatures: {
@@ -1083,19 +1044,17 @@
                     }
                 };
 
-                html5QrCode.start(
-                    { facingMode: "environment" }, 
-                    config,
+                html5QrCode.start({ facingMode: "environment" }, config,
                     (decodedText) => {
                         const now = Date.now();
-                        if (now - lastScanTime > 1000) { // Fast 1 second throttle limit
+                        if (now - lastScanTime > 1200) {
                             lastScanTime = now;
                             processScan(decodedText);
                         }
                     },
-                    (err) => { /* Abaikan kegagalan frame pembacaan biasa */ }
+                    (err) => { }
                 ).catch(err => {
-                    Toast.fire({icon:'error', title:'Gagal akses kamera! Pastikan izin diberikan.'});
+                    Toast.fire({icon:'error', title:'Gagal akses kamera! Pastikan izin kamera aktif.'});
                     camContainer.classList.add('hidden');
                 });
             } else {
@@ -1148,7 +1107,7 @@
             if (e.key === 'Enter') {
                 if (barcodeBuffer.length > 0) {
                     const now = Date.now();
-                    if (now - lastScanTime > 1000) {
+                    if (now - lastScanTime > 1200) {
                         lastScanTime = now;
                         processScan(barcodeBuffer);
                     }
@@ -1161,7 +1120,7 @@
             }
         });
 
-        // --- 5B. MANAJEMEN DATA SISWA ---
+        // --- STREAMING_CHUNK:Implementing Data Manager (Excel & Photo Bulk Upload)... ---
         async function renderDataManager(container) {
             container.innerHTML = `
                 <div class="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-end gap-5">
@@ -1351,12 +1310,11 @@
                             const nisn = getVal(['nisn', 'nis', 'nomorinduk', 'id']);
                             const name = getVal(['namalengkap', 'namasiswa', 'nama', 'name']);
                             const cls = getVal(['kelas', 'class', 'rombel']);
-                            
                             let rawPhone = getVal(['nohporangtua', 'nohportu', 'nohpwali', 'nohp', 'whatsapp', 'telepon', 'phone', 'wa', 'hp', 'notelp', 'nomorhp', 'kontak']);
                             
                             if (rawPhone) {
-                                rawPhone = rawPhone.replace(/\D/g, ''); 
-                                if (rawPhone.startsWith('8')) rawPhone = '0' + rawPhone; 
+                                rawPhone = rawPhone.replace(/\D/g, '');
+                                if (rawPhone.startsWith('8')) rawPhone = '0' + rawPhone;
                             }
 
                             if(nisn) {
@@ -1381,7 +1339,6 @@
             }, 100);
         }
 
-        // FUNGSI KOMPRESI GAMBAR (Pengaman agar browser & DB tetap ringan)
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1398,9 +1355,7 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                             resolve(canvas.toDataURL('image/jpeg', 0.75));
-                        } catch (err) {
-                            reject(err);
-                        }
+                        } catch (err) { reject(err); }
                     };
                     img.onerror = () => reject(new Error("Gagal membaca gambar"));
                     img.src = e.target.result;
@@ -1410,7 +1365,6 @@
             });
         }
 
-        // --- SISTEM UPLOAD FOTO CERDAS & BEBAS FORMAT ---
         async function handlePhotoUpload(e) {
             const files = e.target.files;
             if(!files || files.length === 0) return;
@@ -1445,7 +1399,7 @@
 
             for(let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (!file.type.startsWith('image/')) continue; 
+                if (!file.type.startsWith('image/')) continue;
 
                 const fullFileName = file.name;
                 const nameWithoutExt = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
@@ -1453,7 +1407,6 @@
                 const digitsInFileName = nameWithoutExt.replace(/\D/g, '');
 
                 let targetStudent = null;
-
                 targetStudent = studentList.find(s => s.nisn.toLowerCase() === cleanFileName);
 
                 if (!targetStudent && digitsInFileName.length > 0) {
@@ -1476,9 +1429,7 @@
                         const compressedBase64 = await compressImage(file);
                         await db.students.update(targetStudent.nisn, { photo: compressedBase64 });
                         matched++;
-                    } catch (err) {
-                        console.error("Gagal kompres foto:", err);
-                    }
+                    } catch (err) { console.error("Gagal kompres foto:", err); }
                 } else {
                     unmatchedFiles.push(file.name);
                 }
@@ -1504,7 +1455,7 @@
             loadStudentData();
         }
 
-        // --- DASHBOARD ---
+        // --- STREAMING_CHUNK:Rendering Dashboard & Settings Views... ---
         async function renderDashboard(container) { 
             const today = getDateOnlyWIT();
             const totalSiswa = await db.students.count();
@@ -1546,7 +1497,7 @@
             let html = '';
             for(let s of scans.slice(0, 5)) {
                 const st = await db.students.get(s.nisn);
-                html += `<tr class="border-b"><td class="py-2 font-bold">${st ? st.name : '-'}</td><td class="py-2">${st ? st.class : '-'}</td><td class="py-2 font-bold text-primary">${s.time} WIT</td></tr>`;
+                html += `<tr class="border-b"><td class="py-2 font-bold">${st ? st.name : '-'}</td><td class="py-2">${st ? st.class : '-'}</td><td class="py-2 font-bold text-primary">${s.time}</td></tr>`;
             }
             tbody.innerHTML = html || '<tr><td class="py-4 text-gray-400">Belum ada scan.</td></tr>';
         }
@@ -1555,7 +1506,7 @@
             const val = document.getElementById('lateTimeInput').value;
             if(val) { await db.settings.put({key: 'lateLimit', value: val}); Toast.fire({ icon: 'success', title: 'Tersimpan.' }); }
         }
-        
+
         async function renderWASettings(container) {
             const currentKey = await getWaApiKey();
             
@@ -1754,7 +1705,7 @@
                             <p class="text-sm text-gray-600 mb-3 leading-relaxed">Buka menu <b>Area Scan QR</b>.</p>
                             <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
                                 <li><b class="text-gray-800">Scanner Fisik:</b> Langsung scan kartu/barcode. Tidak perlu mengklik apapun, sistem otomatis membaca ketikan dari scanner.</li>
-                                <li><b class="text-gray-800">Kamera Web:</b> Klik tombol "Kamera Ultra-Fast", izinkan akses, lalu arahkan kartu ke depan kamera.</li>
+                                <li><b class="text-gray-800">Kamera Web:</b> Klik tombol "Aktifkan Kamera", izinkan akses, lalu arahkan kartu ke depan kamera perangkat.</li>
                             </ul>
                         </div>
 
@@ -1766,19 +1717,19 @@
                             <h3 class="text-lg font-bold text-gray-800 mb-2">5. Notifikasi WA & Jam Telat</h3>
                             <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5 font-medium">
                                 <li><b class="text-gray-800">Batas Waktu:</b> Atur jam batas keterlambatan di menu <b>Dashboard</b>. Jika lewat jam tersebut, status otomatis "Terlambat".</li>
-                                <li><b class="text-gray-800">Antrean WA:</b> Pesan dikirim otomatis ke nomor orang tua. Indikator di sidebar menunjukkan antrean aktif.</li>
+                                <li><b class="text-gray-800">Antrean WA:</b> Pesan dikirim otomatis ke nomor orang tua. Indikator di sidebar kiri menunjukkan antrean. Sistem memakai "Jeda Antispam" setiap 10 pesan agar nomor pengirim tidak diblokir oleh WhatsApp.</li>
                             </ul>
                         </div>
 
                         <!-- Panduan 6 -->
                         <div class="premium-card p-6 group cursor-default">
-                            <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-rose-300/50 transition-shadow">
-                                <i class="ph ph-file-xls text-3xl text-rose-700 drop-shadow-sm"></i>
+                            <div class="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-indigo-300/50 transition-shadow">
+                                <i class="ph ph-file-xls text-3xl text-indigo-700 drop-shadow-sm"></i>
                             </div>
-                            <h3 class="text-lg font-bold text-gray-800 mb-2">6. Export Excel Perminggu & Bulanan</h3>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">6. Rekapan Excel Mingguan & Bulanan</h3>
                             <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5 font-medium">
-                                <li><b class="text-gray-800">Excel Perminggu:</b> Menghasilkan rincian hari, tanggal, persentase harian/mingguan & status.</li>
-                                <li><b class="text-gray-800">Excel Bulanan (Tgl 1-31):</b> Matriks lengkap per bulan. Kolom Hari Minggu otomatis berwarna merah.</li>
+                                <li><b class="text-gray-800">Excel Perminggu:</b> Menghasilkan rekapan perminggu lengkap dengan nama hari, tanggal, jam, status, dan persentase kehadiran per siswa.</li>
+                                <li><b class="text-gray-800">Excel Bulanan (Full Matrix):</b> Menghasilkan matriks tanggal 1 sampai akhir bulan. Hari Minggu terdeteksi otomatis dengan penanda <code class="text-red-600 font-bold">🔴 [MINGGU]</code>.</li>
                             </ul>
                         </div>
 
@@ -1787,73 +1738,11 @@
             `;
         }
 
-        // --- NAVIGATION & DOM LISTENERS ---
-        function switchMenu(menuName) {
-            currentMenu = menuName;
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            const activeEl = document.getElementById(`menu-${menuName}`);
-            if (activeEl) activeEl.classList.add('active');
-
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
-            }
-
-            const container = document.getElementById('contentArea');
-            if (!container) return;
-
-            if (menuName === 'dashboard') renderDashboard(container);
-            else if (menuName === 'scan') renderScanArea(container);
-            else if (menuName === 'reports') renderReports(container);
-            else if (menuName === 'data') renderDataManager(container);
-            else if (menuName === 'whatsapp') renderWASettings(container);
-            else if (menuName === 'guide') renderGuide(container);
-        }
-
-        function logout() {
-            Swal.fire({
-                title: 'Keluar Aplikasi?',
-                text: "Anda harus login kembali untuk masuk.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Ya, Keluar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (html5QrCode && html5QrCode.isScanning) {
-                        html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
-                    }
-                    document.getElementById('mainApp').classList.add('hide');
-                    document.getElementById('loginPage').classList.remove('hide');
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    document.getElementById('loginPage').classList.add('hide');
-                    document.getElementById('mainApp').classList.remove('hide');
-                    switchMenu('dashboard');
-                });
-            }
-
-            const togglePassword = document.getElementById('togglePassword');
-            if (togglePassword) {
-                togglePassword.addEventListener('click', () => {
-                    const passInput = document.getElementById('password');
-                    if (passInput.type === 'password') {
-                        passInput.type = 'text';
-                        togglePassword.classList.replace('ph-eye-slash', 'ph-eye');
-                    } else {
-                        passInput.type = 'password';
-                        togglePassword.classList.replace('ph-eye', 'ph-eye-slash');
-                    }
-                });
-            }
-        });
+        // --- APP INITIALIZATION ---
+        window.onload = function() {
+            // Check if user is already logged in or needs login
+            switchMenu('dashboard');
+        };
     </script>
 </body>
 </html>
