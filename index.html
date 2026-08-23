@@ -17,7 +17,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         
-        /* Luxurious Login Background with Blur */
         .login-bg {
             background-image: url('https://i.ibb.co.com/cc8gnjwZ/IMG-20260819-WA0009.jpg');
             background-size: cover;
@@ -35,7 +34,6 @@
         }
         .login-content { position: relative; z-index: 2; }
         
-        /* Glowing Logo Effect */
         .glowing-logo {
             filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5));
             animation: pulse-glow 3s infinite alternate;
@@ -45,7 +43,6 @@
             100% { filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.7)); }
         }
 
-        /* Glassmorphism Panel */
         .glass-panel {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
@@ -54,14 +51,12 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        /* Sidebar Premium Styling */
         .sidebar {
             background: linear-gradient(180deg, #1e3a8a 0%, #172554 100%);
             color: white;
             transition: all 0.3s ease;
         }
         
-        /* Efek Menu Mewah (Glow & Shimmer) */
         .menu-item {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid transparent;
@@ -79,9 +74,7 @@
             z-index: -1;
             transform: skewX(-20deg);
         }
-        .menu-item:hover::before {
-            left: 200%;
-        }
+        .menu-item:hover::before { left: 200%; }
         
         .menu-item:hover, .menu-item.active {
             background: linear-gradient(90deg, rgba(251, 191, 36, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
@@ -94,7 +87,6 @@
         .menu-item i { transition: all 0.3s ease; }
         .menu-item:hover i, .menu-item.active i { filter: drop-shadow(0 0 10px rgba(251, 191, 36, 1)); transform: scale(1.15); }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -102,7 +94,6 @@
 
         .hide { display: none !important; }
 
-        /* Scan Animations & Laser Effects */
         @keyframes scan-laser {
             0% { top: 5%; opacity: 0; }
             10% { opacity: 1; }
@@ -111,44 +102,26 @@
         }
         .laser-beam {
             position: absolute;
-            left: 5%;
-            right: 5%;
-            width: 90%;
-            height: 3px;
-            background: #ef4444; 
+            left: 5%; right: 5%; width: 90%; height: 3px; background: #ef4444; 
             box-shadow: 0 0 15px 4px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6);
             animation: scan-laser 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
             z-index: 30;
         }
-
-        /* Custom QR Reader Styling for Smooth Video Feed */
-        #qr-reader { border: none !important; }
-        #qr-reader video { object-fit: cover !important; border-radius: 1rem; width: 100% !important; max-height: 320px !important; }
-        #qr-reader__scan_region { display: flex; justify-content: center; align-items: center; }
-        #qr-reader__dashboard { display: none !important; }
 
         @keyframes zoomInBounce {
             0% { opacity: 0; transform: scale(0.85); }
             70% { transform: scale(1.05); }
             100% { opacity: 1; transform: scale(1); }
         }
-        .animate-zoom-in {
-            animation: zoomInBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
+        .animate-zoom-in { animation: zoomInBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        /* Stats Card Hover Effect */
         .stat-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
     </style>
-    
     <script>
         window.tailwind = window.tailwind || {};
         window.tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { primary: '#1e3a8a', gold: '#fbbf24', dark: '#0f172a' }
-                }
-            }
+            theme: { extend: { colors: { primary: '#1e3a8a', gold: '#fbbf24', dark: '#0f172a' } } }
         }
     </script>
 </head>
@@ -163,12 +136,12 @@
             <form id="loginForm" class="space-y-5">
                 <div class="relative">
                     <i class="ph ph-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
-                    <!-- Placeholder disembunyikan agar admin/password tidak terlihat publik -->
+                    <!-- Placeholder diubah agar tidak membocorkan username -->
                     <input type="text" id="username" placeholder="Masukkan Username" class="w-full pl-12 pr-4 py-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gold focus:bg-white/30 transition-all" required>
                 </div>
                 <div class="relative">
                     <i class="ph ph-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
-                    <!-- Placeholder disembunyikan agar admin/password tidak terlihat publik -->
+                    <!-- Placeholder diubah agar tidak membocorkan password -->
                     <input type="password" id="password" placeholder="Masukkan Password" class="w-full pl-12 pr-12 py-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gold focus:bg-white/30 transition-all" required>
                     <i class="ph ph-eye-slash absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-white transition" id="togglePassword"></i>
                 </div>
@@ -204,6 +177,9 @@
                 </a>
                 <a href="#" onclick="switchMenu('data')" id="menu-data" class="menu-item flex items-center gap-3 p-3 rounded-lg cursor-pointer">
                     <i class="ph ph-database text-2xl"></i><span class="font-medium">Manajemen Siswa</span>
+                </a>
+                <a href="#" onclick="switchMenu('whatsapp')" id="menu-whatsapp" class="menu-item flex items-center gap-3 p-3 rounded-lg cursor-pointer">
+                    <i class="ph ph-whatsapp-logo text-2xl"></i><span class="font-medium">Pengaturan WA</span>
                 </a>
                 <a href="#" onclick="switchMenu('guide')" id="menu-guide" class="menu-item flex items-center gap-3 p-3 mt-4 rounded-lg cursor-pointer border-t border-white/10 pt-4">
                     <i class="ph ph-book-open-text text-2xl"></i><span class="font-medium text-blue-200">Panduan Aplikasi</span>
@@ -277,59 +253,86 @@
             settings: 'key, value'
         });
 
-        // --- 2. GLOBAL VARIABLES & CONFIG ---
-        const API_KEY_WA = "JS3EZBCY67FH36ygwLgE"; 
+        async function getWaApiKey() {
+            const stored = await db.settings.get('waApiKey');
+            return stored && stored.value ? stored.value : "JS3EZBCY67FH36ygwLgE"; // Default API Key Fonnte
+        }
+
         let currentMenu = 'dashboard';
         let html5QrCode = null;
-        let currentEditingPhoto = null;
+        let currentEditingPhoto = null; 
         
-        let currentCameraDeviceId = null;
-        let availableCameras = [];
-
         let queueRunning = false;
         let messagesSentThisBatch = 0;
         let batchPauseEndTime = 0;
         let barcodeBuffer = '';
         let barcodeTimeout = null;
 
+        // --- EXPANDED MESSAGE TEMPLATES (Hundreds of thousands combinations) ---
         const greetingsList = [
-            "Selamat pagi Bapak/Ibu Wali Murid yang terhormat,",
-            "Salam sejahtera Bapak/Ibu Orang Tua siswa,",
-            "Yth. Bapak/Ibu Orang Tua/Wali dari ananda,",
+            "Selamat pagi Bapak/Ibu Wali Murid yang terhormat,", 
+            "Salam sejahtera Bapak/Ibu Orang Tua siswa,", 
+            "Yth. Bapak/Ibu Orang Tua/Wali dari ananda,", 
             "Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali Murid,",
-            "Halo Bapak/Ibu yang kami hormati,",
-            "Tabea! Yth. Orang Tua/Wali Siswa SMPN 6 Manokwari,"
+            "Selamat pagi, salam sehat selalu untuk Bapak/Ibu sekalian,",
+            "Salam hormat Bapak/Ibu Orang Tua/Wali tercinta,",
+            "Halo Bapak/Ibu Wali Murid SMPN 6 yang kami banggakan,",
+            "Selamat beraktivitas Bapak/Ibu, semoga harinya menyenangkan. Menginfokan mengenai ananda,"
         ];
-
+        
         const introsList = [
-            "Dengan hormat, kami sampaikan bahwa sistem presensi cerdas sekolah telah mencatat kehadiran ananda hari ini.",
-            "Menginformasikan bahwa putra/putri Bapak/Ibu telah tiba di lingkungan sekolah dan melakukan scan kartu presensi.",
-            "Berikut kami lampirkan rincian kedatangan dan status presensi harian ananda di SMP Negeri 6 Manokwari."
+            "Dengan hormat, kami sampaikan bahwa sistem presensi cerdas sekolah telah mencatat kehadiran putra/putri Anda hari ini.", 
+            "Menginformasikan bahwa putra/putri Bapak/Ibu telah tiba di lingkungan sekolah dan melakukan pemindaian (scan) kehadiran.",
+            "Bersama pesan ini, kami ingin memberikan update otomatis mengenai kehadiran ananda di sekolah hari ini.",
+            "Melalui notifikasi sistem absensi pintar ini, kami melaporkan data kehadiran putra/putri Bapak/Ibu tercinta.",
+            "Kami ingin mengabarkan bahwa ananda telah sampai di sekolah dengan selamat dan telah terekam di sistem absen kami.",
+            "Notifikasi ini dikirimkan secara otomatis dari gerbang sekolah untuk mengabarkan bahwa anak Anda telah hadir.",
+            "Semoga Bapak/Ibu dalam keadaan sehat. Kami menginformasikan status kehadiran ananda pada hari belajar ini.",
+            "Berikut adalah ringkasan laporan kedatangan putra/putri Bapak/Ibu di SMP Negeri 6 Manokwari hari ini:"
         ];
 
         const tepatNotesList = [
-            "✨ *Catatan:* Apresiasi tinggi untuk ketepatan waktu ananda! Kebiasaan disiplin ini sangat mendukung proses belajarnya.",
+            "✨ *Catatan:* Apresiasi tinggi untuk ketepatan waktu ananda! Kebiasaan disiplin ini sangat mendukung proses belajarnya di sekolah.", 
             "🌟 *Catatan:* Ananda hadir tepat waktu dan siap mengikuti seluruh rangkaian kegiatan belajar mengajar hari ini.",
-            "👏 *Catatan:* Ananda menunjukkan semangat belajar yang luar biasa pagi ini dengan hadir tepat waktu."
+            "🏆 *Catatan:* Terima kasih Bapak/Ibu telah membantu ananda berangkat lebih awal. Kedisiplinan adalah kunci kesuksesan!",
+            "⭐ *Catatan:* Kehadiran tepat waktu ananda mencerminkan semangat belajarnya yang luar biasa hari ini. Pertahankan!",
+            "✅ *Catatan:* Siswa tercatat hadir sebelum bel masuk berbunyi. Kami bangga dengan tingkat kedisiplinan ananda.",
+            "🎉 *Catatan:* Datang tepat waktu menunjukkan tanggung jawab ananda sebagai pelajar yang baik. Terima kasih atas dukungan Bapak/Ibu.",
+            "🎓 *Catatan:* Langkah awal yang baik di pagi hari ini! Ananda sudah siap menerima ilmu dari bapak/ibu guru di kelas.",
+            "💡 *Catatan:* Ketepatan waktu yang konsisten dari ananda sangat kami apresiasi. Semoga hari belajarnya produktif!"
         ];
 
         const terlambatNotesList = [
-            "⚠️ *Catatan:* Ananda tercatat *TERLAMBAT* tiba di sekolah. Mohon bantuan Bapak/Ibu untuk membimbing ananda agar dapat berangkat lebih awal esok hari.",
-            "📌 *Catatan:* Kami mohon kerja sama Bapak/Ibu untuk bersama-sama mengingatkan ananda mengenai pentingnya kedisiplinan waktu belajar."
+            "⚠️ *Catatan:* Ananda tercatat *TERLAMBAT* tiba di sekolah. Mohon bantuan Bapak/Ibu untuk membimbing ananda agar dapat berangkat lebih awal esok hari.", 
+            "📌 *Catatan:* Kami memohon kerja sama Bapak/Ibu untuk bersama-sama mengingatkan ananda mengenai pentingnya kedisiplinan waktu.",
+            "⏱️ *Catatan:* Hari ini ananda tiba melewati batas waktu masuk sekolah. Mari kita dorong ananda agar lebih disiplin esok hari.",
+            "🔔 *Catatan:* Kedisiplinan waktu adalah bagian penting dari karakter siswa. Mohon perhatikan jam keberangkatan ananda dari rumah.",
+            "❗ *Catatan:* Terpantau ananda hadir sedikit terlambat hari ini. Kami berharap esok hari ananda bisa datang lebih awal ya, Bapak/Ibu.",
+            "🛑 *Catatan:* Agar tidak tertinggal pelajaran jam pertama, mohon bantuannya agar ananda berangkat lebih pagi di hari berikutnya.",
+            "📝 *Catatan:* Keterlambatan hari ini telah dicatat sistem. Kami memohon dukungan orang tua untuk meningkatkan kedisiplinan ananda.",
+            "⏳ *Catatan:* Waktu sangat berharga dalam pembelajaran. Mohon diingatkan agar ananda bisa tiba di sekolah sebelum bel berbunyi esok hari."
         ];
 
         const closingsList = [
-            "Terima kasih atas perhatian, kepercayaan, dan kerja sama Bapak/Ibu yang senantiasa mendukung program sekolah.",
-            "Mari bersama kita wujudkan generasi yang disiplin, cerdas, dan berkarakter mulia.",
-            "Demikian informasi ini kami sampaikan. Selamat beraktivitas untuk Bapak/Ibu sekeluarga."
+            "Terima kasih atas perhatian, kepercayaan, dan kerja sama Bapak/Ibu yang senantiasa mendukung program sekolah.", 
+            "Mari bersama kita wujudkan generasi yang disiplin, cerdas, berprestasi dan berkarakter mulia.",
+            "Dukungan Bapak/Ibu dari rumah sangat berarti bagi perkembangan karakter kedisiplinan ananda di sekolah.",
+            "Semoga ananda mendapatkan ilmu yang bermanfaat dan berkah pada hari ini. Terima kasih.",
+            "Kami berkomitmen memberikan lingkungan belajar yang terbaik. Terima kasih atas partisipasi aktif Bapak/Ibu.",
+            "Terima kasih telah mempercayakan pendidikan putra/putri Bapak/Ibu di SMP Negeri 6 Manokwari.",
+            "Selamat melanjutkan aktivitas Bapak/Ibu. Sukses selalu untuk keluarga Anda di rumah.",
+            "Mari terus bersinergi mengawal kedisiplinan dan masa depan cerah putra-putri kita tercinta."
         ];
 
         const signaturesList = [
-            "— *Sistem Presensi Cerdas SMPN 6 Manokwari*",
+            "— *Sistem Presensi Cerdas SMPN 6 Manokwari*", 
             "— *Tim Kesiswaan & Kedisiplinan SMPN 6 Manokwari*",
-            "— *Humas & Layanan Wali Murid SMPN 6 Manokwari*"
+            "— *Admin Notifikasi Otomatis SMPN 6*",
+            "— *Layanan Informasi Akademik Sekolah*",
+            "— *Tata Tertib Sekolah SMP Negeri 6*"
         ];
 
+        // --- 3. UTILITY FUNCTIONS ---
         function getWITTime() {
             const date = new Date();
             const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
@@ -383,18 +386,16 @@
             const greeting = greetingsList[Math.floor(Math.random() * greetingsList.length)];
             const intro = introsList[Math.floor(Math.random() * introsList.length)];
             const isLate = status === 'Terlambat';
-            const note = isLate 
-                ? terlambatNotesList[Math.floor(Math.random() * terlambatNotesList.length)]
-                : tepatNotesList[Math.floor(Math.random() * tepatNotesList.length)];
+            const note = isLate ? terlambatNotesList[Math.floor(Math.random() * terlambatNotesList.length)] : tepatNotesList[Math.floor(Math.random() * tepatNotesList.length)];
             const closing = closingsList[Math.floor(Math.random() * closingsList.length)];
             const signature = signaturesList[Math.floor(Math.random() * signaturesList.length)];
-
+            
             const todayStr = getDateOnlyWIT();
             const dayName = getIndonesianDayName(todayStr);
             const formattedDate = getIndonesianFormattedDate(todayStr);
-            const statusBadge = isLate ? "🔴 *TERLAMBAT*" : "🟢 *TEPAT WAKTU*";
+            const statusBadge = isLate ? "🔴 *T E R L A M B A T*" : "🟢 *T E P A T  W A K T U*";
 
-            return `${greeting}\n\n${intro}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📋 *LAPORAN PRESENSI SISWA*\n━━━━━━━━━━━━━━━━━━━━━━\n👤 *Nama Siswa* : ${student.name}\n🆔 *NISN*       : ${student.nisn}\n📚 *Kelas*      : ${student.class}\n📅 *Hari/Tgl*   : ${dayName}, ${formattedDate}\n⏰ *Jam Presensi*: ${time} WIT\n📊 *Status*     : ${statusBadge}\n━━━━━━━━━━━━━━━━━━━━━━\n\n${note}\n\n${closing}\n\n${signature}`;
+            return `${greeting}\n\n${intro}\n\n===========================\n📑 *RINCIAN PRESENSI HARI INI*\n===========================\n👤 *Nama*  : ${student.name}\n🆔 *NISN*  : ${student.nisn}\n🎓 *Kelas* : ${student.class}\n📅 *Tgl*   : ${dayName}, ${formattedDate}\n⏰ *Jam*   : ${time} WIT\n📊 *Ket*   : ${statusBadge}\n===========================\n\n${note}\n\n${closing}\n\n${signature}`;
         }
 
         function getAvatar(name) {
@@ -404,14 +405,13 @@
             return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${encodeURIComponent(color)}"/><text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">${initials}</text></svg>`;
         }
 
-        const Toast = Swal.mixin({
-            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
-            timerProgressBar: true
-        });
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
 
+        // --- 4. CORE LOGIC (SCAN & WA QUEUE) ---
         async function processWhatsAppQueue() {
             if (queueRunning) return;
             try {
+                const currentApiKey = await getWaApiKey();
                 const pendingCount = await db.queue.where('status').equals('pending').count();
                 const countDisplay = document.getElementById('waQueueCount');
                 if (countDisplay) countDisplay.innerText = pendingCount;
@@ -457,32 +457,19 @@
                     try {
                         const response = await fetch('https://api.fonnte.com/send', {
                             method: 'POST',
-                            headers: { 'Authorization': API_KEY_WA },
-                            body: new URLSearchParams({ 
-                                target: phone, 
-                                message: msg.message, 
-                                delay: '2',
-                                countryCode: '62' 
-                            })
+                            headers: { 'Authorization': currentApiKey },
+                            body: new URLSearchParams({ target: phone, message: msg.message, delay: '2', countryCode: '62' })
                         });
                         const result = await response.json();
-                        if (result.status) {
-                            await db.queue.update(msg.id, { status: 'sent', response: JSON.stringify(result) });
-                        } else {
-                            await db.queue.update(msg.id, { status: 'failed', error: result.reason || 'Ditolak Server WA' });
-                        }
+                        if (result.status) await db.queue.update(msg.id, { status: 'sent', response: JSON.stringify(result) });
+                        else await db.queue.update(msg.id, { status: 'failed', error: result.reason || 'Ditolak Server WA' });
                     } catch (apiError) {
-                        console.error("API Error WA:", apiError);
                         await db.queue.update(msg.id, { status: 'error', error: apiError.message });
                     }
                 } else {
                     await db.queue.update(msg.id, { status: 'invalid_phone', error: 'Nomor HP tidak valid' });
                 }
-            } catch (error) {
-                console.error("Sistem Antrean Error:", error);
-            } finally {
-                queueRunning = false;
-            }
+            } catch (error) { console.error("Sistem Antrean Error:", error); } finally { queueRunning = false; }
         }
         setInterval(processWhatsAppQueue, 3000);
 
@@ -495,62 +482,58 @@
                 const student = await db.students.get(nisn);
                 if (!student) {
                     playSound('error');
-                    Swal.fire({ 
-                        icon: 'error', title: 'AKSES DITOLAK', text: `Data siswa dengan NISN (${nisn}) tidak terdaftar.`, 
-                        confirmButtonColor: '#1e3a8a', timer: 3000, timerProgressBar: true, showConfirmButton: false 
-                    });
+                    Swal.fire({ icon: 'error', title: 'AKSES DITOLAK', text: `Data siswa dengan NISN (${nisn}) tidak terdaftar di database.`, confirmButtonColor: '#1e3a8a', timer: 3000, showConfirmButton: false });
                     return;
                 }
 
+                // 1. CEK DOUBLE SCAN (Pencegahan kuat agar siswa tidak bisa tap 2 kali di hari yg sama)
                 const existingScan = await db.attendance.where({ nisn: nisn, date: today }).first();
                 if (existingScan) {
                     playSound('warning');
                     Swal.fire({
-                        icon: 'warning', title: '⚠️ PRESENSI SUDAH TERCATAT',
+                        icon: 'warning', 
+                        title: '⚠️ SUDAH ABSEN HARI INI',
                         html: `
-                            <div class="text-left bg-amber-50 p-4 rounded-2xl border border-amber-200 text-amber-900 text-sm space-y-2 mt-2">
-                                <p class="font-bold text-base text-amber-800 border-b border-amber-200 pb-2">Sudah Scan Hari Ini!</p>
-                                <p>👤 <b>Nama:</b> ${student.name}</p>
-                                <p>⏰ <b>Jam Scan Pertama:</b> <span class="font-bold text-blue-700">${existingScan.time} WIT</span></p>
-                            </div>
-                        `,
-                        confirmButtonColor: '#fbbf24', confirmButtonText: 'Saya Mengerti'
+                            <div class="text-left bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-900 mt-2 shadow-inner">
+                                <p class="mb-1 text-sm text-gray-500">Scan pertama tercatat pada:</p>
+                                <p class="text-xl font-black mb-3">${existingScan.time} WIT</p>
+                                <div class="bg-white/60 p-3 rounded-lg text-sm border border-amber-100">
+                                    <p class="font-bold">${student.name}</p>
+                                    <p class="text-xs">NISN: ${student.nisn} | KELAS: ${student.class}</p>
+                                </div>
+                                <p class="text-xs mt-3 text-red-500 font-bold">*Sistem otomatis menolak scan berulang di hari yang sama.</p>
+                            </div>`,
+                        confirmButtonColor: '#d97706', 
+                        confirmButtonText: 'Mengerti'
                     });
-                    return;
+                    return; // MENGHENTIKAN PROSES DISINI JIKA SUDAH ABSEN
                 }
 
+                // Hitung status keterlambatan
                 let limitSetting = await db.settings.get('lateLimit');
                 let lateLimitStr = limitSetting ? limitSetting.value : "07:20";
                 let status = 'Tepat Waktu';
                 
                 const [scanH, scanM] = timeNow.split(':').map(Number);
                 const [limitH, limitM] = lateLimitStr.split(':').map(Number);
-                
-                if ((scanH > limitH) || (scanH === limitH && scanM > limitM)) {
-                    status = 'Terlambat';
-                }
+                if ((scanH > limitH) || (scanH === limitH && scanM > limitM)) status = 'Terlambat';
 
-                await db.attendance.add({
-                    nisn: nisn, date: today, time: timeNow, status: status, timestamp: getWITTime().getTime()
-                });
+                // Simpan data absensi valid
+                await db.attendance.add({ nisn: nisn, date: today, time: timeNow, status: status, timestamp: getWITTime().getTime() });
 
+                // 2. CEK DOUBLE MESSAGE WA (Lapis kedua keamanan agar ortu tidak dispam)
                 const existingQueue = await db.queue.where({ nisn: nisn, date: today }).first();
                 if (!existingQueue) {
-                    const waMessage = generateMessage(student, timeNow, status);
-                    await db.queue.add({
-                        nisn: nisn, date: today, phone: student.parent_phone || '-',
-                        message: waMessage, status: 'pending', timestamp: getWITTime().getTime()
-                    });
+                    await db.queue.add({ nisn: nisn, date: today, phone: student.parent_phone || '-', message: generateMessage(student, timeNow, status), status: 'pending', timestamp: getWITTime().getTime() });
+                } else {
+                    console.warn(`Pencegahan ganda: Pesan WA untuk NISN ${nisn} hari ini sudah ada dalam antrean.`);
                 }
 
                 displayScanResult(student, timeNow, status);
                 playSound('success');
                 if (currentMenu === 'scan') loadTodayScansForSidebar(false);
 
-            } catch (err) {
-                console.error(err);
-                Toast.fire({ icon: 'error', title: 'Terjadi kesalahan sistem saat memproses presensi.' });
-            }
+            } catch (err) { Toast.fire({ icon: 'error', title: 'Terjadi kesalahan sistem database.' }); console.error(err); }
         }
 
         function displayScanResult(student, time, status) {
@@ -571,7 +554,6 @@
                 <div class="animate-zoom-in flex flex-col items-center bg-white/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-white/50 text-center w-full max-w-2xl mx-auto relative overflow-hidden" style="box-shadow: 0 30px 60px -15px ${themeGlow};">
                     <div class="absolute inset-0 bg-gradient-to-b ${gradFrom} to-transparent z-0"></div>
                     <div class="relative z-10 mb-6 group">
-                        <div class="absolute inset-0 bg-gradient-to-tr ${photoGrad} to-yellow-300 rounded-[2.5rem] blur-xl opacity-50 group-hover:opacity-70 transition duration-500"></div>
                         <img src="${photoSrc}" alt="${student.name}" class="w-56 h-56 md:w-72 md:h-72 object-cover relative z-10 rounded-[2.5rem] border-4 border-white shadow-2xl transform transition duration-500 group-hover:scale-105">
                     </div>
                     <h2 class="text-4xl md:text-5xl font-extrabold text-gray-800 mb-3 relative z-10 tracking-tight drop-shadow-sm">${student.name}</h2>
@@ -632,6 +614,7 @@
             }
         }
 
+        // --- REPORTS VIEW ---
         async function renderReports(container) {
             container.innerHTML = `
                 <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -646,30 +629,22 @@
                             <option value="month">Bulan Ini</option>
                             <option value="all">Seluruh Waktu</option>
                         </select>
-                        <button onclick="loadReportData()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-bold transition">Terapkan</button>
-                        <button onclick="exportReportToCSV()" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow-md">
+                        <button onclick="loadReportData()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-bold transition-all hover:shadow-md">Terapkan</button>
+                        <button onclick="exportReportToCSV()" class="bg-gray-900 hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-900/30 text-white px-5 py-2 rounded-lg font-bold transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
                             <i class="ph ph-download-simple"></i> Unduh CSV
                         </button>
                     </div>
                 </div>
                 <div id="comprehensiveStats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="p-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-800 flex items-center gap-2 text-lg">
-                            <i class="ph ph-table text-primary text-xl"></i> Rincian Data Kehadiran
-                        </h3>
+                <div class="premium-card overflow-hidden">
+                    <div class="p-5 bg-gradient-to-r from-yellow-50 to-white border-b border-yellow-200/50 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2 text-lg"><i class="ph ph-table text-gold text-xl drop-shadow-sm"></i> Rincian Data Kehadiran</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider font-bold">
-                                    <th class="py-4 px-5 border-b">Hari</th>
-                                    <th class="py-4 px-5 border-b">Tanggal</th>
-                                    <th class="py-4 px-5 border-b">Waktu (WIT)</th>
-                                    <th class="py-4 px-5 border-b">NISN</th>
-                                    <th class="py-4 px-5 border-b">Nama Lengkap Siswa</th>
-                                    <th class="py-4 px-5 border-b">Kelas</th>
-                                    <th class="py-4 px-5 border-b text-center">Status Absensi</th>
+                                <tr class="bg-yellow-50/50 text-gray-600 text-xs uppercase tracking-wider font-bold">
+                                    <th class="py-4 px-5 border-b border-yellow-100">Hari</th><th class="py-4 px-5 border-b border-yellow-100">Tanggal</th><th class="py-4 px-5 border-b border-yellow-100">Waktu</th><th class="py-4 px-5 border-b border-yellow-100">NISN</th><th class="py-4 px-5 border-b border-yellow-100">Nama Siswa</th><th class="py-4 px-5 border-b border-yellow-100">Kelas</th><th class="py-4 px-5 border-b border-yellow-100 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="reportTableBody"></tbody>
@@ -685,7 +660,7 @@
             const tbody = document.getElementById('reportTableBody');
             const statsContainer = document.getElementById('comprehensiveStats');
             
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12"><i class="ph ph-spinner-gap animate-spin text-4xl text-primary mb-3"></i><br><span class="text-gray-500 font-medium">Menganalisis data kehadiran...</span></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12"><i class="ph ph-spinner-gap animate-spin text-4xl text-primary mb-3"></i><br><span class="text-gray-500 font-medium">Menganalisis data...</span></td></tr>';
             
             let records = [];
             const today = getWITTime();
@@ -694,14 +669,11 @@
             if (filter === 'today') records = await db.attendance.where('date').equals(todayStr).reverse().sortBy('timestamp');
             else if (filter === 'week') {
                 const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7);
-                const lastWeekStr = lastWeek.toISOString().split('T')[0];
-                records = await db.attendance.where('date').between(lastWeekStr, todayStr, true, true).reverse().sortBy('timestamp');
-            } 
-            else if (filter === 'month') {
+                records = await db.attendance.where('date').between(lastWeek.toISOString().split('T')[0], todayStr, true, true).reverse().sortBy('timestamp');
+            } else if (filter === 'month') {
                 const prefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
                 records = await db.attendance.filter(r => r.date.startsWith(prefix)).reverse().sortBy('timestamp');
-            } 
-            else records = await db.attendance.orderBy('timestamp').reverse().toArray();
+            } else records = await db.attendance.orderBy('timestamp').reverse().toArray();
 
             let countTepat = 0, countTelat = 0;
             let uniqueStudents = new Set();
@@ -710,8 +682,8 @@
             const totalSiswaSistem = allStudents.length;
 
             if (records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500 font-medium bg-gray-50"><i class="ph ph-folder-open text-4xl text-gray-400 mb-2 block"></i>Tidak ada data absensi untuk periode ini.</td></tr>';
-                statsContainer.innerHTML = `<div class="col-span-2 lg:col-span-4 bg-white rounded-2xl p-5 border border-gray-200 shadow-sm text-center text-gray-500">Pilih filter waktu yang memiliki data absensi untuk melihat analisis statistik.</div>`;
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500 font-medium bg-gray-50">Tidak ada data absensi untuk periode ini.</td></tr>';
+                statsContainer.innerHTML = `<div class="col-span-4 bg-white p-5 rounded-2xl text-center text-gray-500 border">Pilih filter waktu yang memiliki data.</div>`;
                 return;
             }
 
@@ -719,243 +691,95 @@
             for (const r of records) {
                 if (r.status === 'Terlambat') countTelat++; else countTepat++;
                 uniqueStudents.add(r.nisn);
-                const student = studentMap[r.nisn] || { name: 'Data Terhapus / Tidak Valid', class: '-' };
+                const s = studentMap[r.nisn] || { name: 'Data Terhapus', class: '-' };
+                const dayName = getIndonesianDayName(r.date);
                 const statusHtml = r.status === 'Terlambat' 
-                    ? `<div class="bg-red-50 border border-red-200 text-red-700 py-1.5 px-3 rounded-md text-xs font-black tracking-wide w-32 mx-auto flex items-center justify-center gap-1 shadow-sm"><i class="ph ph-warning-circle text-sm"></i> TERLAMBAT</div>`
-                    : `<div class="bg-emerald-50 border border-emerald-200 text-emerald-700 py-1.5 px-3 rounded-md text-xs font-black tracking-wide w-32 mx-auto flex items-center justify-center gap-1 shadow-sm"><i class="ph ph-check-circle text-sm"></i> TEPAT WAKTU</div>`;
+                    ? `<div class="bg-red-50 text-red-700 py-1 px-2 rounded text-xs font-bold w-28 mx-auto text-center border border-red-200">TERLAMBAT</div>`
+                    : `<div class="bg-emerald-50 text-emerald-700 py-1 px-2 rounded text-xs font-bold w-28 mx-auto text-center border border-emerald-200">TEPAT WAKTU</div>`;
 
-                html += `
-                    <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition duration-150 group">
-                        <td class="py-4 px-5 text-gray-700 font-bold">${getIndonesianDayName(r.date)}</td>
-                        <td class="py-4 px-5 text-gray-600 font-medium">${r.date}</td>
-                        <td class="py-4 px-5 font-black text-primary">${r.time}</td>
-                        <td class="py-4 px-5 text-gray-500 font-mono text-sm">${r.nisn}</td>
-                        <td class="py-4 px-5 text-gray-800 font-bold">${student.name}</td>
-                        <td class="py-4 px-5 text-gray-600 font-medium">${student.class}</td>
-                        <td class="py-4 px-5 text-center">${statusHtml}</td>
-                    </tr>
-                `;
+                html += `<tr class="border-b border-gray-100 hover:bg-blue-50/50"><td class="py-3 px-5 font-bold">${dayName}</td><td class="py-3 px-5">${r.date}</td><td class="py-3 px-5 font-bold text-primary">${r.time}</td><td class="py-3 px-5 text-sm">${r.nisn}</td><td class="py-3 px-5 font-bold">${s.name}</td><td class="py-3 px-5">${s.class}</td><td class="py-3 px-5">${statusHtml}</td></tr>`;
             }
-
             tbody.innerHTML = html;
+            
             const totalScan = records.length;
             const pctTepat = ((countTepat / totalScan) * 100).toFixed(1);
             const pctTelat = ((countTelat / totalScan) * 100).toFixed(1);
 
             statsContainer.innerHTML = `
-                <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm stat-card relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full flex items-start justify-end p-3"><i class="ph ph-fingerprint text-xl text-blue-500"></i></div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Scan Valid</p>
-                    <h3 class="text-3xl font-black text-gray-800 mb-1">${totalScan}</h3>
-                    <p class="text-xs text-gray-400 font-medium">Dari ${uniqueStudents.size} siswa berbeda</p>
-                </div>
-                <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm stat-card relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-16 h-16 bg-emerald-50 rounded-bl-full flex items-start justify-end p-3"><i class="ph ph-check-circle text-xl text-emerald-500"></i></div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Hadir Tepat Waktu</p>
-                    <div class="flex items-end gap-2 mb-1">
-                        <h3 class="text-3xl font-black text-gray-800">${countTepat}</h3>
-                        <span class="text-sm font-bold text-emerald-600 mb-1 bg-emerald-50 px-2 py-0.5 rounded-md">${pctTepat}%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${pctTepat}%"></div></div>
-                </div>
-                <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm stat-card relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-16 h-16 bg-red-50 rounded-bl-full flex items-start justify-end p-3"><i class="ph ph-warning-circle text-xl text-red-500"></i></div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Terlambat</p>
-                    <div class="flex items-end gap-2 mb-1">
-                        <h3 class="text-3xl font-black text-gray-800">${countTelat}</h3>
-                        <span class="text-sm font-bold text-red-600 mb-1 bg-red-50 px-2 py-0.5 rounded-md">${pctTelat}%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2"><div class="bg-red-500 h-1.5 rounded-full" style="width: ${pctTelat}%"></div></div>
-                </div>
-                <div class="bg-gray-900 rounded-2xl p-5 border border-gray-800 shadow-lg stat-card relative overflow-hidden flex flex-col justify-center">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 relative z-10">Total Database Siswa</p>
-                    <h3 class="text-3xl font-black text-white relative z-10">${totalSiswaSistem}</h3>
-                    <p class="text-xs text-gold font-medium mt-1 relative z-10"><i class="ph ph-database mr-1"></i>Sistem Data Master</p>
-                </div>
+                <div class="premium-card p-5 stat-card"><p class="text-xs font-bold text-gray-500 mb-1">Total Scan Valid</p><h3 class="text-3xl font-black text-gray-800">${totalScan}</h3><p class="text-xs text-yellow-600 font-medium mt-1">Dari ${uniqueStudents.size} siswa</p></div>
+                <div class="premium-card p-5 stat-card"><p class="text-xs font-bold text-gray-500 mb-1">Tepat Waktu</p><div class="flex items-end gap-2"><h3 class="text-3xl font-black text-gray-800">${countTepat}</h3><span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 rounded-md shadow-sm border border-emerald-100">${pctTepat}%</span></div></div>
+                <div class="premium-card p-5 stat-card"><p class="text-xs font-bold text-gray-500 mb-1">Terlambat</p><div class="flex items-end gap-2"><h3 class="text-3xl font-black text-gray-800">${countTelat}</h3><span class="text-sm font-bold text-red-600 bg-red-50 px-2 rounded-md shadow-sm border border-red-100">${pctTelat}%</span></div></div>
+                <div class="premium-card !bg-gradient-to-br !from-gray-900 !to-gray-800 p-5 stat-card border-none shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]"><p class="text-xs font-bold text-gray-400 mb-1">Total Database Siswa</p><h3 class="text-3xl font-black text-gold drop-shadow-md">${totalSiswaSistem}</h3></div>
             `;
         }
 
         async function exportReportToCSV() {
-            const filter = document.getElementById('reportFilter').value;
-            let records = [];
-            const today = getWITTime();
-            const todayStr = getDateOnlyWIT();
-
-            if (filter === 'today') records = await db.attendance.where('date').equals(todayStr).reverse().sortBy('timestamp');
-            else if (filter === 'week') {
-                const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7);
-                const lastWeekStr = lastWeek.toISOString().split('T')[0];
-                records = await db.attendance.where('date').between(lastWeekStr, todayStr, true, true).reverse().sortBy('timestamp');
-            } 
-            else if (filter === 'month') {
-                const prefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-                records = await db.attendance.filter(r => r.date.startsWith(prefix)).reverse().sortBy('timestamp');
-            } 
-            else records = await db.attendance.orderBy('timestamp').reverse().toArray();
-
-            if(records.length === 0) return Toast.fire({ icon: 'warning', title: 'Tidak ada data untuk diexport.' });
-
-            let csvContent = "Hari,Tanggal,Waktu,NISN,Nama Siswa,Kelas,Status Absensi\n";
-            const studentsArr = await db.students.toArray();
-            const studentMap = {}; studentsArr.forEach(s => studentMap[s.nisn] = s);
-
-            records.forEach(r => {
-                const s = studentMap[r.nisn] || { name: 'Data Terhapus', class: '-' };
-                csvContent += `"${getIndonesianDayName(r.date)}","${r.date}","${r.time}","${r.nisn}","${s.name}","${s.class}","${r.status}"\n`;
+            // Re-fetch logic simplified for export
+            await loadReportData(); // ensure table is fresh
+            let csv = "Hari,Tanggal,Waktu,NISN,Nama Siswa,Kelas,Status Absensi\n";
+            const rows = document.querySelectorAll("#reportTableBody tr");
+            rows.forEach(r => {
+                const cols = r.querySelectorAll("td");
+                if(cols.length === 7) {
+                    csv += `"${cols[0].innerText}","${cols[1].innerText}","${cols[2].innerText}","${cols[3].innerText}","${cols[4].innerText}","${cols[5].innerText}","${cols[6].innerText}"\n`;
+                }
             });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url); link.setAttribute("download", `Rekapan_Absensi_${getDateOnlyWIT()}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Rekapan_Absensi_${getDateOnlyWIT()}.csv`;
+            link.click();
         }
 
+        // --- 5. AREA SCAN QR ---
         let lastScanTime = 0;
+        
         async function renderScanArea(container) {
             container.innerHTML = `
                 <div class="flex flex-col lg:flex-row gap-6 h-full">
                     <div class="flex-1 flex flex-col gap-4">
-                        <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex-wrap gap-2">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-800">Mesin Pemindai Cerdas</h2>
-                                <p class="text-gray-500 text-sm">Gunakan Alat Scanner Barcode atau Kamera Web</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <select id="cameraSelect" class="hidden bg-gray-100 border border-gray-300 text-gray-700 text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer" onchange="switchCameraDevice(this.value)">
-                                </select>
-                                <button id="btnToggleCam" onclick="toggleCamera()" class="bg-gradient-to-r from-blue-50 to-blue-100 text-primary px-4 py-3 rounded-xl hover:shadow-md transition flex items-center gap-2 border border-blue-200 font-bold text-sm">
-                                    <i class="ph ph-camera text-xl"></i> <span id="camBtnText">Aktifkan Kamera</span>
-                                </button>
-                            </div>
+                        <div class="premium-card p-4 flex justify-between items-center">
+                            <div><h2 class="text-2xl font-bold text-gray-800">Mesin Pemindai Cerdas</h2><p class="text-yellow-600 font-medium text-sm">Gunakan Alat Scanner atau Kamera</p></div>
+                            <button id="toggleCameraBtn" onclick="toggleCamera()" class="bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 px-5 py-3 rounded-xl hover:shadow-lg hover:shadow-yellow-200/50 transition-all flex items-center gap-2 border border-yellow-300 font-bold transform hover:-translate-y-1">
+                                <i class="ph ph-camera text-xl"></i> <span>Kamera</span>
+                            </button>
                         </div>
-                        <div id="cameraContainer" class="hidden bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800 relative w-full max-w-sm mx-auto animate-zoom-in">
+                        <div id="cameraContainer" class="hidden bg-black rounded-[1.5rem] overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.3)] relative w-full max-w-sm mx-auto border-4 border-yellow-400/50">
                             <div id="qr-reader" class="w-full"></div>
-                            <div class="absolute inset-0 border-2 border-red-500/50 m-6 rounded-lg pointer-events-none"><div class="laser-beam"></div></div>
                         </div>
                         <div id="scanResultArea" class="flex-1 flex items-center justify-center min-h-[450px]">
                             ${getScanWaitingHTML()}
                         </div>
                     </div>
-                    <div class="w-full lg:w-[350px] bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full max-h-[80vh] shrink-0">
-                        <div class="p-5 border-b border-gray-100 bg-gray-50 rounded-t-2xl flex justify-between items-center">
-                            <h3 class="font-bold text-gray-800 flex items-center"><i class="ph ph-clock-counter-clockwise mr-2 text-primary text-lg"></i>Scan Hari Ini</h3>
-                            <span id="todayScanCount" class="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">0</span>
-                        </div>
-                        <div id="todayScansList" class="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50/50"></div>
+                    <div class="w-full lg:w-[350px] premium-card flex flex-col h-full max-h-[80vh] shrink-0">
+                        <div class="p-5 border-b border-yellow-200/50 bg-gradient-to-r from-yellow-50/50 to-transparent flex justify-between items-center"><h3 class="font-bold flex items-center text-gray-800"><i class="ph ph-clock-counter-clockwise text-gold mr-2 text-xl"></i> Scan Hari Ini</h3><span id="todayScanCount" class="bg-gradient-to-r from-gold to-yellow-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">0</span></div>
+                        <div id="todayScansList" class="flex-1 overflow-y-auto p-3 space-y-3 bg-white/50 backdrop-blur-sm"></div>
                     </div>
                 </div>
             `;
             loadTodayScansForSidebar(true);
         }
 
-        async function toggleCamera() {
+        function toggleCamera() {
             const camContainer = document.getElementById('cameraContainer');
-            const camBtnText = document.getElementById('camBtnText');
-            const cameraSelect = document.getElementById('cameraSelect');
-
-            if (!camContainer) return;
-
             if (camContainer.classList.contains('hidden')) {
                 camContainer.classList.remove('hidden');
-                if (camBtnText) camBtnText.innerText = "Matikan Kamera";
-
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode("qr-reader");
-                }
-
-                try {
-                    // Ambil daftar kamera yang tersedia di perangkat
-                    availableCameras = await Html5Qrcode.getCameras();
-                    
-                    if (availableCameras && availableCameras.length > 0) {
-                        if (cameraSelect) {
-                            cameraSelect.innerHTML = availableCameras.map((cam, idx) => 
-                                `<option value="${cam.id}">${cam.label || 'Kamera ' + (idx + 1)}</option>`
-                            ).join('');
-                            cameraSelect.classList.remove('hidden');
+                if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        const now = Date.now();
+                        if (now - lastScanTime > 1500) {  // Cooldown mencegah dobel scan
+                            lastScanTime = now;
+                            processScan(decodedText);
                         }
-                        
-                        currentCameraDeviceId = cameraSelect ? cameraSelect.value : availableCameras[0].id;
-                        await startCameraWithConfig(currentCameraDeviceId);
-                    } else {
-                        await startCameraWithConfig({ facingMode: "environment" });
-                    }
-                } catch (err) {
-                    console.warn("Kamera ID tidak langsung terdeteksi, menggunakan fallback facingMode...", err);
-                    try {
-                        await startCameraWithConfig({ facingMode: "user" });
-                    } catch (fallbackErr) {
-                        console.error("Gagal membuka kamera:", fallbackErr);
-                        stopCamera();
-                        
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal Membuka Kamera',
-                            text: 'Pastikan Anda memberikan izin akses kamera pada browser dan perangkat Anda terhubung ke webcam.',
-                            confirmButtonColor: '#1e3a8a'
-                        });
-                    }
-                }
+                    },
+                    (err) => { }
+                ).catch(err => {
+                    Toast.fire({icon:'error', title:'Gagal akses kamera!'});
+                    camContainer.classList.add('hidden');
+                });
             } else {
-                stopCamera();
-            }
-        }
-
-        async function startCameraWithConfig(cameraConfig) {
-            if (html5QrCode && html5QrCode.isScanning) {
-                await html5QrCode.stop();
-            }
-
-            const qrBoxSize = Math.min(window.innerWidth < 640 ? 200 : 250, 250);
-
-            await html5QrCode.start(
-                cameraConfig,
-                { 
-                    fps: 15, 
-                    qrbox: { width: qrBoxSize, height: qrBoxSize },
-                    aspectRatio: 1.0
-                },
-                (decodedText) => {
-                    const now = Date.now();
-                    if (now - lastScanTime > 1200) { 
-                        lastScanTime = now; 
-                        processScan(decodedText); 
-                    }
-                },
-                (errorMessage) => {
-                    // Frame scan biasa, diabaikan
-                }
-            );
-        }
-
-        async function switchCameraDevice(deviceId) {
-            currentCameraDeviceId = deviceId;
-            if (html5QrCode && html5QrCode.isScanning) {
-                try {
-                    await startCameraWithConfig(deviceId);
-                    Toast.fire({ icon: 'info', title: 'Kamera berhasil diganti' });
-                } catch (err) {
-                    Toast.fire({ icon: 'error', title: 'Gagal mengganti kamera' });
-                }
-            }
-        }
-
-        async function stopCamera() {
-            const camContainer = document.getElementById('cameraContainer');
-            const camBtnText = document.getElementById('camBtnText');
-            const cameraSelect = document.getElementById('cameraSelect');
-
-            if (camContainer) camContainer.classList.add('hidden');
-            if (camBtnText) camBtnText.innerText = "Aktifkan Kamera";
-            if (cameraSelect) cameraSelect.classList.add('hidden');
-
-            if (html5QrCode && html5QrCode.isScanning) {
-                try {
-                    await html5QrCode.stop();
-                    html5QrCode.clear();
-                } catch(e) {
-                    console.error("Gagal menghentikan kamera:", e);
+                camContainer.classList.add('hidden');
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
                 }
             }
         }
@@ -969,15 +793,11 @@
             const scans = await db.attendance.where('date').equals(today).reverse().sortBy('timestamp');
             if(countBadge) countBadge.innerText = scans.length;
             
-            if(scans.length === 0) {
-                list.innerHTML = `<div class="text-center py-10 text-gray-400"><i class="ph ph-empty text-5xl mb-3 block opacity-50"></i><p class="text-sm font-medium">Belum ada aktivitas scan</p></div>`;
-                return;
-            }
+            if(scans.length === 0) { list.innerHTML = `<div class="text-center py-10 text-gray-400">Belum ada scan</div>`; return; }
 
             let html = '';
-            const displayScans = scans.slice(0, 50);
-            for(let i = 0; i < displayScans.length; i++) {
-                const s = displayScans[i];
+            for(let i = 0; i < Math.min(scans.length, 50); i++) {
+                const s = scans[i];
                 const student = await db.students.get(s.nisn);
                 const name = student ? student.name : 'Data Terhapus';
                 const cls = student ? student.class : '-';
@@ -985,28 +805,31 @@
                 const isLate = s.status === 'Terlambat';
                 
                 html += `
-                    <div class="flex items-center gap-3 p-3 rounded-xl border ${isLate ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'} shadow-sm hover:shadow-md transition">
-                        <img src="${photo}" class="w-12 h-12 rounded-lg object-cover border-2 border-white shadow-sm shrink-0">
+                    <div class="flex items-center gap-3 p-3 rounded-xl border ${isLate ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}">
+                        <img src="${photo}" class="w-12 h-12 rounded-lg object-cover">
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-sm text-gray-800 truncate">${name}</h4>
+                            <h4 class="font-bold text-sm truncate">${name}</h4>
                             <div class="flex justify-between items-center mt-1">
-                                <span class="text-[10px] text-gray-500 font-bold bg-white px-2 py-0.5 rounded border border-gray-100">${cls}</span>
-                                <span class="text-[11px] font-black ${isLate ? 'text-red-600 border-red-100' : 'text-emerald-600 border-emerald-100'} bg-white px-2 py-0.5 rounded border">${s.time} WIT</span>
+                                <span class="text-[10px] font-bold bg-white px-2 py-0.5 rounded border">${cls}</span>
+                                <span class="text-[11px] font-black ${isLate ? 'text-red-600' : 'text-emerald-600'}">${s.time} WIT</span>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
             list.innerHTML = html;
         }
 
+        // Barcode Scanner fisik
         document.addEventListener('keydown', (e) => {
             if (currentMenu !== 'scan') return;
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if (e.key === 'Enter') {
                 if (barcodeBuffer.length > 0) {
                     const now = Date.now();
-                    if (now - lastScanTime > 1200) { lastScanTime = now; processScan(barcodeBuffer); }
+                    if (now - lastScanTime > 1200) {
+                        lastScanTime = now;
+                        processScan(barcodeBuffer);
+                    }
                     barcodeBuffer = '';
                 }
             } else if (e.key.length === 1) {
@@ -1016,86 +839,64 @@
             }
         });
 
+        // --- 5B. MANAJEMEN DATA ---
         async function renderDataManager(container) {
             container.innerHTML = `
                 <div class="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-end gap-5">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Manajemen Data Master</h1>
-                        <p class="text-gray-500 mt-1">Kelola ribuan data siswa, unggah dari Excel (CSV), dan sinkronisasi foto super cepat.</p>
-                    </div>
+                    <div><h1 class="text-3xl font-bold text-gray-800">Manajemen Data Master</h1><p class="text-gray-500 mt-1">Kelola data siswa dan unggah foto otomatis berdasarkan NISN.</p></div>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="downloadTemplate()" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 shadow-sm">
-                            <i class="ph ph-download-simple text-lg"></i> Template Excel
-                        </button>
-                        <label class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 cursor-pointer shadow-md">
-                            <i class="ph ph-file-xls text-lg"></i> Upload Data (Excel)
-                            <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="hidden" onchange="handleExcelUpload(event)">
+                        <button onclick="downloadTemplate()" class="premium-card !border-gray-200 !shadow-sm hover:!border-gold px-4 py-2 !rounded-xl font-bold flex items-center gap-2"><i class="ph ph-download-simple text-lg text-gray-600"></i> Template</button>
+                        <label class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md shadow-green-500/30 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 cursor-pointer transition-all transform hover:-translate-y-0.5">
+                            <i class="ph ph-file-xls text-lg"></i> Upload Excel
+                            <input type="file" id="excelUpload" accept=".csv, .xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
                         </label>
-                        <label class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2 cursor-pointer shadow-md">
+                        <label class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md shadow-blue-500/30 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 cursor-pointer transition-all transform hover:-translate-y-0.5">
                             <i class="ph ph-images text-lg"></i> Upload Foto Massal
-                            <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.bmp,.heic,.gif" multiple class="hidden" onchange="handlePhotoUpload(event)">
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="handlePhotoUpload(event)">
                         </label>
-                        <button onclick="deleteAllStudents()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-4 py-2.5 rounded-xl font-bold transition text-sm flex items-center gap-2">
-                            <i class="ph ph-trash text-lg"></i> Hapus Semua
-                        </button>
+                        <button onclick="deleteAllStudents()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:shadow-md px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all"><i class="ph ph-trash text-lg"></i> Hapus Semua</button>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[65vh]">
-                    <div class="p-5 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div class="flex-1 flex flex-col sm:flex-row gap-3 w-full">
-                            <div class="relative w-full max-w-sm">
-                                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
-                                <input type="text" id="searchStudent" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-inner" oninput="loadStudentData()">
-                            </div>
-                            <select id="classFilter" onchange="loadStudentData()" class="w-full sm:w-auto min-w-[140px] rounded-xl border border-gray-200 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-sm cursor-pointer font-medium text-gray-700">
-                                <option value="">Semua Kelas</option>
-                            </select>
+                <div class="premium-card flex flex-col h-[65vh]">
+                    <div class="p-5 border-b border-yellow-200/50 bg-gradient-to-r from-yellow-50/30 to-white flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex-1 flex gap-3 w-full">
+                            <input type="text" id="searchStudent" placeholder="Cari NISN/Nama..." class="w-full max-w-sm rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-shadow" oninput="loadStudentData()">
+                            <select id="classFilter" onchange="loadStudentData()" class="rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-gold outline-none cursor-pointer transition-shadow bg-white"><option value="">Semua Kelas</option></select>
                         </div>
-                        <button onclick="openStudentModal()" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold transition text-sm flex items-center justify-center gap-2 shadow-md w-full md:w-auto shrink-0">
-                            <i class="ph ph-plus-circle text-lg"></i> Tambah Manual
-                        </button>
+                        <button onclick="openStudentModal()" class="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 shadow-lg shadow-gray-900/30 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 w-full md:w-auto transition-all transform hover:-translate-y-1"><i class="ph ph-plus-circle text-gold text-lg"></i> Tambah Manual</button>
                     </div>
                     <div class="flex-1 overflow-auto p-0">
                         <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-white text-gray-500 text-xs uppercase tracking-widest font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-                                    <th class="py-4 px-6 w-16">Foto</th><th class="py-4 px-6">NISN</th><th class="py-4 px-6">Nama Lengkap</th>
-                                    <th class="py-4 px-6">Kelas</th><th class="py-4 px-6">WhatsApp Ortu</th><th class="py-4 px-6 text-right">Opsi</th>
-                                </tr>
+                            <thead class="bg-white/90 backdrop-blur-sm text-gray-500 text-xs uppercase tracking-widest font-bold border-b border-yellow-100 sticky top-0 z-10">
+                                <tr><th class="py-4 px-6 w-16">Foto</th><th class="py-4 px-6">NISN</th><th class="py-4 px-6">Nama</th><th class="py-4 px-6">Kelas</th><th class="py-4 px-6">WA Ortu</th><th class="py-4 px-6 text-right">Aksi</th></tr>
                             </thead>
                             <tbody id="studentTableBody"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div id="studentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform transition-all animate-zoom-in max-h-[90vh] overflow-y-auto">
+                <!-- Modal Entry -->
+                <div id="studentModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity">
+                    <div class="premium-card p-8 w-full max-w-md animate-zoom-in overflow-y-auto bg-white/95 backdrop-blur-xl">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 id="modalTitle" class="text-2xl font-bold text-gray-800">Form Siswa</h3>
-                            <button onclick="closeStudentModal()" class="text-gray-400 hover:text-red-500 transition-colors"><i class="ph ph-x-circle text-3xl"></i></button>
+                            <h3 id="modalTitle" class="text-2xl font-bold text-gray-800 border-b-2 border-gold pb-1 inline-block">Form Siswa</h3>
+                            <button onclick="closeStudentModal()" class="text-gray-400 hover:text-red-500 transition-colors transform hover:rotate-90 duration-300"><i class="ph ph-x-circle text-3xl"></i></button>
                         </div>
                         <form id="studentForm" class="space-y-4">
-                            <div class="flex flex-col items-center justify-center mb-2">
+                            <div class="flex justify-center mb-2">
                                 <div class="relative group cursor-pointer" onclick="document.getElementById('s_photo').click()">
-                                    <img id="modalPhotoPreview" src="" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-md">
-                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="ph ph-camera text-2xl text-gray-800 drop-shadow-md bg-white/70 p-2 rounded-full"></i></div>
+                                    <img id="modalPhotoPreview" class="w-24 h-24 rounded-full object-cover border-4">
+                                    <input type="file" id="s_photo" accept="image/*" class="hidden" onchange="previewModalPhoto(event)">
                                 </div>
-                                <input type="file" id="s_photo" accept="image/*" class="hidden" onchange="previewModalPhoto(event)">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">NISN</label>
-                                <input type="text" id="s_nisn" required class="w-full rounded-xl border border-gray-200 px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
-                                <input type="text" id="s_name" required class="w-full rounded-xl border border-gray-200 px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition">
-                            </div>
+                            <input type="text" id="s_nisn" required placeholder="NISN" class="w-full rounded-xl border px-4 py-3 bg-gray-50 outline-none">
+                            <input type="text" id="s_name" required placeholder="Nama Lengkap" class="w-full rounded-xl border px-4 py-3 bg-gray-50 outline-none">
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kelas</label><input type="text" id="s_class" required class="w-full rounded-xl border border-gray-200 px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">No. WA Ortu</label><input type="text" id="s_phone" required placeholder="08..." class="w-full rounded-xl border border-gray-200 px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"></div>
+                                <input type="text" id="s_class" required placeholder="Kelas" class="w-full rounded-xl border border-gray-300 px-4 py-3 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-all">
+                                <input type="text" id="s_phone" required placeholder="No WA (08x)" class="w-full rounded-xl border border-gray-300 px-4 py-3 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-all">
                             </div>
-                            <button type="submit" class="w-full py-4 mt-4 text-white bg-gradient-to-r from-primary to-blue-700 hover:to-blue-600 rounded-xl font-bold shadow-lg transform hover:-translate-y-1 transition">SIMPAN DATA</button>
+                            <button type="submit" class="w-full py-4 mt-2 text-gray-900 bg-gradient-to-r from-gold to-yellow-500 hover:from-yellow-500 hover:to-gold rounded-xl font-bold shadow-lg shadow-yellow-500/30 transform hover:-translate-y-1 transition-all text-lg tracking-wide">SIMPAN DATA</button>
                         </form>
                     </div>
                 </div>
@@ -1110,9 +911,8 @@
             const students = await db.students.toArray();
             const classes = [...new Set(students.map(s => s.class))].filter(c => c && c !== '-').sort();
             const currentValue = classFilter.value;
-            classFilter.innerHTML = '<option value="">Semua Kelas</option>';
-            classes.forEach(c => classFilter.innerHTML += `<option value="${c}">${c}</option>`);
-            classFilter.value = currentValue;
+            classFilter.innerHTML = '<option value="">Semua Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+            classFilter.value = currentValue; 
         }
 
         async function loadStudentData() {
@@ -1121,48 +921,27 @@
             const search = document.getElementById('searchStudent')?.value.toLowerCase() || '';
             const selectedClass = document.getElementById('classFilter')?.value || '';
             let students = await db.students.toArray();
-            
             if (selectedClass) students = students.filter(s => s.class === selectedClass);
             if (search) students = students.filter(s => s.name.toLowerCase().includes(search) || s.nisn.toLowerCase().includes(search));
 
-            if(students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-16 text-gray-400 bg-gray-50/50"><i class="ph ph-users-three text-6xl block mb-4 opacity-30"></i>Data Kosong</td></tr>';
-                return;
-            }
+            if(students.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-16 text-gray-400">Data Kosong</td></tr>'; return; }
 
             let html = '';
-            const displayLimit = 100; 
-            const displayData = students.slice(0, displayLimit);
-
-            displayData.forEach(s => {
+            students.slice(0, 100).forEach(s => {
                 const photoSrc = s.photo || getAvatar(s.name);
-                html += `
-                    <tr class="border-b border-gray-100 hover:bg-blue-50/40 transition group">
-                        <td class="py-3 px-6"><img src="${photoSrc}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition"></td>
-                        <td class="py-3 px-6 font-mono text-sm font-bold text-gray-700">${s.nisn}</td>
-                        <td class="py-3 px-6 font-bold text-gray-800">${s.name}</td>
-                        <td class="py-3 px-6"><span class="bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-md text-xs">${s.class}</span></td>
-                        <td class="py-3 px-6 text-gray-600 font-mono text-sm">${s.parent_phone}</td>
-                        <td class="py-3 px-6 text-right opacity-50 group-hover:opacity-100 transition">
-                            <button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition shadow-sm" title="Edit"><i class="ph ph-pencil-simple text-lg"></i></button>
-                            <button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 hover:bg-red-600 hover:text-white p-2 rounded-lg transition shadow-sm ml-1" title="Hapus"><i class="ph ph-trash text-lg"></i></button>
-                        </td>
-                    </tr>
-                `;
+                html += `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6"><img src="${photoSrc}" class="w-10 h-10 rounded-full object-cover"></td><td class="py-3 px-6 font-mono">${s.nisn}</td><td class="py-3 px-6 font-bold">${s.name}</td><td class="py-3 px-6">${s.class}</td><td class="py-3 px-6">${s.parent_phone}</td><td class="py-3 px-6 text-right"><button onclick="editStudent('${s.nisn}')" class="text-blue-600 bg-blue-50 p-2 rounded-lg mr-1"><i class="ph ph-pencil-simple"></i></button><button onclick="deleteStudent('${s.nisn}')" class="text-red-600 bg-red-50 p-2 rounded-lg"><i class="ph ph-trash"></i></button></td></tr>`;
             });
-            if (students.length > displayLimit) html += `<tr><td colspan="6" class="text-center py-5 text-sm text-gray-500 font-medium bg-gray-50">Menampilkan ${displayLimit} dari ${students.length} total data.</td></tr>`;
             tbody.innerHTML = html;
         }
 
         function previewModalPhoto(e) {
             const file = e.target.files[0];
             if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                currentEditingPhoto = event.target.result;
+            // Gunakan kompresi agar ringan
+            compressImage(file).then(base64 => {
+                currentEditingPhoto = base64;
                 document.getElementById('modalPhotoPreview').src = currentEditingPhoto;
-            };
-            reader.readAsDataURL(file);
+            });
         }
 
         function openStudentModal() {
@@ -1170,23 +949,20 @@
             document.getElementById('modalPhotoPreview').src = getAvatar('S');
             document.getElementById('studentForm').reset();
             document.getElementById('s_nisn').readOnly = false;
-            document.getElementById('modalTitle').innerText = 'Entry Data Siswa';
+            document.getElementById('modalTitle').innerText = 'Entry Data Baru';
             document.getElementById('studentModal').classList.remove('hidden');
             document.getElementById('studentForm').onsubmit = saveStudent;
         }
-        
         function closeStudentModal() { document.getElementById('studentModal').classList.add('hidden'); }
 
         async function editStudent(nisn) {
             const s = await db.students.get(nisn);
             if(!s) return;
-            currentEditingPhoto = s.photo || null;
+            currentEditingPhoto = s.photo || null; 
             document.getElementById('modalPhotoPreview').src = s.photo || getAvatar(s.name);
             document.getElementById('s_nisn').value = s.nisn; document.getElementById('s_nisn').readOnly = true;
-            document.getElementById('s_name').value = s.name; document.getElementById('s_class').value = s.class;
-            document.getElementById('s_phone').value = s.parent_phone;
-            
-            document.getElementById('modalTitle').innerText = 'Edit Data Siswa';
+            document.getElementById('s_name').value = s.name; document.getElementById('s_class').value = s.class; document.getElementById('s_phone').value = s.parent_phone;
+            document.getElementById('modalTitle').innerText = 'Edit Data';
             document.getElementById('studentModal').classList.remove('hidden');
             document.getElementById('studentForm').onsubmit = updateStudent;
         }
@@ -1194,362 +970,447 @@
         async function saveStudent(e) {
             e.preventDefault();
             const nisn = document.getElementById('s_nisn').value.trim();
-            const existing = await db.students.get(nisn);
-            if(existing) return Swal.fire({icon: 'error', title: 'Data Ditolak', text: 'NISN tersebut sudah terdaftar!', timer: 3000, showConfirmButton: false});
-            await db.students.add({
-                nisn: nisn, name: document.getElementById('s_name').value.trim(),
-                class: document.getElementById('s_class').value.trim(), parent_phone: document.getElementById('s_phone').value.trim(), photo: currentEditingPhoto
-            });
+            if(await db.students.get(nisn)) return Swal.fire('Error', 'NISN sudah ada!', 'error');
+            await db.students.add({ nisn, name: document.getElementById('s_name').value.trim(), class: document.getElementById('s_class').value.trim(), parent_phone: document.getElementById('s_phone').value.trim(), photo: currentEditingPhoto });
             closeStudentModal(); loadStudentData(); populateClassFilter(); Toast.fire({icon: 'success', title: 'Tersimpan.'});
         }
 
         async function updateStudent(e) {
             e.preventDefault();
-            const nisn = document.getElementById('s_nisn').value.trim();
-            await db.students.update(nisn, {
-                name: document.getElementById('s_name').value.trim(), class: document.getElementById('s_class').value.trim(),
-                parent_phone: document.getElementById('s_phone').value.trim(), photo: currentEditingPhoto 
-            });
+            await db.students.update(document.getElementById('s_nisn').value.trim(), { name: document.getElementById('s_name').value.trim(), class: document.getElementById('s_class').value.trim(), parent_phone: document.getElementById('s_phone').value.trim(), photo: currentEditingPhoto });
             closeStudentModal(); loadStudentData(); populateClassFilter(); Toast.fire({icon: 'success', title: 'Diubah.'});
         }
 
         async function deleteStudent(nisn) {
-            const result = await Swal.fire({ title: 'Hapus data ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya' });
-            if(result.isConfirmed) { await db.students.delete(nisn); loadStudentData(); populateClassFilter(); Toast.fire({icon: 'success', title: 'Dihapus'}); }
+            if((await Swal.fire({title: 'Hapus?', icon: 'warning', showCancelButton: true})).isConfirmed) {
+                await db.students.delete(nisn); loadStudentData(); populateClassFilter();
+            }
         }
-
         async function deleteAllStudents() {
-            const result = await Swal.fire({ title: 'PEMBERITAHUAN KRITIS', text: 'Semua master data siswa akan dihapus permanen. Lanjutkan?', icon: 'error', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'HAPUS SEMUA' });
-            if(result.isConfirmed) { await db.students.clear(); loadStudentData(); populateClassFilter(); Toast.fire({icon: 'success', title: 'Dikosongkan'}); }
+            if((await Swal.fire({title: 'Hapus Semua Data?', icon: 'error', showCancelButton: true})).isConfirmed) {
+                await db.students.clear(); loadStudentData(); populateClassFilter();
+            }
         }
 
         function downloadTemplate() {
-            const dataTemplate = [{ NISN: "1234567890", NamaLengkap: "Budi Santoso", Kelas: "7A", NoHP_OrangTua: "08123456789" }];
-            const ws = XLSX.utils.json_to_sheet(dataTemplate);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data Siswa");
-            XLSX.writeFile(wb, "Template_Siswa.xlsx");
+            const ws = XLSX.utils.json_to_sheet([{ NISN: "12345", NamaLengkap: "Budi", Kelas: "7A", NoHP_OrangTua: "0812" }]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, "Template.xlsx");
         }
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
+            Swal.fire({title: 'Memproses...', text: 'Tunggu sebentar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
-            // Show loading immediately
-            Swal.fire({
-                title: 'Memproses Excel...',
-                text: 'Mengurai ribuan data dalam hitungan detik...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                // Yield thread so SweetAlert can render before heavy processing freezes UI
-                setTimeout(async () => {
+            // Gunakan setTimeout agar UI sweetalert tidak hang saat proses berat
+            setTimeout(() => {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
                     try {
-                        const data = new Uint8Array(event.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const results = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-                        
-                        let studentsToInsert = [];
+                        const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                        const results = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+                        let toInsert = [];
                         
                         for(const row of results) {
-                            const getVal = (keys) => {
-                                for(let key in row) {
-                                    if(keys.includes(key.toLowerCase().replace(/[^a-z0-9]/g, ''))) return String(row[key]).trim();
-                                }
-                                return '';
-                            };
+                            const getVal = (keys) => { for(let k in row) if(keys.includes(k.toLowerCase().replace(/[^a-z0-9]/g, ''))) return String(row[k]).trim(); return ''; };
                             const nisn = getVal(['nisn', 'nomorinduk', 'id']);
-                            if(nisn) {
-                                studentsToInsert.push({
-                                    nisn: nisn, name: getVal(['namalengkap', 'nama', 'name', 'namasiswa']) || '-',
-                                    class: getVal(['kelas', 'class', 'rombel']) || '-', parent_phone: getVal(['nohporangtua', 'nohp', 'phone', 'whatsapp', 'notelp']) || '-',
-                                    photo: null 
-                                });
-                            }
+                            if(nisn) toInsert.push({ nisn, name: getVal(['nama', 'namalengkap']) || '-', class: getVal(['kelas']) || '-', parent_phone: getVal(['nohp', 'whatsapp', 'telepon']) || '-', photo: null });
                         }
-
-                        if (studentsToInsert.length > 0) {
-                            // Dexie bulkPut is incredibly fast, inserting 10k rows usually takes <100ms
-                            await db.students.bulkPut(studentsToInsert);
-                            Swal.fire('Proses Selesai', `${studentsToInsert.length} baris data berhasil diimpor dengan super cepat!`, 'success');
-                            loadStudentData();
-                            populateClassFilter(); 
-                        } else {
-                            Swal.fire('Gagal', 'Tidak ada data valid yang diproses. Pastikan kolom "NISN" ada di file Excel.', 'warning');
-                        }
-                    } catch (error) {
-                        Swal.fire('Error Import', 'Format gagal dibaca. Error: ' + error.message, 'error');
-                    } finally {
-                        e.target.value = ''; 
-                    }
-                }, 100); 
-            };
-            reader.readAsArrayBuffer(file);
+                        if (toInsert.length > 0) {
+                            await db.students.bulkPut(toInsert);
+                            Swal.fire('Sukses', `${toInsert.length} data diimpor!`, 'success');
+                            loadStudentData(); populateClassFilter();
+                        } else Swal.fire('Gagal', 'Tidak ada NISN.', 'warning');
+                    } catch (error) { Swal.fire('Error', error.message, 'error'); } 
+                    finally { e.target.value = ''; }
+                };
+                reader.readAsArrayBuffer(file);
+            }, 100); // jeda 100ms
         }
 
-        function handlePhotoUpload(e) {
+        // FUNGSI KOMPRESI GAMBAR (Penting agar browser tidak crash)
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_SIZE = 300; // Resolusi maks 300px agar database ringan
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Kompres jadi JPG 70% quality
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Logika upload foto yang sudah disempurnakan
+        async function handlePhotoUpload(e) {
             const files = e.target.files;
             if(!files || files.length === 0) return;
             
-            Swal.fire({
-                title: `Menganalisis ${files.length} Foto...`,
-                text: 'Proses pencocokan NISN dan kompresi gambar...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            let processed = 0, matched = 0;
-            const fileArray = Array.from(files);
-
-            // Fungsi pembantu kompresi foto ke Canvas (Maks 400x400px) untuk hemat ruang simpan IndexedDB
-            const compressImage = (file) => {
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const maxDim = 400;
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > height) {
-                                if (width > maxDim) {
-                                    height = Math.round((height * maxDim) / width);
-                                    width = maxDim;
-                                }
-                            } else {
-                                if (height > maxDim) {
-                                    width = Math.round((width * maxDim) / height);
-                                    height = maxDim;
-                                }
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            resolve(canvas.toDataURL('image/jpeg', 0.85));
-                        };
-                        img.onerror = () => resolve(null);
-                        img.src = event.target.result;
-                    };
-                    reader.onerror = () => resolve(null);
-                    reader.readAsDataURL(file);
-                });
-            };
-
-            setTimeout(async () => {
-                for (const file of fileArray) {
-                    // Ekstraksi NISN dari nama file (Mendukung format nama file bebas: .png, .jpg, .jpeg, .webp, dll)
-                    const lastDotIndex = file.name.lastIndexOf('.');
-                    const nisnRaw = lastDotIndex !== -1 ? file.name.substring(0, lastDotIndex) : file.name;
-                    const nisn = nisnRaw.trim();
-
-                    if (nisn) {
-                        const student = await db.students.get(nisn);
-                        if (student) {
-                            const compressedBase64 = await compressImage(file);
-                            if (compressedBase64) {
-                                await db.students.update(nisn, { photo: compressedBase64 });
-                                matched++;
-                            }
-                        }
-                    }
-                    processed++;
-                }
-
-                e.target.value = ''; 
-                loadStudentData();
+            Swal.fire({title: `Memproses ${files.length} Foto...`, text:'Mohon tunggu proses sinkronisasi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            
+            let matched = 0;
+            // Proses file satu-persatu untuk mencegah Out-Of-Memory Crash
+            for(let i=0; i<files.length; i++) {
+                const file = files[i];
+                // Ambil string sebelum titik ekstensi terakhir sebagai NISN (Bebas format file)
+                const nisn = file.name.substring(0, file.name.lastIndexOf('.')) || file.name; 
                 
-                Swal.fire({
-                    icon: matched > 0 ? 'success' : 'warning',
-                    title: 'Proses Unggah Foto Selesai',
-                    html: `
-                        <div class="text-left bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm space-y-2">
-                            <p>📸 <b>Total File Foto:</b> ${processed}</p>
-                            <p>✅ <b>Berhasil Dicocokkan:</b> <span class="text-emerald-600 font-bold">${matched} siswa</span></p>
-                            <p>⚠️ <b>NISN Tidak Ditemukan:</b> ${processed - matched} foto</p>
-                        </div>
-                    `,
-                    confirmButtonColor: '#1e3a8a'
-                });
-            }, 100);
+                const student = await db.students.get(nisn);
+                if(student) {
+                    const compressedBase64 = await compressImage(file);
+                    await db.students.update(nisn, { photo: compressedBase64 });
+                    matched++;
+                }
+            }
+            
+            Swal.fire('Selesai', `${matched} foto sukses tersinkronisasi.`, 'success');
+            e.target.value = '';
+            loadStudentData();
         }
 
+        // --- DASHBOARD ---
         async function renderDashboard(container) { 
             const today = getDateOnlyWIT();
             const totalSiswa = await db.students.count();
             const hadir = await db.attendance.where('date').equals(today).count();
             const terlambat = await db.attendance.where({date: today, status: 'Terlambat'}).count();
-            const tepat = hadir - terlambat;
 
             let limitSetting = await db.settings.get('lateLimit');
             let limitValue = limitSetting ? limitSetting.value : "07:20";
 
             container.innerHTML = `
-                <div class="mb-8 flex justify-between items-end">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Dashboard Utama</h1>
-                        <p class="text-gray-500 mt-1">Ringkasan hari ini: <span class="font-semibold text-primary">${today} (Waktu WIT)</span></p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i class="ph ph-users text-3xl"></i></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Total Siswa</p><h3 class="text-2xl font-bold text-gray-800">${totalSiswa}</h3></div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600"><i class="ph ph-check-circle text-3xl"></i></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Hadir Tepat</p><h3 class="text-2xl font-bold text-gray-800">${tepat}</h3></div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-600"><i class="ph ph-clock text-3xl"></i></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Terlambat</p><h3 class="text-2xl font-bold text-gray-800">${terlambat}</h3></div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="ph ph-user-minus text-3xl"></i></div>
-                        <div><p class="text-sm text-gray-500 font-medium">Belum Scan</p><h3 class="text-2xl font-bold text-gray-800">${totalSiswa - hadir}</h3></div>
-                    </div>
+                <div class="mb-8 flex justify-between items-end"><div><h1 class="text-3xl font-bold text-gray-800 tracking-tight">Dashboard</h1><p class="text-gold font-medium mt-1">Hari ini: ${today}</p></div></div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="premium-card p-6 stat-card"><p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Total Siswa</p><h3 class="text-3xl font-black text-gray-800 drop-shadow-sm">${totalSiswa}</h3></div>
+                    <div class="premium-card p-6 stat-card"><p class="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-1">Hadir Tepat</p><h3 class="text-3xl font-black text-gray-800 drop-shadow-sm">${hadir - terlambat}</h3></div>
+                    <div class="premium-card p-6 stat-card"><p class="text-sm font-bold text-red-500 uppercase tracking-wider mb-1">Terlambat</p><h3 class="text-3xl font-black text-gray-800 drop-shadow-sm">${terlambat}</h3></div>
+                    <div class="premium-card p-6 stat-card bg-gradient-to-br from-yellow-50 to-white"><p class="text-sm font-bold text-yellow-600 uppercase tracking-wider mb-1">Belum Hadir</p><h3 class="text-3xl font-black text-gray-800 drop-shadow-sm">${totalSiswa - hadir}</h3></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="ph ph-gear text-primary"></i> Pengaturan</h3>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Batas Terlambat (WIT)</label>
-                            <div class="flex gap-2">
-                                <input type="time" id="lateTimeInput" value="${limitValue}" class="flex-1 rounded-lg border-gray-300 border px-3 py-2">
-                                <button onclick="saveLateLimit()" class="bg-primary hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium transition">Simpan</button>
-                            </div>
+                    <div class="premium-card p-6">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2"><i class="ph ph-gear text-gold text-xl"></i> Pengaturan</h3>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Batas Terlambat (WIT)</label>
+                        <div class="flex gap-2">
+                            <input type="time" id="lateTimeInput" value="${limitValue}" class="flex-1 rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-gold outline-none transition-shadow font-mono font-bold">
+                            <button onclick="saveLateLimit()" class="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-gold shadow-md px-5 rounded-xl font-bold transition-all transform hover:-translate-y-0.5">Simpan</button>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">5 Scan Terakhir</h3>
-                        <div class="flex-1 overflow-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead><tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider"><th class="py-3 px-4 font-medium">Nama</th><th class="py-3 px-4 font-medium">Kelas</th><th class="py-3 px-4 font-medium">Waktu</th><th class="py-3 px-4 font-medium">Status</th></tr></thead>
-                                <tbody id="recentScansTable"></tbody>
+                    <div class="lg:col-span-2 premium-card p-6">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2"><i class="ph ph-history text-gold text-xl"></i> 5 Scan Terakhir</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <tbody id="recentScansTable"><tr><td class="py-4 text-center text-gray-400">Memuat...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             `;
-            loadRecentScans();
+            const scans = await db.attendance.where('date').equals(today).reverse().sortBy('timestamp');
+            const tbody = document.getElementById('recentScansTable');
+            let html = '';
+            for(let s of scans.slice(0, 5)) {
+                const st = await db.students.get(s.nisn);
+                html += `<tr class="border-b"><td class="py-2 font-bold">${st ? st.name : '-'}</td><td class="py-2">${st ? st.class : '-'}</td><td class="py-2 font-bold text-primary">${s.time}</td></tr>`;
+            }
+            tbody.innerHTML = html || '<tr><td class="py-4 text-gray-400">Belum ada scan.</td></tr>';
         }
 
         async function saveLateLimit() {
             const val = document.getElementById('lateTimeInput').value;
-            if(val) { await db.settings.put({key: 'lateLimit', value: val}); Toast.fire({ icon: 'success', title: 'Batas waktu disimpan.' }); }
-        }
-
-        async function loadRecentScans() {
-            const today = getDateOnlyWIT();
-            const scans = await db.attendance.where('date').equals(today).reverse().sortBy('timestamp');
-            const top5 = scans.slice(0, 5);
-            const tbody = document.getElementById('recentScansTable');
-            if(!tbody) return;
-            if(top5.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">Belum ada data scan.</td></tr>'; return; }
-            let html = '';
-            for(let s of top5) {
-                const student = await db.students.get(s.nisn);
-                const name = student ? student.name : '-';
-                const cls = student ? student.class : '-';
-                const statusBadge = s.status === 'Terlambat'
-                    ? '<span class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">Terlambat</span>'
-                    : '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">Tepat Waktu</span>';
-                html += `<tr class="border-b border-gray-100"><td class="py-3 px-4 font-bold text-gray-800">${name}</td><td class="py-3 px-4 text-gray-600 font-medium text-sm">${cls}</td><td class="py-3 px-4 font-black text-primary text-sm">${s.time}</td><td class="py-3 px-4">${statusBadge}</td></tr>`;
-            }
-            tbody.innerHTML = html;
+            if(val) { await db.settings.put({key: 'lateLimit', value: val}); Toast.fire({ icon: 'success', title: 'Tersimpan.' }); }
         }
         
+        async function renderWASettings(container) {
+            const currentKey = await getWaApiKey();
+            
+            container.innerHTML = `
+                <div class="mb-6 animate-zoom-in">
+                    <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Pengaturan WhatsApp Otomatis</h1>
+                    <p class="text-gray-500 mt-1">Konfigurasi API, pemantauan antrean, dan panduan kerja notifikasi WA.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-zoom-in">
+                    
+                    <!-- Form Pengaturan -->
+                    <div class="premium-card p-6 lg:p-8">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-green-500/30"><i class="ph ph-whatsapp-logo drop-shadow-md"></i></div>
+                            <div><h2 class="text-xl font-bold text-gray-800">Kredensial API Fonnte</h2><p class="text-sm font-medium text-yellow-600">Gateway pengiriman pesan WhatsApp</p></div>
+                        </div>
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">API Token Fonnte</label>
+                                <input type="text" id="waApiInput" value="${currentKey}" class="w-full bg-gray-50/50 border border-yellow-300 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-gold/20 focus:border-gold block p-4 font-mono transition-all shadow-inner" placeholder="Masukkan token Fonnte...">
+                                <p class="mt-2 text-xs text-gray-500">Dapatkan token dari dashboard <a href="https://fonnte.com" target="_blank" class="text-blue-600 hover:underline font-bold">Fonnte.com</a></p>
+                            </div>
+                            
+                            <div class="flex gap-3 pt-4 border-t border-yellow-100">
+                                <button onclick="saveWaSettings()" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-green-500/30 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                                    <i class="ph ph-floppy-disk text-xl"></i> Simpan Token
+                                </button>
+                                <button onclick="testWaMessage()" class="bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-700 border border-yellow-300 hover:shadow-md font-bold py-3.5 px-6 rounded-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                                    <i class="ph ph-paper-plane-tilt text-xl"></i> Uji Pesan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Status Server -->
+                        <div class="mt-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl border border-gold/30 group">
+                            <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-20 transition-opacity duration-500"><i class="ph ph-server text-9xl text-gold"></i></div>
+                            <h3 class="font-bold text-sm text-gold mb-4 uppercase tracking-widest flex items-center gap-2 drop-shadow-md">
+                                <div id="settingWaDot" class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_#4ade80]"></div> Status Engine
+                            </h3>
+                            <div class="grid grid-cols-2 gap-4 relative z-10">
+                                <div>
+                                    <p class="text-xs text-gray-400 font-medium">Total Pesan Terkirim</p>
+                                    <p class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-500 drop-shadow-sm" id="statSent">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 font-medium">Menunggu Antrean</p>
+                                    <p class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-gold drop-shadow-sm" id="statPending">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Penjelasan Cara Kerja -->
+                    <div class="premium-card p-6 lg:p-8 bg-gradient-to-br from-blue-50/50 to-indigo-50/50">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2 border-b-2 border-gold/50 pb-3"><i class="ph ph-info text-gold text-2xl drop-shadow-sm"></i> Cara Kerja & Pencegahan Error</h2>
+                        
+                        <div class="space-y-4">
+                            <div class="flex gap-4 items-start bg-white p-4 rounded-2xl border border-blue-50 shadow-sm">
+                                <div class="bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center font-black shrink-0">1</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">Validasi Scan Ganda (Anti-Double)</h4>
+                                    <p class="text-xs text-gray-600 mt-1 leading-relaxed">Sistem mendeteksi jika siswa menscan kartu lebih dari satu kali di hari yang sama. Scan kedua akan ditolak sepenuhnya dan pesan peringatan visual akan muncul, memastikan data absensi dan pesan WA tidak ganda.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4 items-start bg-white p-4 rounded-2xl border border-blue-50 shadow-sm">
+                                <div class="bg-amber-100 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center font-black shrink-0">2</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">Algoritma Variasi Pesan</h4>
+                                    <p class="text-xs text-gray-600 mt-1 leading-relaxed">Pesan yang dikirim tidak kaku. Sistem menggunakan ratusan ribu kombinasi kalimat acak (sapaan, catatan, dan penutup) sehingga setiap wali murid menerima pesan yang terkesan natural, sopan, dan berbeda-beda satu sama lain.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 items-start bg-white p-4 rounded-2xl border border-blue-50 shadow-sm">
+                                <div class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-black shrink-0">3</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">Manajemen Antrean (Anti-Spam WA)</h4>
+                                    <p class="text-xs text-gray-600 mt-1 leading-relaxed">Jika ratusan siswa hadir bersamaan, pesan ditampung di Database Internal. Sistem mengirimkannya secara otomatis dengan laju aman dan menjeda pengiriman (pause) setelah beberapa pesan, agar nomor pengirim tidak diblokir oleh WhatsApp.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            updateWaStats();
+        }
+
+        async function saveWaSettings() {
+            const token = document.getElementById('waApiInput').value.trim();
+            if(token) { 
+                await db.settings.put({key: 'waApiKey', value: token}); 
+                Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Token API WhatsApp berhasil diperbarui!'});
+            } else {
+                Swal.fire({icon: 'error', title: 'Gagal', text: 'Token tidak boleh kosong.'});
+            }
+        }
+
+        async function testWaMessage() {
+            const { value: phone } = await Swal.fire({
+                title: 'Uji Coba Kirim WA',
+                input: 'text',
+                inputLabel: 'Nomor WhatsApp Anda',
+                inputPlaceholder: '08123456789',
+                showCancelButton: true
+            });
+
+            if (phone) {
+                const dummyStudent = { name: "SISWA UJI COBA", nisn: "123456", class: "TEST" };
+                const msg = generateMessage(dummyStudent, getTimeOnlyWIT(), "Tepat Waktu");
+                
+                await db.queue.add({ 
+                    nisn: 'TEST', date: getDateOnlyWIT(), phone: phone, 
+                    message: `*PESAN UJI COBA SISTEM*\n\n` + msg, 
+                    status: 'pending', timestamp: getWITTime().getTime() 
+                });
+                
+                Swal.fire('Masuk Antrean!', 'Pesan tes sedang diproses oleh engine di latar belakang.', 'success');
+                updateWaStats();
+            }
+        }
+
+        async function updateWaStats() {
+            const elSent = document.getElementById('statSent');
+            const elPending = document.getElementById('statPending');
+            if(!elSent || !elPending) return;
+
+            const sent = await db.queue.where('status').equals('sent').count();
+            const pending = await db.queue.where('status').equals('pending').count();
+            
+            elSent.innerText = sent;
+            elPending.innerText = pending;
+
+            setTimeout(updateWaStats, 3000); // Auto update stats in settings menu
+        }
+
         function renderGuide(container) {
-            container.innerHTML = `<div class="max-w-4xl mx-auto pb-10"><h1 class="text-3xl font-bold text-gray-800 tracking-tight mb-6">Pusat Bantuan & Panduan</h1><p class="text-gray-600">Aplikasi siap digunakan. Silakan gunakan menu navigasi untuk mengelola data dan memindai barcode siswa.</p></div>`;
+            container.innerHTML = `
+                <div class="max-w-6xl mx-auto pb-12 animate-zoom-in">
+                    <div class="mb-8 border-b-2 border-yellow-200/50 pb-5">
+                        <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Buku Panduan Penggunaan</h1>
+                        <p class="text-yellow-600 font-medium mt-2">Panduan lengkap langkah demi langkah untuk mengoperasikan Sistem Absensi Cerdas.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Panduan 1: Instalasi PWA -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-blue-300/50 transition-shadow">
+                                <i class="ph ph-desktop text-3xl text-blue-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">1. Optimalisasi Tampilan</h3>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Agar aplikasi berjalan layar penuh (Full Screen) tanpa gangguan panel URL browser:</p>
+                            <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
+                                <li>Gunakan browser <b class="text-gray-800">Google Chrome</b>.</li>
+                                <li>Klik titik tiga di pojok kanan atas browser.</li>
+                                <li>Pilih opsi <b class="text-gray-800">"Install App"</b> atau <b class="text-gray-800">"Tambahkan ke Layar Utama"</b>.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Panduan 2: Data Master -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-emerald-300/50 transition-shadow">
+                                <i class="ph ph-users text-3xl text-emerald-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">2. Memasukkan Data Siswa</h3>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Ada dua cara memasukkan data melalui menu <b>Manajemen Siswa</b>:</p>
+                            <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
+                                <li><b class="text-gray-800">Manual:</b> Klik tombol "Tambah Manual" dan isi formulir.</li>
+                                <li><b class="text-gray-800">Massal (Excel):</b> Klik tombol "Template", isi data di excel tersebut. Lalu klik "Upload Excel" untuk memasukkan ratusan data sekaligus.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Panduan 3: Foto Siswa -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-purple-300/50 transition-shadow">
+                                <i class="ph ph-images text-3xl text-purple-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">3. Upload Foto Otomatis</h3>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Sistem dapat mencocokkan foto siswa secara otomatis berdasarkan NISN:</p>
+                            <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
+                                <li>Siapkan file foto (Bebas format JPG/PNG).</li>
+                                <li><b class="text-gray-800">Ubah nama file foto</b> persis menjadi angka NISN. Contoh: <code class="bg-gray-100 px-1 rounded text-pink-600">005123456.jpg</code>.</li>
+                                <li>Pilih menu "Upload Foto Massal" dan blok semua foto yang telah disiapkan.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Panduan 4: Proses Scanning -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-amber-300/50 transition-shadow">
+                                <i class="ph ph-barcode text-3xl text-amber-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">4. Cara Pemindaian (Scanning)</h3>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Buka menu <b>Area Scan QR</b>.</p>
+                            <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
+                                <li><b class="text-gray-800">Scanner Fisik:</b> Langsung scan kartu/barcode. Tidak perlu mengklik apapun, sistem otomatis membaca ketikan dari scanner.</li>
+                                <li><b class="text-gray-800">Kamera Web:</b> Klik tombol "Kamera", izinkan akses, lalu arahkan kartu ke depan kamera perangkat.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Panduan 5: WhatsApp & Keterlambatan -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-green-300/50 transition-shadow">
+                                <i class="ph ph-whatsapp-logo text-3xl text-green-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">5. Notifikasi WA & Jam Telat</h3>
+                            <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5 font-medium">
+                                <li><b class="text-gray-800">Batas Waktu:</b> Atur jam batas keterlambatan di menu <b>Dashboard</b>. Jika lewat jam tersebut, status otomatis "Terlambat".</li>
+                                <li><b class="text-gray-800">Antrean WA:</b> Pesan dikirim otomatis ke nomor orang tua. Indikator di sidebar kiri menunjukkan antrean. Sistem memakai "Jeda Antispam" setiap 10 pesan agar nomor pengirim tidak diblokir.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Panduan 6: Laporan -->
+                        <div class="premium-card p-6 group cursor-default">
+                            <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-rose-300/50 transition-shadow">
+                                <i class="ph ph-file-csv text-3xl text-rose-700 drop-shadow-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">6. Laporan & Ekspor Data</h3>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Rekapan kehadiran dapat dipantau pada menu <b>Rekapan Data</b>.</p>
+                            <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
+                                <li>Gunakan filter waktu (Hari ini, 7 Hari, Bulan ini) untuk melihat rincian spesifik.</li>
+                                <li>Klik tombol <b class="text-gray-800">"Unduh CSV"</b> untuk menyimpan data ke komputer dan membukanya di Microsoft Excel untuk direkap bulanan/tahunan.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            `;
         }
 
         function switchMenu(menuName) {
             currentMenu = menuName;
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            const activeMenu = document.getElementById(`menu-${menuName}`);
-            if (activeMenu) activeMenu.classList.add('active');
+            const act = document.getElementById(`menu-${menuName}`); if (act) act.classList.add('active');
             
-            if (menuName !== 'scan') {
-                stopCamera();
+            if (menuName !== 'scan' && html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
             }
 
-            const contentArea = document.getElementById('contentArea');
-            contentArea.innerHTML = ''; 
-            switch (menuName) {
-                case 'dashboard': renderDashboard(contentArea); break;
-                case 'scan': renderScanArea(contentArea); break;
-                case 'reports': renderReports(contentArea); break; 
-                case 'data': renderDataManager(contentArea); break;
-                case 'guide': renderGuide(contentArea); break;
+            const c = document.getElementById('contentArea'); c.innerHTML = ''; 
+            switch (menuName) { 
+                case 'dashboard': renderDashboard(c); break; 
+                case 'scan': renderScanArea(c); break; 
+                case 'reports': renderReports(c); break; 
+                case 'data': renderDataManager(c); break; 
+                case 'whatsapp': renderWASettings(c); break; // Menambahkan routing untuk menu WA
+                case 'guide': renderGuide(c); break; 
             }
             if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
         }
 
-        
-        // Logika Toggle Password Visibility
+        // --- LOGIN & Sembunyikan Kredensial ---
         document.getElementById('togglePassword').addEventListener('click', function() {
             const pwdInput = document.getElementById('password');
-            if (pwdInput.type === 'password') {
-                pwdInput.type = 'text';
-                this.classList.remove('ph-eye-slash');
-                this.classList.add('ph-eye');
-                this.classList.add('text-white');
-            } else {
-                pwdInput.type = 'password';
-                this.classList.remove('ph-eye');
-                this.classList.add('ph-eye-slash');
-                this.classList.remove('text-white');
-            }
+            if (pwdInput.type === 'password') { pwdInput.type = 'text'; this.classList.replace('ph-eye-slash', 'ph-eye'); } 
+            else { pwdInput.type = 'password'; this.classList.replace('ph-eye', 'ph-eye-slash'); }
         });
 
-        // Logika Form Login
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            
-            // Validasi Hardcoded karena kita berjalan sebagai Aplikasi Client-Side murni (Github Pages)
-            if(user === 'admin' && pass === '60400173') {
-                document.getElementById('loginPage').classList.add('hide');
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            // Di-encode agar password admin tidak terlihat jelas dalam source code jika diinspect element.
+            if (btoa(u) === 'YWRtaW4=' && btoa(p) === 'NjA0MDAxNzM=') {
+                document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hide');
                 switchMenu('dashboard');
-                Toast.fire({ icon: 'success', title: 'Login Berhasil' });
+                Swal.fire({icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false});
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Akses Ditolak',
-                    text: 'Username atau Password yang Anda masukkan salah.',
-                    confirmButtonColor: '#1e3a8a'
-                });
+                Swal.fire({icon: 'error', title: 'Akses Ditolak', text: 'Username atau Password salah!'});
             }
         });
 
-        // Logika Keluar/Logout
         function logout() {
-            Swal.fire({
-                title: 'Akhiri Sesi?',
-                text: "Anda akan dikembalikan ke halaman login.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#1e3a8a',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Keluar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (html5QrCode && html5QrCode.isScanning) {
-                        html5QrCode.stop().then(() => html5QrCode.clear());
-                    }
-                    document.getElementById('loginForm').reset();
-                    document.getElementById('mainApp').classList.add('hide');
-                    document.getElementById('loginPage').classList.remove('hide');
-                }
-            });
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hide');
+            document.getElementById('password').value = '';
+            if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(()=>{});
         }
     </script>
 </body>
