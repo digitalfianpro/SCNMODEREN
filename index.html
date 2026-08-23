@@ -127,6 +127,7 @@
 </head>
 <body class="text-gray-800 antialiased overflow-hidden h-screen w-screen flex flex-col">
 
+    <!-- Login Page -->
     <div id="loginPage" class="login-bg h-screen w-full flex items-center justify-center fixed inset-0 z-50">
         <div class="login-content glass-panel p-10 rounded-3xl w-full max-w-md text-center transform transition-all">
             <img src="https://i.ibb.co.com/JWy6dhzM/LOGO-SMP6-1-removebg-preview.png" alt="Logo SMP6" class="w-40 h-40 mx-auto mb-6 glowing-logo object-contain">
@@ -136,12 +137,10 @@
             <form id="loginForm" class="space-y-5">
                 <div class="relative">
                     <i class="ph ph-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
-                    <!-- Placeholder diubah agar tidak membocorkan username -->
                     <input type="text" id="username" placeholder="Masukkan Username" class="w-full pl-12 pr-4 py-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gold focus:bg-white/30 transition-all" required>
                 </div>
                 <div class="relative">
                     <i class="ph ph-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
-                    <!-- Placeholder diubah agar tidak membocorkan password -->
                     <input type="password" id="password" placeholder="Masukkan Password" class="w-full pl-12 pr-12 py-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gold focus:bg-white/30 transition-all" required>
                     <i class="ph ph-eye-slash absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-white transition" id="togglePassword"></i>
                 </div>
@@ -153,6 +152,7 @@
         </div>
     </div>
 
+    <!-- Main App Container -->
     <div id="mainApp" class="hide h-screen w-full flex bg-white">
         
         <!-- Sidebar -->
@@ -238,11 +238,12 @@
             </header>
 
             <div class="flex-1 p-6 lg:p-10" id="contentArea">
-                <!-- Views will be injected here -->
+                <!-- Dynamic Content Injected Here -->
             </div>
         </main>
     </div>
 
+    <!-- JavaScript Application Logic -->
     <script>
         // --- 1. SETUP DATABASE (Dexie.js) ---
         const db = new Dexie("AbsensiPremiumDB");
@@ -268,7 +269,7 @@
         let barcodeBuffer = '';
         let barcodeTimeout = null;
 
-        // --- EXPANDED MESSAGE TEMPLATES (Hundreds of thousands combinations) ---
+        // --- EXPANDED MESSAGE TEMPLATES ---
         const greetingsList = [
             "Selamat pagi Bapak/Ibu Wali Murid yang terhormat,", 
             "Salam sejahtera Bapak/Ibu Orang Tua siswa,", 
@@ -486,7 +487,7 @@
                     return;
                 }
 
-                // 1. CEK DOUBLE SCAN (Pencegahan kuat agar siswa tidak bisa tap 2 kali di hari yg sama)
+                // CEK DOUBLE SCAN
                 const existingScan = await db.attendance.where({ nisn: nisn, date: today }).first();
                 if (existingScan) {
                     playSound('warning');
@@ -506,10 +507,9 @@
                         confirmButtonColor: '#d97706', 
                         confirmButtonText: 'Mengerti'
                     });
-                    return; // MENGHENTIKAN PROSES DISINI JIKA SUDAH ABSEN
+                    return;
                 }
 
-                // Hitung status keterlambatan
                 let limitSetting = await db.settings.get('lateLimit');
                 let lateLimitStr = limitSetting ? limitSetting.value : "07:20";
                 let status = 'Tepat Waktu';
@@ -518,15 +518,11 @@
                 const [limitH, limitM] = lateLimitStr.split(':').map(Number);
                 if ((scanH > limitH) || (scanH === limitH && scanM > limitM)) status = 'Terlambat';
 
-                // Simpan data absensi valid
                 await db.attendance.add({ nisn: nisn, date: today, time: timeNow, status: status, timestamp: getWITTime().getTime() });
 
-                // 2. CEK DOUBLE MESSAGE WA (Lapis kedua keamanan agar ortu tidak dispam)
                 const existingQueue = await db.queue.where({ nisn: nisn, date: today }).first();
                 if (!existingQueue) {
                     await db.queue.add({ nisn: nisn, date: today, phone: student.parent_phone || '-', message: generateMessage(student, timeNow, status), status: 'pending', timestamp: getWITTime().getTime() });
-                } else {
-                    console.warn(`Pencegahan ganda: Pesan WA untuk NISN ${nisn} hari ini sudah ada dalam antrean.`);
                 }
 
                 displayScanResult(student, timeNow, status);
@@ -543,8 +539,6 @@
             const isLate = status === 'Terlambat';
             const themeGlow = isLate ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.4)';
             const gradFrom = isLate ? 'from-red-100/50' : 'from-emerald-100/50';
-            const blobColor = isLate ? 'bg-red-400' : 'bg-emerald-400';
-            const photoGrad = isLate ? 'from-red-400' : 'from-emerald-400';
             const boxBg = isLate ? 'bg-red-500' : 'bg-emerald-500';
             const boxBorder = isLate ? 'border-red-400' : 'border-emerald-400';
             const iconStatus = isLate ? '<i class="ph ph-warning-circle text-5xl"></i>' : '<i class="ph ph-check-circle text-5xl"></i>';
@@ -714,8 +708,7 @@
         }
 
         async function exportReportToCSV() {
-            // Re-fetch logic simplified for export
-            await loadReportData(); // ensure table is fresh
+            await loadReportData();
             let csv = "Hari,Tanggal,Waktu,NISN,Nama Siswa,Kelas,Status Absensi\n";
             const rows = document.querySelectorAll("#reportTableBody tr");
             rows.forEach(r => {
@@ -766,7 +759,7 @@
                 html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
                     (decodedText) => {
                         const now = Date.now();
-                        if (now - lastScanTime > 1500) {  // Cooldown mencegah dobel scan
+                        if (now - lastScanTime > 1500) {
                             lastScanTime = now;
                             processScan(decodedText);
                         }
@@ -819,7 +812,7 @@
             list.innerHTML = html;
         }
 
-        // Barcode Scanner fisik
+        // Physical Barcode Listener
         document.addEventListener('keydown', (e) => {
             if (currentMenu !== 'scan') return;
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -937,10 +930,11 @@
         function previewModalPhoto(e) {
             const file = e.target.files[0];
             if(!file) return;
-            // Gunakan kompresi agar ringan
             compressImage(file).then(base64 => {
                 currentEditingPhoto = base64;
                 document.getElementById('modalPhotoPreview').src = currentEditingPhoto;
+            }).catch(err => {
+                Toast.fire({icon: 'error', title: 'Gagal memproses gambar.'});
             });
         }
 
@@ -1002,7 +996,6 @@
             if(!file) return;
             Swal.fire({title: 'Memproses...', text: 'Tunggu sebentar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
-            // Gunakan setTimeout agar UI sweetalert tidak hang saat proses berat
             setTimeout(() => {
                 const reader = new FileReader();
                 reader.onload = async function(event) {
@@ -1025,55 +1018,134 @@
                     finally { e.target.value = ''; }
                 };
                 reader.readAsArrayBuffer(file);
-            }, 100); // jeda 100ms
+            }, 100);
         }
 
-        // FUNGSI KOMPRESI GAMBAR (Penting agar browser tidak crash)
+        // FUNGSI KOMPRESI GAMBAR (Pengaman agar browser & DB tetap ringan)
         function compressImage(file) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = new Image();
                     img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const MAX_SIZE = 300; // Resolusi maks 300px agar database ringan
-                        let width = img.width, height = img.height;
-                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Kompres jadi JPG 70% quality
-                    }
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const MAX_SIZE = 350; // Resolusi optimal 350px
+                            let width = img.width, height = img.height;
+                            if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                            else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                            canvas.width = Math.round(width); canvas.height = Math.round(height);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.75));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = () => reject(new Error("Gagal membaca gambar"));
                     img.src = e.target.result;
-                }
+                };
+                reader.onerror = () => reject(new Error("Gagal membaca file"));
                 reader.readAsDataURL(file);
             });
         }
 
-        // Logika upload foto yang sudah disempurnakan
+        // --- SISTEM UPLOAD FOTO CERDAS & BEBAS FORMAT ---
         async function handlePhotoUpload(e) {
             const files = e.target.files;
             if(!files || files.length === 0) return;
             
-            Swal.fire({title: `Memproses ${files.length} Foto...`, text:'Mohon tunggu proses sinkronisasi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            
+            Swal.fire({
+                title: `Memproses ${files.length} Foto...`, 
+                text: 'Sistem sedang menganalisis & mencocokkan NISN secara cerdas...', 
+                allowOutsideClick: false, 
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const allStudents = await db.students.toArray();
+            if (allStudents.length === 0) {
+                Swal.fire('Perhatian', 'Belum ada data siswa di database. Silakan upload Excel terlebih dahulu!', 'warning');
+                e.target.value = '';
+                return;
+            }
+
+            // Normalisasi data siswa untuk pencocokan multi-skenario
+            const studentList = allStudents.map(s => {
+                const cleanNisn = String(s.nisn).trim();
+                const digitsOnlyNisn = cleanNisn.replace(/\D/g, '');
+                return {
+                    nisn: cleanNisn,
+                    digitsNisn: digitsOnlyNisn,
+                    cleanName: s.name ? s.name.toLowerCase().replace(/[^a-z0-9]/g, '') : '',
+                    raw: s
+                };
+            });
+
             let matched = 0;
-            // Proses file satu-persatu untuk mencegah Out-Of-Memory Crash
-            for(let i=0; i<files.length; i++) {
+            let unmatchedFiles = [];
+
+            for(let i = 0; i < files.length; i++) {
                 const file = files[i];
-                // Ambil string sebelum titik ekstensi terakhir sebagai NISN (Bebas format file)
-                const nisn = file.name.substring(0, file.name.lastIndexOf('.')) || file.name; 
-                
-                const student = await db.students.get(nisn);
-                if(student) {
-                    const compressedBase64 = await compressImage(file);
-                    await db.students.update(nisn, { photo: compressedBase64 });
-                    matched++;
+                if (!file.type.startsWith('image/')) continue; // Skip file non-gambar
+
+                const fullFileName = file.name;
+                const nameWithoutExt = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
+                const cleanFileName = nameWithoutExt.toLowerCase().trim();
+                const digitsInFileName = nameWithoutExt.replace(/\D/g, ''); // Ambil hanya angka dalam nama file
+
+                let targetStudent = null;
+
+                // 1. Pencocokan Persis NISN (contoh: "005123456.jpg")
+                targetStudent = studentList.find(s => s.nisn.toLowerCase() === cleanFileName);
+
+                // 2. Pencocokan Deret Digit Angka (contoh: "Foto_005123456_2026.png" atau "005123456 (1).jpg")
+                if (!targetStudent && digitsInFileName.length > 0) {
+                    targetStudent = studentList.find(s => s.digitsNisn.length > 0 && digitsInFileName.includes(s.digitsNisn));
+                }
+
+                // 3. Pencocokan NISN sebagai Substring (contoh: "Passphoto - 005123456 - Budi.jpeg")
+                if (!targetStudent) {
+                    targetStudent = studentList.find(s => cleanFileName.includes(s.nisn.toLowerCase()));
+                }
+
+                // 4. Fallback Pencocokan berdasarkan Nama Siswa (contoh: "Budi Santoso.jpg")
+                if (!targetStudent) {
+                    const fileLettersOnly = cleanFileName.replace(/[^a-z0-9]/g, '');
+                    if (fileLettersOnly.length >= 3) {
+                        targetStudent = studentList.find(s => s.cleanName.length >= 3 && fileLettersOnly.includes(s.cleanName));
+                    }
+                }
+
+                // Simpan jika ditemukan siswa yang cocok
+                if (targetStudent) {
+                    try {
+                        const compressedBase64 = await compressImage(file);
+                        await db.students.update(targetStudent.nisn, { photo: compressedBase64 });
+                        matched++;
+                    } catch (err) {
+                        console.error("Gagal kompres foto:", err);
+                    }
+                } else {
+                    unmatchedFiles.push(file.name);
                 }
             }
             
-            Swal.fire('Selesai', `${matched} foto sukses tersinkronisasi.`, 'success');
+            if (unmatchedFiles.length > 0 && matched > 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sinkronisasi Cerdas Selesai!',
+                    html: `<p class="font-bold text-emerald-600 mb-2">${matched} foto berhasil dicocokkan & disimpan.</p><p class="text-xs text-gray-500">${unmatchedFiles.length} file tidak ditemukan NISN/Namanya di database.</p>`
+                });
+            } else if (matched === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Pencocokan Gagal',
+                    text: `Tidak ada foto yang cocok dari ${files.length} file. Pastikan nama file foto mengandung NISN atau Nama siswa yang terdaftar!`
+                });
+            } else {
+                Swal.fire('Sukses', `${matched} foto sukses tersinkronisasi secara cerdas!`, 'success');
+            }
+
             e.target.value = '';
             loadStudentData();
         }
@@ -1265,7 +1337,7 @@
             elSent.innerText = sent;
             elPending.innerText = pending;
 
-            setTimeout(updateWaStats, 3000); // Auto update stats in settings menu
+            setTimeout(updateWaStats, 3000);
         }
 
         function renderGuide(container) {
@@ -1278,7 +1350,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         
-                        <!-- Panduan 1: Instalasi PWA -->
+                        <!-- Panduan 1 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-blue-300/50 transition-shadow">
                                 <i class="ph ph-desktop text-3xl text-blue-700 drop-shadow-sm"></i>
@@ -1292,7 +1364,7 @@
                             </ul>
                         </div>
 
-                        <!-- Panduan 2: Data Master -->
+                        <!-- Panduan 2 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-emerald-300/50 transition-shadow">
                                 <i class="ph ph-users text-3xl text-emerald-700 drop-shadow-sm"></i>
@@ -1305,21 +1377,21 @@
                             </ul>
                         </div>
 
-                        <!-- Panduan 3: Foto Siswa -->
+                        <!-- Panduan 3 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-purple-300/50 transition-shadow">
                                 <i class="ph ph-images text-3xl text-purple-700 drop-shadow-sm"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-800 mb-2">3. Upload Foto Otomatis</h3>
-                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Sistem dapat mencocokkan foto siswa secara otomatis berdasarkan NISN:</p>
+                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">Sistem dapat mencocokkan foto siswa secara otomatis & cerdas:</p>
                             <ul class="text-sm text-gray-600 space-y-1.5 list-disc pl-5 font-medium">
-                                <li>Siapkan file foto (Bebas format JPG/PNG).</li>
-                                <li><b class="text-gray-800">Ubah nama file foto</b> persis menjadi angka NISN. Contoh: <code class="bg-gray-100 px-1 rounded text-pink-600">005123456.jpg</code>.</li>
-                                <li>Pilih menu "Upload Foto Massal" dan blok semua foto yang telah disiapkan.</li>
+                                <li>Siapkan file foto siswa (Bebas format JPG/PNG/JPEG).</li>
+                                <li><b class="text-gray-800">Nama File Bebas:</b> Bisa berisi NISN (misal: <code class="bg-gray-100 px-1 rounded text-pink-600">005123456.jpg</code>), kombinasi teks (<code class="bg-gray-100 px-1 rounded text-pink-600">Foto_005123456.png</code>), atau Nama Lengkap Siswa.</li>
+                                <li>Pilih menu "Upload Foto Massal" dan pilih semua foto sekaligus.</li>
                             </ul>
                         </div>
 
-                        <!-- Panduan 4: Proses Scanning -->
+                        <!-- Panduan 4 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-amber-300/50 transition-shadow">
                                 <i class="ph ph-barcode text-3xl text-amber-700 drop-shadow-sm"></i>
@@ -1332,7 +1404,7 @@
                             </ul>
                         </div>
 
-                        <!-- Panduan 5: WhatsApp & Keterlambatan -->
+                        <!-- Panduan 5 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-green-300/50 transition-shadow">
                                 <i class="ph ph-whatsapp-logo text-3xl text-green-700 drop-shadow-sm"></i>
@@ -1340,11 +1412,11 @@
                             <h3 class="text-lg font-bold text-gray-800 mb-2">5. Notifikasi WA & Jam Telat</h3>
                             <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5 font-medium">
                                 <li><b class="text-gray-800">Batas Waktu:</b> Atur jam batas keterlambatan di menu <b>Dashboard</b>. Jika lewat jam tersebut, status otomatis "Terlambat".</li>
-                                <li><b class="text-gray-800">Antrean WA:</b> Pesan dikirim otomatis ke nomor orang tua. Indikator di sidebar kiri menunjukkan antrean. Sistem memakai "Jeda Antispam" setiap 10 pesan agar nomor pengirim tidak diblokir.</li>
+                                <li><b class="text-gray-800">Antrean WA:</b> Pesan dikirim otomatis ke nomor orang tua. Indikator di sidebar kiri menunjukkan antrean. Sistem memakai "Jeda Antispam" setiap 10 pesan agar nomor pengirim tidak diblokir oleh WhatsApp.</li>
                             </ul>
                         </div>
 
-                        <!-- Panduan 6: Laporan -->
+                        <!-- Panduan 6 -->
                         <div class="premium-card p-6 group cursor-default">
                             <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-200 rounded-2xl flex items-center justify-center mb-5 shadow-inner group-hover:shadow-rose-300/50 transition-shadow">
                                 <i class="ph ph-file-csv text-3xl text-rose-700 drop-shadow-sm"></i>
@@ -1377,13 +1449,13 @@
                 case 'scan': renderScanArea(c); break; 
                 case 'reports': renderReports(c); break; 
                 case 'data': renderDataManager(c); break; 
-                case 'whatsapp': renderWASettings(c); break; // Menambahkan routing untuk menu WA
+                case 'whatsapp': renderWASettings(c); break; 
                 case 'guide': renderGuide(c); break; 
             }
             if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
         }
 
-        // --- LOGIN & Sembunyikan Kredensial ---
+        // --- LOGIN LOGIC ---
         document.getElementById('togglePassword').addEventListener('click', function() {
             const pwdInput = document.getElementById('password');
             if (pwdInput.type === 'password') { pwdInput.type = 'text'; this.classList.replace('ph-eye-slash', 'ph-eye'); } 
@@ -1395,7 +1467,6 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
 
-            // Di-encode agar password admin tidak terlihat jelas dalam source code jika diinspect element.
             if (btoa(u) === 'YWRtaW4=' && btoa(p) === 'NjA0MDAxNzM=') {
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hide');
